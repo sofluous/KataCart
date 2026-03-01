@@ -1,0 +1,2326 @@
+<!doctype html>
+<html lang="en" data-theme="mono-slate">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="app-version" content="0.2" />
+    <title>KataCart</title>
+    <link rel="stylesheet" href="./theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/iconoir@7.10.1/css/iconoir.css"
+    />
+    <style>
+      :root {
+        --gap: 12px;
+        --panel: 310px;
+        --strip: 120px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--ds-font-sans);
+        color: var(--ds-text);
+        background: var(--ds-bg);
+      }
+      body {
+        background:
+          radial-gradient(
+            1200px 700px at 86% -8%,
+            color-mix(in oklab, var(--ds-accent) 14%, transparent),
+            transparent 62%
+          ),
+          radial-gradient(
+            900px 620px at -20% 120%,
+            color-mix(in oklab, var(--ds-info) 12%, transparent),
+            transparent 62%
+          ),
+          var(--ds-bg);
+      }
+      .panel {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-3);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        box-shadow: var(--ds-card-shadow);
+        min-width: 0;
+        min-height: 0;
+      }
+      .btn {
+        min-height: var(--ds-control-h-sm);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: var(--ds-btn-bg);
+        color: var(--ds-text);
+        font: inherit;
+        padding: 0 10px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn.primary {
+        background: var(--ds-btn-primary-bg);
+        border-color: var(--ds-btn-primary-border);
+        color: var(--ds-btn-primary-text);
+      }
+      .btn.destructive {
+        background: color-mix(in oklab, var(--ds-error) 18%, var(--ds-btn-bg));
+        border-color: color-mix(in oklab, var(--ds-error) 45%, var(--ds-border));
+        color: var(--ds-text);
+      }
+      .btn.active {
+        border-color: var(--ds-accent);
+        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .muted {
+        color: var(--ds-text-muted);
+        font-size: var(--ds-fs-1);
+      }
+      .screen {
+        width: 100%;
+        height: 100%;
+      }
+      .screen[hidden] {
+        display: none !important;
+      }
+      .field {
+        display: grid;
+        gap: 4px;
+      }
+      .field label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--ds-text-muted);
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        min-height: var(--ds-control-h-sm);
+        border: 1px solid var(--ds-input-border);
+        border-radius: var(--ds-radius-2);
+        background: var(--ds-input-bg);
+        color: var(--ds-input-text);
+        font: inherit;
+        padding: 6px 8px;
+      }
+      .field textarea {
+        min-height: 86px;
+        resize: vertical;
+      }
+      #galleryScreen {
+        position: relative;
+        padding: var(--gap);
+      }
+      .gallery-shell {
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: var(--gap);
+      }
+      .gallery-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .gallery-top h1 {
+        margin: 0;
+        font-size: clamp(1.1rem, 2vw, 1.6rem);
+      }
+      .layout-switch {
+        display: flex;
+        gap: 6px;
+      }
+      .layout-switch .btn.active {
+        border-color: var(--ds-accent);
+        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
+      }
+      #galleryList {
+        min-height: 0;
+        overflow: auto;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+        grid-auto-rows: max-content;
+      }
+      #galleryList.layout-grid {
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      }
+      #galleryList.layout-tile {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      }
+      #galleryList.layout-list {
+        grid-template-columns: 1fr;
+      }
+      .cart-card {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-raised) 84%, transparent);
+        padding: 10px;
+        display: grid;
+        gap: 6px;
+        align-self: start;
+      }
+      #galleryList.layout-list .cart-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
+      }
+      .cart-meta {
+        display: grid;
+        gap: 4px;
+      }
+      .new-cart-card {
+        border: 1px dashed color-mix(in oklab, var(--ds-accent) 60%, var(--ds-border));
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-accent) 8%, var(--ds-bg-raised));
+        padding: 10px;
+        display: grid;
+        gap: 6px;
+        align-self: start;
+        cursor: pointer;
+      }
+      .new-cart-card:hover {
+        border-color: var(--ds-accent);
+        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-bg-raised));
+      }
+      #createPanel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(340px, 92vw);
+        height: 100%;
+        border-right: 1px solid var(--ds-border);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 96%, transparent);
+        box-shadow: var(--ds-card-shadow);
+        transform: translateX(-102%);
+        transition: transform var(--ds-dur-med) var(--ds-ease-standard);
+        z-index: 110;
+        padding: 14px;
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+      #createPanel.open {
+        transform: translateX(0);
+      }
+      .template-list {
+        min-height: 0;
+        overflow: auto;
+        display: grid;
+        gap: 6px;
+      }
+      .template-option {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: var(--ds-btn-bg);
+        color: var(--ds-text);
+        font: inherit;
+        text-align: left;
+        padding: 8px;
+        cursor: pointer;
+        display: grid;
+        gap: 2px;
+      }
+      .template-option[aria-selected="true"] {
+        border-color: var(--ds-accent);
+        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
+      }
+      .create-actions {
+        display: flex;
+        gap: 8px;
+      }
+      #workspaceScreen {
+        padding: var(--gap);
+        display: grid;
+        gap: var(--gap);
+        grid-template-columns: var(--panel) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) var(--strip);
+      }
+      .context-panel {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        padding: 8px;
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        gap: 8px;
+        min-height: 0;
+      }
+      .brand {
+        min-height: 44px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(
+          in oklab,
+          var(--ds-accent) 12%,
+          var(--ds-bg-raised)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 10px;
+        font-weight: 600;
+      }
+      .context-wrap {
+        min-height: 0;
+        overflow: auto;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-raised) 86%, transparent);
+        padding: 8px;
+      }
+      .group {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 86%, transparent);
+        padding: 8px;
+        display: grid;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .group h3 {
+        margin: 0;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--ds-text-muted);
+      }
+      .tool-row {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) 46px;
+        gap: 6px;
+        align-items: center;
+        font-size: var(--ds-fs-1);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+      .tool-row input[type="range"] {
+        width: 100%;
+      }
+      #context2D[hidden],
+      #context3D[hidden] {
+        display: none;
+      }
+      .status {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: var(--ds-bg-raised);
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        color: var(--ds-text-muted);
+        font-size: var(--ds-fs-1);
+      }
+      .workspace-main {
+        grid-column: 2;
+        grid-row: 1;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 8px;
+        min-height: 0;
+      }
+      .workspace-header {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 10px;
+      }
+      .workspace-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .stage {
+        position: relative;
+        min-height: 0;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        overflow: hidden;
+        background:
+          radial-gradient(
+            90% 120% at 14% 8%,
+            color-mix(in oklab, var(--ds-accent) 10%, transparent),
+            transparent 64%
+          ),
+          radial-gradient(
+            88% 120% at 86% 94%,
+            color-mix(in oklab, var(--ds-info) 11%, transparent),
+            transparent 66%
+          ),
+          var(--ds-bg-raised);
+      }
+      #stageCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+        cursor: grab;
+      }
+      #stageCanvas.drag {
+        cursor: grabbing;
+      }
+      #stageCanvas.drop-hover {
+        outline: 2px dashed color-mix(in oklab, var(--ds-accent) 72%, transparent);
+        outline-offset: -2px;
+      }
+      #cartNameOverlay {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        width: min(360px, 52%);
+        min-height: 32px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        color: var(--ds-text);
+        font: inherit;
+        font-weight: 600;
+        padding: 0 8px;
+      }
+      .hud {
+        position: absolute;
+        left: 10px;
+        top: 50px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
+        padding: 6px 8px;
+        display: grid;
+        gap: 2px;
+        font-size: var(--ds-fs-1);
+        pointer-events: none;
+      }
+      .canvas-controls {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
+        padding: 4px;
+        display: flex;
+        gap: 4px;
+      }
+      .canvas-controls button {
+        min-width: 30px;
+        min-height: 30px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: var(--ds-btn-bg);
+        color: var(--ds-text);
+        cursor: pointer;
+      }
+      .canvas-toolstrip {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 92%, transparent);
+        padding: 3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .seg-btn {
+        min-height: 30px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-1);
+        background: var(--ds-btn-bg);
+        color: var(--ds-text);
+        font: inherit;
+        padding: 0 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .seg-btn.active {
+        border-color: var(--ds-accent);
+        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
+      }
+      .drop-tip {
+        position: absolute;
+        inset: auto 50% 56px auto;
+        transform: translateX(50%);
+        border: 1px dashed var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 92%, transparent);
+        color: var(--ds-text-muted);
+        padding: 6px 10px;
+        font-size: var(--ds-fs-1);
+        display: none;
+        pointer-events: none;
+      }
+      .drop-tip.show {
+        display: block;
+      }
+      .tip {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
+        padding: 4px 6px;
+        color: var(--ds-text-muted);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      #assetStripShell {
+        grid-column: 2;
+        grid-row: 2;
+        padding: 6px 8px;
+        display: grid;
+        align-items: center;
+      }
+      #assetStrip {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(150px, 190px);
+        gap: 8px;
+        overflow: auto hidden;
+        min-height: 0;
+      }
+      .asset-card {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 86%, transparent);
+        padding: 7px;
+        display: grid;
+        gap: 6px;
+        cursor: pointer;
+      }
+      .asset-card.active {
+        border-color: var(--ds-accent);
+        background: color-mix(
+          in oklab,
+          var(--ds-accent) 13%,
+          var(--ds-bg-elevated)
+        );
+      }
+      .asset-box {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-1);
+        min-height: 46px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background: repeating-linear-gradient(
+          45deg,
+          color-mix(in oklab, var(--ds-accent) 10%, transparent) 0 8px,
+          color-mix(in oklab, var(--ds-bg-raised) 86%, transparent) 8px 16px
+        );
+      }
+      .asset-box.has-image {
+        background-color: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        background-blend-mode: normal;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .asset-box.is-3d {
+        background:
+          radial-gradient(
+            56% 90% at 68% 24%,
+            color-mix(in oklab, var(--ds-accent) 25%, transparent),
+            transparent 70%
+          ),
+          linear-gradient(
+            135deg,
+            color-mix(in oklab, var(--ds-info) 18%, var(--ds-bg-raised)),
+            color-mix(in oklab, var(--ds-bg-elevated) 86%, transparent)
+          );
+      }
+      .asset-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      #settingsDrawer {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: min(340px, 92vw);
+        height: 100%;
+        border-left: 1px solid var(--ds-border);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 96%, transparent);
+        box-shadow: var(--ds-card-shadow);
+        transform: translateX(102%);
+        transition: transform var(--ds-dur-med) var(--ds-ease-standard);
+        z-index: 120;
+        padding: 14px;
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 10px;
+        align-content: start;
+      }
+      #settingsDrawer.open {
+        transform: translateX(0);
+      }
+      .settings-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .settings-body {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      @media (max-width: 1120px) {
+        :root {
+          --panel: 260px;
+          --strip: 108px;
+        }
+        #landing {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+  <aside id="createPanel">
+      <div>
+        <h2 style="margin: 0">Create Cart</h2>
+        <p class="muted" style="margin: 4px 0 0 0">
+          Select a template first, then create blank cart.
+        </p>
+      </div>
+      <div class="field">
+        <label for="newCartNameInput">Cart Name</label>
+        <input id="newCartNameInput" type="text" value="New KataCart" />
+      </div>
+      <div id="createTemplateList" class="template-list"></div>
+      <div class="create-actions">
+        <button id="cancelCreateBtn" class="btn destructive" type="button">
+          <i class="iconoir-xmark-circle"></i>Cancel
+        </button>
+        <button id="createCartBtn" class="btn primary" type="button" disabled>
+          <i class="iconoir-check-circle"></i>Create Cart
+        </button>
+      </div>
+    </aside>
+
+    <section id="galleryScreen" class="screen">
+      <div class="gallery-shell">
+        <div class="gallery-top">
+          <div>
+            <h1 style="margin: 0">KataCart Gallery</h1>
+            <div class="muted">
+              Fullscreen gallery. Open a cart or create a new blank slot.
+            </div>
+          </div>
+          <div class="layout-switch">
+            <button class="btn active" data-layout="grid" type="button">
+              <i class="iconoir-view-grid"></i>Grid
+            </button>
+            <button class="btn" data-layout="tile" type="button">
+              <i class="iconoir-view-columns-2"></i>Tile
+            </button>
+            <button class="btn" data-layout="list" type="button">
+              <i class="iconoir-list"></i>List
+            </button>
+          </div>
+        </div>
+        <div id="galleryList" class="layout-grid"></div>
+      </div>
+    </section>
+
+    <section id="workspaceScreen" class="screen" hidden>
+      <aside class="panel context-panel">
+        <div class="brand">
+          <span><i class="iconoir-3d-select-face"></i> KataCart Work</span>
+          <span id="contextAssetType" class="muted">-</span>
+        </div>
+        <div class="muted" id="contextTemplateText">Template: -</div>
+        <div class="context-wrap">
+          <div class="group">
+            <h3>Metadata</h3>
+            <div class="field">
+              <label for="metaNotes">Notes</label
+              ><textarea id="metaNotes"></textarea>
+            </div>
+            <div class="field">
+              <label for="metaTags">Tags</label
+              ><input id="metaTags" placeholder="retro, ps2, archive" />
+            </div>
+            <div class="field">
+              <label for="metaSku">SKU</label
+              ><input id="metaSku" placeholder="KATA-0001" />
+            </div>
+          </div>
+          <div id="context2D" class="group" hidden>
+            <h3>2D Asset Context</h3>
+            <div class="actions">
+              <button id="downloadTemplateBtn" class="btn" type="button">
+                <i class="iconoir-download"></i>Template PNG
+              </button>
+              <button id="uploadAssetBtn" class="btn primary" type="button">
+                <i class="iconoir-upload"></i>Upload Image
+              </button>
+            </div>
+            <div class="tool-row">
+              <span>X</span
+              ><input
+                id="txRange"
+                type="range"
+                min="-220"
+                max="220"
+                value="0"
+              /><output id="txOut">0</output>
+            </div>
+            <div class="tool-row">
+              <span>Y</span
+              ><input
+                id="tyRange"
+                type="range"
+                min="-220"
+                max="220"
+                value="0"
+              /><output id="tyOut">0</output>
+            </div>
+            <div class="tool-row">
+              <span>Scale</span
+              ><input
+                id="tsRange"
+                type="range"
+                min="20"
+                max="300"
+                value="100"
+              /><output id="tsOut">1.00</output>
+            </div>
+            <div class="tool-row">
+              <span>Rotate</span
+              ><input
+                id="trRange"
+                type="range"
+                min="-180"
+                max="180"
+                value="0"
+              /><output id="trOut">0deg</output>
+            </div>
+            <div class="tool-row">
+              <span>Pixelize</span
+              ><input
+                id="pxRange"
+                type="range"
+                min="1"
+                max="64"
+                value="1"
+              /><output id="pxOut">1x</output>
+            </div>
+            <div class="actions">
+              <button id="mirrorXBtn" class="btn" type="button">
+                <i class="iconoir-reflect-horizontal"></i>Mirror X
+              </button>
+              <button id="mirrorYBtn" class="btn" type="button">
+                <i class="iconoir-reflect-vertical"></i>Mirror Y
+              </button>
+            </div>
+            <div class="actions">
+              <button id="reset2dBtn" class="btn destructive" type="button">
+                <i class="iconoir-undo"></i>Reset
+              </button>
+              <button id="fitContainBtn" class="btn" type="button">
+                <i class="iconoir-scale-frame-enlarge"></i>Fit
+              </button>
+              <button id="fitCoverBtn" class="btn" type="button">
+                <i class="iconoir-scale-frame-reduce"></i>Fill
+              </button>
+            </div>
+          </div>
+          <div id="context3D" class="group" hidden>
+            <h3>3D Asset Context</h3>
+            <div class="actions">
+              <button id="spinToggleBtn" class="btn" type="button">
+                <i class="iconoir-refresh-double"></i>Auto Rotate
+              </button>
+              <button id="gridToggleBtn" class="btn" type="button">
+                <i class="iconoir-grid-minus"></i>Grid
+              </button>
+            </div>
+            <div class="muted">
+              Drag inside canvas to rotate. Use wheel or +/- controls to zoom.
+            </div>
+            <div class="tool-row">
+              <span>Move X</span
+              ><input
+                id="m3dXRange"
+                type="range"
+                min="-1"
+                max="1"
+                step="0.01"
+                value="0"
+              /><output id="m3dXOut">0.00</output>
+            </div>
+            <div class="tool-row">
+              <span>Move Y</span
+              ><input
+                id="m3dYRange"
+                type="range"
+                min="-1"
+                max="1"
+                step="0.01"
+                value="0"
+              /><output id="m3dYOut">0.00</output>
+            </div>
+            <div class="tool-row">
+              <span>Scale</span
+              ><input
+                id="m3dSRange"
+                type="range"
+                min="40"
+                max="230"
+                value="100"
+              /><output id="m3dSOut">1.00</output>
+            </div>
+            <div class="actions">
+              <button id="rotX90Btn" class="btn" type="button">
+                <i class="iconoir-refresh-circle"></i>Rot X +90
+              </button>
+              <button id="rotY90Btn" class="btn" type="button">
+                <i class="iconoir-refresh-circle"></i>Rot Y +90
+              </button>
+            </div>
+            <div class="actions">
+              <button id="reset3dBtn" class="btn destructive" type="button">
+                <i class="iconoir-undo"></i>Reset 3D
+              </button>
+              <button id="mirror3dXBtn" class="btn" type="button">
+                <i class="iconoir-reflect-horizontal"></i>Mirror X
+              </button>
+            </div>
+          </div>
+          <div class="group">
+            <h3>Export</h3>
+            <div class="actions">
+              <button id="exportTxtBtn" class="btn" type="button">
+                <i class="iconoir-doc-star"></i>TXT
+              </button>
+              <button id="exportJsonBtn" class="btn primary" type="button">
+                <i class="iconoir-download"></i>JSON
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="statusText" class="status">Ready.</div>
+      </aside>
+
+      <div class="workspace-main">
+        <header class="workspace-header">
+          <div class="workspace-header-left">
+            <button id="backToGalleryBtn" class="btn" type="button">
+              <i class="iconoir-arrow-left"></i>Back To Gallery
+            </button>
+            <strong>KataCart Workspace</strong>
+          </div>
+          <button id="settingsBtn" class="btn" type="button">
+            <i class="iconoir-settings"></i>Settings
+          </button>
+        </header>
+        <section class="stage">
+          <canvas id="stageCanvas"></canvas>
+          <input id="cartNameOverlay" value="Cart" />
+          <div class="hud">
+            <div id="hudAsset">Asset: -</div>
+            <div id="hudTemplate" class="muted">Template: -</div>
+            <div id="hudCamera" class="muted">Rot 0,0 | Zoom 1.00</div>
+          </div>
+          <div class="canvas-controls">
+            <button id="zoomInBtn" type="button" title="Zoom in">
+              <i class="iconoir-plus"></i>
+            </button>
+            <button id="zoomOutBtn" type="button" title="Zoom out">
+              <i class="iconoir-minus"></i>
+            </button>
+            <button id="zoomResetBtn" type="button" title="Reset view">
+              <i class="iconoir-undo-circle"></i>
+            </button>
+          </div>
+          <div class="canvas-toolstrip">
+            <button id="toolRenderStandardBtn" class="seg-btn" type="button">
+              <i class="iconoir-3d-select-face"></i>Standard
+            </button>
+            <button id="toolRenderWobbleBtn" class="seg-btn" type="button">
+              <i class="iconoir-frame-alt-empty"></i>Wobble
+            </button>
+            <button id="toolAutoRotateBtn" class="seg-btn" type="button">
+              <i class="iconoir-refresh-double"></i>Auto Rotate
+            </button>
+            <button id="toolGridBtn" class="seg-btn" type="button">
+              <i class="iconoir-grid-minus"></i>Show Grid
+            </button>
+            <button id="toolNormalsBtn" class="seg-btn" type="button">
+              <i class="iconoir-frame-alt-empty"></i>Normals
+            </button>
+          </div>
+          <div id="dropTip" class="drop-tip">
+            <i class="iconoir-media-image-list"></i> Drop image to map texture
+          </div>
+          <div class="tip">
+            Asset cards change context panel. 2D cards use upload/template + fit
+            tools.
+          </div>
+        </section>
+      </div>
+
+      <footer id="assetStripShell" class="panel">
+        <div id="assetStrip"></div>
+      </footer>
+    </section>
+
+    <aside id="settingsDrawer">
+      <div class="settings-head">
+        <h2 style="margin: 0">Settings</h2>
+        <button id="closeSettingsBtn" class="btn" type="button">
+          <i class="iconoir-xmark-circle"></i>Close
+        </button>
+      </div>
+      <div class="settings-body">
+        <div class="muted">Workspace display and theme.</div>
+        <div class="field">
+          <label for="themeSelect">Theme</label
+          ><select id="themeSelect"></select>
+        </div>
+        <label class="field"
+          ><span class="muted">Auto Rotate</span
+          ><input id="spinCheckbox" type="checkbox"
+        /></label>
+        <label class="field"
+          ><span class="muted">Show Grid</span
+          ><input id="gridCheckbox" type="checkbox" checked
+        /></label>
+        <label class="field"
+          ><span class="muted">Background Glow</span
+          ><input id="glowCheckbox" type="checkbox" checked
+        /></label>
+      </div>
+    </aside>
+
+    <input id="assetFileInput" type="file" accept="image/*" hidden />
+
+    <script>
+      const THEMES = [
+        "steel-night",
+        "paper-mint",
+        "amber-terminal",
+        "neon-grid",
+        "mono-slate",
+        "tech-grid",
+        "skeuo-panel",
+        "industrial-terminal",
+        "velvet-touch",
+        "eva-wireframe",
+        "saturn-alloy",
+        "eva-unit-01",
+      ];
+      const TEMPLATES = [
+        {
+          id: "cd-jewel",
+          name: "CD Jewel Case",
+          family: "Disc Case",
+          d: { w: 142, h: 125, z: 10 },
+          uv: { w: 2048, h: 2048 },
+        },
+        {
+          id: "ps1-jewel",
+          name: "PlayStation Jewel Case",
+          family: "Disc Case",
+          d: { w: 142, h: 125, z: 24 },
+          uv: { w: 4096, h: 2048 },
+        },
+        {
+          id: "ps2-case",
+          name: "PlayStation 2 Case",
+          family: "Disc Case",
+          d: { w: 135, h: 190, z: 14 },
+          uv: { w: 4096, h: 4096 },
+        },
+        {
+          id: "gamecube-case",
+          name: "GameCube Case",
+          family: "Disc Case",
+          d: { w: 135, h: 190, z: 14 },
+          uv: { w: 4096, h: 4096 },
+        },
+        {
+          id: "psp-umd",
+          name: "PSP UMD Case",
+          family: "Portable Disc",
+          d: { w: 64, h: 67, z: 4.5 },
+          uv: { w: 2048, h: 2048 },
+        },
+        {
+          id: "gameboy-cart",
+          name: "Game Boy Cartridge",
+          family: "Handheld Cart",
+          d: { w: 58, h: 65, z: 8 },
+          uv: { w: 2048, h: 2048 },
+        },
+        {
+          id: "sd-card",
+          name: "SD Card",
+          family: "Storage Media",
+          d: { w: 24, h: 32, z: 2.1 },
+          uv: { w: 1024, h: 1024 },
+        },
+        {
+          id: "mini-dv",
+          name: "MiniDV Cassette",
+          family: "Tape Media",
+          d: { w: 66, h: 48, z: 12 },
+          uv: { w: 2048, h: 2048 },
+        },
+      ];
+
+      function blueprint(template) {
+        const list = [
+          { id: "model_3d", label: "3D Model", type: "3d", w: 0, h: 0 },
+          {
+            id: "cover_front",
+            label: "Cover Front",
+            type: "2d",
+            w: template.uv.w,
+            h: template.uv.h,
+          },
+          {
+            id: "cover_back",
+            label: "Cover Back",
+            type: "2d",
+            w: template.uv.w,
+            h: template.uv.h,
+          },
+          {
+            id: "spine",
+            label: "Spine",
+            type: "2d",
+            w: Math.max(512, Math.floor(template.uv.w * 0.2)),
+            h: template.uv.h,
+          },
+        ];
+        if (template.family.includes("Disc"))
+          list.push({
+            id: "disc_art",
+            label: "Disc Art",
+            type: "2d",
+            w: 1400,
+            h: 1400,
+          });
+        if (template.id === "gameboy-cart" || template.id === "sd-card")
+          list.push({
+            id: "label_front",
+            label: "Label Front",
+            type: "2d",
+            w: 1024,
+            h: 1024,
+          });
+        return list.map((a) => ({
+          ...a,
+          image: null,
+          tr: { x: 0, y: 0, s: 1, r: 0, mx: false, my: false, px: 1 },
+        }));
+      }
+      function createCart(template, name) {
+        return {
+          id: `cart_${Date.now()}_${Math.floor(Math.random() * 9999)}`,
+          name: name || `${template.name} Cart`,
+          templateId: template.id,
+          notes: "",
+          tags: "",
+          sku: "",
+          assets: blueprint(template),
+          modelTr: { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0, s: 1, mx: false },
+          updatedAt: new Date().toISOString(),
+        };
+      }
+
+      const S = {
+        screen: "gallery",
+        galleryLayout: "grid",
+        createOpen: false,
+        createTemplateId: null,
+        carts: [createCart(TEMPLATES[2], "PS2 Demo Cart")],
+        cartId: null,
+        assetId: null,
+        theme: document.documentElement.dataset.theme || "mono-slate",
+        settingsOpen: false,
+        view: {
+          yaw: 0.45,
+          pitch: -0.25,
+          zoom: 1.12,
+          drag: false,
+          dragOver: false,
+          spin: false,
+          grid: true,
+          normals: false,
+          renderMode: "wobble",
+          glow: true,
+        },
+      };
+
+      const U = {
+        galleryScreen: document.getElementById("galleryScreen"),
+        workspaceScreen: document.getElementById("workspaceScreen"),
+        galleryList: document.getElementById("galleryList"),
+        layoutButtons: [...document.querySelectorAll(".layout-switch .btn")],
+        createPanel: document.getElementById("createPanel"),
+        createTemplateList: document.getElementById("createTemplateList"),
+        newCartNameInput: document.getElementById("newCartNameInput"),
+        createCartBtn: document.getElementById("createCartBtn"),
+        cancelCreateBtn: document.getElementById("cancelCreateBtn"),
+        contextTemplateText: document.getElementById("contextTemplateText"),
+        contextAssetType: document.getElementById("contextAssetType"),
+        context2D: document.getElementById("context2D"),
+        context3D: document.getElementById("context3D"),
+        statusText: document.getElementById("statusText"),
+        backToGalleryBtn: document.getElementById("backToGalleryBtn"),
+        settingsBtn: document.getElementById("settingsBtn"),
+        settingsDrawer: document.getElementById("settingsDrawer"),
+        closeSettingsBtn: document.getElementById("closeSettingsBtn"),
+        themeSelect: document.getElementById("themeSelect"),
+        spinCheckbox: document.getElementById("spinCheckbox"),
+        gridCheckbox: document.getElementById("gridCheckbox"),
+        glowCheckbox: document.getElementById("glowCheckbox"),
+        stageCanvas: document.getElementById("stageCanvas"),
+        cartNameOverlay: document.getElementById("cartNameOverlay"),
+        hudAsset: document.getElementById("hudAsset"),
+        hudTemplate: document.getElementById("hudTemplate"),
+        hudCamera: document.getElementById("hudCamera"),
+        zoomInBtn: document.getElementById("zoomInBtn"),
+        zoomOutBtn: document.getElementById("zoomOutBtn"),
+        zoomResetBtn: document.getElementById("zoomResetBtn"),
+        assetStrip: document.getElementById("assetStrip"),
+        uploadAssetBtn: document.getElementById("uploadAssetBtn"),
+        downloadTemplateBtn: document.getElementById("downloadTemplateBtn"),
+        txRange: document.getElementById("txRange"),
+        tyRange: document.getElementById("tyRange"),
+        tsRange: document.getElementById("tsRange"),
+        trRange: document.getElementById("trRange"),
+        pxRange: document.getElementById("pxRange"),
+        txOut: document.getElementById("txOut"),
+        tyOut: document.getElementById("tyOut"),
+        tsOut: document.getElementById("tsOut"),
+        trOut: document.getElementById("trOut"),
+        pxOut: document.getElementById("pxOut"),
+        mirrorXBtn: document.getElementById("mirrorXBtn"),
+        mirrorYBtn: document.getElementById("mirrorYBtn"),
+        fitContainBtn: document.getElementById("fitContainBtn"),
+        fitCoverBtn: document.getElementById("fitCoverBtn"),
+        reset2dBtn: document.getElementById("reset2dBtn"),
+        m3dXRange: document.getElementById("m3dXRange"),
+        m3dYRange: document.getElementById("m3dYRange"),
+        m3dSRange: document.getElementById("m3dSRange"),
+        m3dXOut: document.getElementById("m3dXOut"),
+        m3dYOut: document.getElementById("m3dYOut"),
+        m3dSOut: document.getElementById("m3dSOut"),
+        rotX90Btn: document.getElementById("rotX90Btn"),
+        rotY90Btn: document.getElementById("rotY90Btn"),
+        mirror3dXBtn: document.getElementById("mirror3dXBtn"),
+        reset3dBtn: document.getElementById("reset3dBtn"),
+        toolRenderStandardBtn: document.getElementById("toolRenderStandardBtn"),
+        toolRenderWobbleBtn: document.getElementById("toolRenderWobbleBtn"),
+        toolAutoRotateBtn: document.getElementById("toolAutoRotateBtn"),
+        toolGridBtn: document.getElementById("toolGridBtn"),
+        toolNormalsBtn: document.getElementById("toolNormalsBtn"),
+        dropTip: document.getElementById("dropTip"),
+        metaNotes: document.getElementById("metaNotes"),
+        metaTags: document.getElementById("metaTags"),
+        metaSku: document.getElementById("metaSku"),
+        exportJsonBtn: document.getElementById("exportJsonBtn"),
+        exportTxtBtn: document.getElementById("exportTxtBtn"),
+        spinToggleBtn: document.getElementById("spinToggleBtn"),
+        gridToggleBtn: document.getElementById("gridToggleBtn"),
+        assetFileInput: document.getElementById("assetFileInput"),
+      };
+
+      const X = U.stageCanvas.getContext("2d");
+      let last = performance.now();
+      let lastPt = null;
+
+      function setStatus(msg) {
+        U.statusText.textContent = msg;
+      }
+      function tById(id) {
+        return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
+      }
+      function cart() {
+        return S.carts.find((c) => c.id === S.cartId) || null;
+      }
+      function asset() {
+        const c = cart();
+        if (!c) return null;
+        return c.assets.find((a) => a.id === S.assetId) || c.assets[0] || null;
+      }
+      function ensure2DTransform(a) {
+        if (!a || a.type !== "2d") return;
+        a.tr = {
+          x: Number(a.tr?.x || 0),
+          y: Number(a.tr?.y || 0),
+          s: Number(a.tr?.s || 1),
+          r: Number(a.tr?.r || 0),
+          mx: !!a.tr?.mx,
+          my: !!a.tr?.my,
+          px: Math.max(1, Number(a.tr?.px || 1)),
+        };
+      }
+      function ensureModelTransform(c) {
+        if (!c) return;
+        const m = c.modelTr || {};
+        c.modelTr = {
+          tx: Number(m.tx || 0),
+          ty: Number(m.ty || 0),
+          tz: Number(m.tz || 0),
+          rx: Number(m.rx || 0),
+          ry: Number(m.ry || 0),
+          rz: Number(m.rz || 0),
+          s: Number(m.s || 1),
+          mx: !!m.mx,
+        };
+      }
+      function ensureAsset() {
+        const c = cart();
+        if (!c) return;
+        if (!S.assetId || !c.assets.some((a) => a.id === S.assetId))
+          S.assetId = c.assets[0]?.id || null;
+        c.assets.forEach(ensure2DTransform);
+        ensureModelTransform(c);
+      }
+      function syncViewToggleUI() {
+        U.spinCheckbox.checked = S.view.spin;
+        U.gridCheckbox.checked = S.view.grid;
+        U.spinToggleBtn.classList.toggle("active", S.view.spin);
+        U.gridToggleBtn.classList.toggle("active", S.view.grid);
+        U.toolAutoRotateBtn.classList.toggle("active", S.view.spin);
+        U.toolGridBtn.classList.toggle("active", S.view.grid);
+        U.toolNormalsBtn.classList.toggle("active", S.view.normals);
+        U.toolRenderStandardBtn.classList.toggle(
+          "active",
+          S.view.renderMode === "standard",
+        );
+        U.toolRenderWobbleBtn.classList.toggle(
+          "active",
+          S.view.renderMode === "wobble",
+        );
+      }
+      function isEmpty2DAssetActive() {
+        const a = asset();
+        return !!(a && a.type === "2d" && !a.image);
+      }
+
+      function openCreatePanel() {
+        S.createOpen = true;
+        U.createPanel.classList.add("open");
+        renderCreatePanel();
+      }
+      function closeCreatePanel() {
+        S.createOpen = false;
+        U.createPanel.classList.remove("open");
+        S.createTemplateId = null;
+        U.createCartBtn.disabled = true;
+        renderCreatePanel();
+      }
+    function openGallery() {
+      S.screen = "gallery";
+      document.body.dataset.screen = "gallery";
+      U.galleryScreen.hidden = false;
+      U.workspaceScreen.hidden = true;
+      renderGallery();
+    }
+      function openWorkspace(cartId) {
+        S.cartId = cartId;
+        ensureAsset();
+      S.screen = "workspace";
+      document.body.dataset.screen = "workspace";
+      U.galleryScreen.hidden = true;
+      U.workspaceScreen.hidden = false;
+      renderWorkspace();
+    }
+
+      function renderCreatePanel() {
+        U.createTemplateList.innerHTML = "";
+        TEMPLATES.forEach((t) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "template-option";
+          b.setAttribute("aria-selected", String(S.createTemplateId === t.id));
+          b.innerHTML = `<strong>${t.name}</strong><span class="muted">${t.family}</span><span class="muted">${t.d.w} x ${t.d.h} x ${t.d.z}mm</span>`;
+          b.addEventListener("click", () => {
+            S.createTemplateId = t.id;
+            U.createCartBtn.disabled = false;
+            renderCreatePanel();
+          });
+          U.createTemplateList.append(b);
+        });
+      }
+
+      function gallerySummary(c) {
+        const t = tById(c.templateId);
+        const filled = c.assets.filter(
+          (a) => a.type === "2d" && !!a.image,
+        ).length;
+        const total = c.assets.filter((a) => a.type === "2d").length;
+        return { t, filled, total };
+      }
+      function renderGallery() {
+        U.galleryList.className = `layout-${S.galleryLayout}`;
+        U.layoutButtons.forEach((b) =>
+          b.classList.toggle("active", b.dataset.layout === S.galleryLayout),
+        );
+        U.galleryList.innerHTML = "";
+        const newCard = document.createElement("article");
+        newCard.className = "new-cart-card";
+        newCard.innerHTML = `
+          <div class="cart-meta">
+            <strong><i class="iconoir-plus-circle"></i> Create New Cart</strong>
+            <span class="muted">Select a template and create a blank slot.</span>
+          </div>
+          <button class="btn primary" type="button"><i class="iconoir-plus-circle"></i>New Cart</button>
+        `;
+        newCard.querySelector("button").addEventListener("click", openCreatePanel);
+        newCard.addEventListener("dblclick", openCreatePanel);
+        U.galleryList.append(newCard);
+
+        if (!S.carts.length) {
+          const empty = document.createElement("div");
+          empty.className = "muted";
+          empty.textContent = "No carts yet. Start by creating a new cart tile above.";
+          U.galleryList.append(empty);
+          return;
+        }
+        S.carts.forEach((c) => {
+          const s = gallerySummary(c);
+          const card = document.createElement("article");
+          card.className = "cart-card";
+          card.innerHTML = `
+          <div class="cart-meta">
+            <strong>${c.name}</strong>
+            <span class="muted">${s.t.name}</span>
+            <span class="muted">${s.filled}/${s.total} 2D assets filled</span>
+          </div>
+          <button class="btn" type="button"><i class="iconoir-arrow-right-circle"></i>Open</button>
+        `;
+          card
+            .querySelector("button")
+            .addEventListener("click", () => openWorkspace(c.id));
+          card.addEventListener("dblclick", () => openWorkspace(c.id));
+          U.galleryList.append(card);
+        });
+      }
+
+      function renderAssetStrip() {
+        const c = cart();
+        if (!c) return;
+        U.assetStrip.innerHTML = "";
+        c.assets.forEach((a) => {
+          const status =
+            a.type === "3d" ? "Viewer" : a.image ? "Uploaded" : "Empty";
+          const item = document.createElement("article");
+          item.className = `asset-card${a.id === S.assetId ? " active" : ""}`;
+          item.innerHTML = `<div class="asset-box"></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div>`;
+          const box = item.querySelector(".asset-box");
+          if (a.type === "3d") box.classList.add("is-3d");
+          if (a.image?.src) {
+            box.classList.add("has-image");
+            box.style.backgroundImage = `url("${a.image.src}")`;
+          }
+          item.addEventListener("click", () => {
+            S.assetId = a.id;
+            syncContextFromAsset();
+            renderAssetStrip();
+          });
+          U.assetStrip.append(item);
+        });
+      }
+
+      function syncContextFromAsset() {
+        const c = cart();
+        const a = asset();
+        if (!c || !a) return;
+        const t = tById(c.templateId);
+        U.contextTemplateText.textContent = `Template: ${t.name} (${t.family})`;
+        U.hudAsset.textContent = `Asset: ${a.label}`;
+        U.hudTemplate.textContent = `Template: ${t.name} | UV ${t.uv.w}x${t.uv.h}`;
+        U.contextAssetType.textContent = a.type.toUpperCase();
+        const is2d = a.type === "2d";
+        U.context2D.hidden = !is2d;
+        U.context3D.hidden = is2d;
+        U.cartNameOverlay.value = c.name;
+        U.metaNotes.value = c.notes || "";
+        U.metaTags.value = c.tags || "";
+        U.metaSku.value = c.sku || "";
+        if (is2d) {
+          ensure2DTransform(a);
+          U.txRange.value = String(a.tr.x);
+          U.tyRange.value = String(a.tr.y);
+          U.tsRange.value = String(Math.round(a.tr.s * 100));
+          U.trRange.value = String(Math.round(a.tr.r));
+          U.pxRange.value = String(Math.round(a.tr.px || 1));
+          U.txOut.textContent = String(a.tr.x);
+          U.tyOut.textContent = String(a.tr.y);
+          U.tsOut.textContent = a.tr.s.toFixed(2);
+          U.trOut.textContent = `${Math.round(a.tr.r)}deg`;
+          U.pxOut.textContent = `${Math.round(a.tr.px || 1)}x`;
+        } else {
+          ensureModelTransform(c);
+          U.m3dXRange.value = String(c.modelTr.tx);
+          U.m3dYRange.value = String(c.modelTr.ty);
+          U.m3dSRange.value = String(Math.round(c.modelTr.s * 100));
+          U.m3dXOut.textContent = c.modelTr.tx.toFixed(2);
+          U.m3dYOut.textContent = c.modelTr.ty.toFixed(2);
+          U.m3dSOut.textContent = c.modelTr.s.toFixed(2);
+        }
+        setDropHover(false);
+        syncViewToggleUI();
+      }
+
+      function renderWorkspace() {
+        const c = cart();
+        if (!c) return;
+        syncContextFromAsset();
+        renderAssetStrip();
+        U.themeSelect.value = S.theme;
+        syncViewToggleUI();
+        U.glowCheckbox.checked = S.view.glow;
+        U.settingsDrawer.classList.toggle("open", S.settingsOpen);
+      }
+      function resizeCanvas() {
+        const r = U.stageCanvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const w = Math.max(1, Math.floor(r.width * dpr));
+        const h = Math.max(1, Math.floor(r.height * dpr));
+        if (U.stageCanvas.width !== w || U.stageCanvas.height !== h) {
+          U.stageCanvas.width = w;
+          U.stageCanvas.height = h;
+        }
+      }
+      function drawGrid(w, h, color) {
+        if (!S.view.grid) return;
+        X.save();
+        X.globalAlpha = 0.25;
+        X.strokeStyle = color;
+        const step = Math.max(20, Math.floor(w / 24));
+        for (let x = 0; x <= w; x += step) {
+          X.beginPath();
+          X.moveTo(x, 0);
+          X.lineTo(x, h);
+          X.stroke();
+        }
+        for (let y = 0; y <= h; y += step) {
+          X.beginPath();
+          X.moveTo(0, y);
+          X.lineTo(w, y);
+          X.stroke();
+        }
+        X.restore();
+      }
+      function rot(p) {
+        const cy = Math.cos(S.view.yaw),
+          sy = Math.sin(S.view.yaw);
+        const cp = Math.cos(S.view.pitch),
+          sp = Math.sin(S.view.pitch);
+        const x = p.x * cy - p.z * sy;
+        const z = p.x * sy + p.z * cy;
+        return { x, y: p.y * cp - z * sp, z: p.y * sp + z * cp };
+      }
+      function proj(p, k, cx, cy) {
+        const f = k / (p.z + 4.2);
+        return { x: cx + p.x * f, y: cy - p.y * f, z: p.z };
+      }
+      function stylizeProjectedPoint(pt, z, idx) {
+        if (S.view.renderMode !== "wobble") return pt;
+        const wobble = 1.2 + Math.max(0, z + 0.8) * 0.9;
+        const t = performance.now() * 0.0027 + idx * 1.13;
+        const jx = Math.sin(t) * wobble;
+        const jy = Math.cos(t * 1.1) * wobble;
+        return {
+          x: Math.round((pt.x + jx) * 0.5) * 2,
+          y: Math.round((pt.y + jy) * 0.5) * 2,
+          z: pt.z,
+        };
+      }
+      function model(p, m) {
+        const s = m.s || 1;
+        let x = p.x * s * (m.mx ? -1 : 1);
+        let y = p.y * s;
+        let z = p.z * s;
+        const rx = (m.rx * Math.PI) / 180;
+        const ry = (m.ry * Math.PI) / 180;
+        const rz = (m.rz * Math.PI) / 180;
+        const cx = Math.cos(rx),
+          sx = Math.sin(rx);
+        const cy = Math.cos(ry),
+          sy = Math.sin(ry);
+        const cz = Math.cos(rz),
+          sz = Math.sin(rz);
+        const y1 = y * cx - z * sx;
+        const z1 = y * sx + z * cx;
+        y = y1;
+        z = z1;
+        const x2 = x * cy + z * sy;
+        const z2 = -x * sy + z * cy;
+        x = x2;
+        z = z2;
+        const x3 = x * cz - y * sz;
+        const y3 = x * sz + y * cz;
+        x = x3;
+        y = y3;
+        return { x: x + m.tx, y: y + m.ty, z: z + m.tz };
+      }
+      function face(poly, pts, color, a) {
+        X.beginPath();
+        X.moveTo(pts[poly[0]].x, pts[poly[0]].y);
+        for (let i = 1; i < poly.length; i += 1)
+          X.lineTo(pts[poly[i]].x, pts[poly[i]].y);
+        X.closePath();
+        X.globalAlpha = a;
+        X.fillStyle = color;
+        X.fill();
+        X.globalAlpha = 1;
+        X.strokeStyle =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-border")
+            .trim() || "#777";
+        X.stroke();
+      }
+      function assetImageById(cart, id) {
+        if (!cart) return null;
+        const a = cart.assets.find((x) => x.id === id && x.image && x.image.img);
+        return a ? getRenderableImage(a) : null;
+      }
+      function applyImageToTriangle(img, s0, s1, s2, d0, d1, d2) {
+        const den =
+          s0.x * (s1.y - s2.y) +
+          s1.x * (s2.y - s0.y) +
+          s2.x * (s0.y - s1.y);
+        if (!den) return;
+        const a =
+          (d0.x * (s1.y - s2.y) +
+            d1.x * (s2.y - s0.y) +
+            d2.x * (s0.y - s1.y)) /
+          den;
+        const b =
+          (d0.y * (s1.y - s2.y) +
+            d1.y * (s2.y - s0.y) +
+            d2.y * (s0.y - s1.y)) /
+          den;
+        const c =
+          (d0.x * (s2.x - s1.x) +
+            d1.x * (s0.x - s2.x) +
+            d2.x * (s1.x - s0.x)) /
+          den;
+        const d =
+          (d0.y * (s2.x - s1.x) +
+            d1.y * (s0.x - s2.x) +
+            d2.y * (s1.x - s0.x)) /
+          den;
+        const e =
+          (d0.x * (s1.x * s2.y - s2.x * s1.y) +
+            d1.x * (s2.x * s0.y - s0.x * s2.y) +
+            d2.x * (s0.x * s1.y - s1.x * s0.y)) /
+          den;
+        const f =
+          (d0.y * (s1.x * s2.y - s2.x * s1.y) +
+            d1.y * (s2.x * s0.y - s0.x * s2.y) +
+            d2.y * (s0.x * s1.y - s1.x * s0.y)) /
+          den;
+        X.save();
+        X.beginPath();
+        X.moveTo(d0.x, d0.y);
+        X.lineTo(d1.x, d1.y);
+        X.lineTo(d2.x, d2.y);
+        X.closePath();
+        X.clip();
+        X.transform(a, b, c, d, e, f);
+        X.drawImage(img, 0, 0);
+        X.restore();
+      }
+      function applyImageToQuad(img, quad, opts = {}) {
+        const { flipX = false, flipY = false, rotate180 = false, rotate90 = false } = opts;
+        const sw = img.width;
+        const sh = img.height;
+        const source = [
+          { x: 0, y: 0 },
+          { x: sw, y: 0 },
+          { x: sw, y: sh },
+          { x: 0, y: sh },
+        ].map((p) => ({
+          x: flipX ? sw - p.x : p.x,
+          y: flipY ? sh - p.y : p.y,
+        }));
+        const q = rotate180
+          ? [source[2], source[3], source[0], source[1]]
+          : source;
+        const qq = rotate90 ? [q[3], q[0], q[1], q[2]] : q;
+        applyImageToTriangle(
+          img,
+          qq[0],
+          qq[1],
+          qq[2],
+          quad[0],
+          quad[1],
+          quad[2],
+        );
+        applyImageToTriangle(
+          img,
+          qq[0],
+          qq[2],
+          qq[3],
+          quad[0],
+          quad[2],
+          quad[3],
+        );
+      }
+      function vsub(a, b) {
+        return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+      }
+      function vcross(a, b) {
+        return {
+          x: a.y * b.z - a.z * b.y,
+          y: a.z * b.x - a.x * b.z,
+          z: a.x * b.y - a.y * b.x,
+        };
+      }
+      function vnorm(a) {
+        const m = Math.hypot(a.x, a.y, a.z) || 1;
+        return { x: a.x / m, y: a.y / m, z: a.z / m };
+      }
+      function vdot(a, b) {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+      }
+      function drawFaceAssist(faceName, quad, n, camForward) {
+        if (!S.view.normals) return;
+        if (vdot(n, camForward) <= 0.02) return;
+        const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
+        const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
+        const dx = n.x * 22;
+        const dy = -n.y * 22;
+        const ex = cx + dx;
+        const ey = cy + dy;
+        X.save();
+        X.strokeStyle =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-accent")
+            .trim() || "#7bd0ff";
+        X.fillStyle = X.strokeStyle;
+        X.lineWidth = 2;
+        X.beginPath();
+        X.moveTo(cx, cy);
+        X.lineTo(ex, ey);
+        X.stroke();
+        const ang = Math.atan2(ey - cy, ex - cx);
+        X.beginPath();
+        X.moveTo(ex, ey);
+        X.lineTo(ex - Math.cos(ang - 0.45) * 8, ey - Math.sin(ang - 0.45) * 8);
+        X.lineTo(ex - Math.cos(ang + 0.45) * 8, ey - Math.sin(ang + 0.45) * 8);
+        X.closePath();
+        X.fill();
+        X.fillStyle = "#eaf6ff";
+        X.font = "11px sans-serif";
+        X.textAlign = "left";
+        X.textBaseline = "middle";
+        X.fillText(faceName, ex + 6, ey);
+        X.restore();
+      }
+      function resolveFaceTexOpts(faceId, n) {
+        const ax = Math.abs(n.x);
+        const ay = Math.abs(n.y);
+        const az = Math.abs(n.z);
+        if (az >= ax && az >= ay) {
+          return { flipY: true, flipX: n.z < 0 };
+        }
+        if (ax >= ay && ax >= az) {
+          return { flipY: true, rotate90: true, flipX: n.x > 0 };
+        }
+        return faceId === "top"
+          ? { flipX: true }
+          : { flipY: true };
+      }
+      function getRenderableImage(a) {
+        if (!a?.image?.img) return null;
+        const px = Math.max(1, Math.round(a.tr?.px || 1));
+        if (px <= 1) return a.image.img;
+        if (!a.image.pixelCache) a.image.pixelCache = {};
+        if (a.image.pixelCache[px]) return a.image.pixelCache[px];
+        const src = a.image.img;
+        const sw = src.width;
+        const sh = src.height;
+        const tw = Math.max(1, Math.floor(sw / px));
+        const th = Math.max(1, Math.floor(sh / px));
+        const low = document.createElement("canvas");
+        low.width = tw;
+        low.height = th;
+        const lx = low.getContext("2d");
+        lx.imageSmoothingEnabled = false;
+        lx.drawImage(src, 0, 0, tw, th);
+        const out = document.createElement("canvas");
+        out.width = sw;
+        out.height = sh;
+        const ox = out.getContext("2d");
+        ox.imageSmoothingEnabled = false;
+        ox.drawImage(low, 0, 0, tw, th, 0, 0, sw, sh);
+        a.image.pixelCache[px] = out;
+        return out;
+      }
+      function drawDiscTexture(img, quad) {
+        const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
+        const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
+        const width = Math.hypot(quad[1].x - quad[0].x, quad[1].y - quad[0].y);
+        const r = Math.max(8, width * 0.32);
+        X.save();
+        X.beginPath();
+        X.arc(cx, cy, r, 0, Math.PI * 2);
+        X.closePath();
+        X.clip();
+        X.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+        X.restore();
+        X.save();
+        X.strokeStyle =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-accent")
+            .trim() || "#7bd0ff";
+        X.globalAlpha = 0.6;
+        X.beginPath();
+        X.arc(cx, cy, r * 0.2, 0, Math.PI * 2);
+        X.stroke();
+        X.restore();
+      }
+      function draw3D(cart, template, w, h, ca, ci) {
+        ensureModelTransform(cart);
+        const d = template.d,
+          sx = d.w / 100,
+          sy = d.h / 100,
+          sz = Math.max(0.1, d.z / 100);
+        const k = Math.min(w, h) * 0.36 * S.view.zoom,
+          cx = w * 0.5,
+          cy = h * 0.56;
+        const verts = [
+          { x: -sx, y: -sy, z: -sz },
+          { x: sx, y: -sy, z: -sz },
+          { x: sx, y: sy, z: -sz },
+          { x: -sx, y: sy, z: -sz },
+          { x: -sx, y: -sy, z: sz },
+          { x: sx, y: -sy, z: sz },
+          { x: sx, y: sy, z: sz },
+          { x: -sx, y: sy, z: sz },
+        ]
+          .map((p) => model(p, cart.modelTr))
+          .map(rot);
+        const pts = verts.map((v, i) =>
+          stylizeProjectedPoint(proj(v, k, cx, cy), v.z, i),
+        );
+        const frontImg =
+          assetImageById(cart, "cover_front") || assetImageById(cart, "label_front");
+        const backImg = assetImageById(cart, "cover_back");
+        const spineImg = assetImageById(cart, "spine");
+        const discImg = assetImageById(cart, "disc_art");
+        const faces = [
+          {
+            id: "back",
+            poly: [0, 3, 2, 1],
+            tex: backImg,
+          },
+          {
+            id: "front",
+            poly: [4, 5, 6, 7],
+            tex: frontImg,
+          },
+          { id: "bottom", poly: [0, 1, 5, 4] },
+          { id: "right", poly: [1, 2, 6, 5] },
+          { id: "top", poly: [3, 7, 6, 2] },
+          {
+            id: "spine",
+            poly: [3, 0, 4, 7],
+            tex: spineImg,
+          },
+        ];
+        const camForward = vnorm({ x: 0, y: 0, z: 1 });
+        faces
+          .map((f) => ({
+            ...f,
+            z: f.poly.reduce((acc, n) => acc + verts[n].z, 0) / f.poly.length,
+          }))
+          .sort((a, b) => a.z - b.z)
+          .forEach((f, i) => {
+            const p0 = verts[f.poly[0]];
+            const p1 = verts[f.poly[1]];
+            const p3 = verts[f.poly[3]];
+            const n = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
+            const facing = vdot(n, camForward);
+            const fillColor =
+              facing > 0.005
+                ? "rgba(140, 148, 160, 0.30)"
+                : "rgba(255, 255, 255, 0.14)";
+            face(f.poly, pts, fillColor, 1);
+            const quad = f.poly.map((n) => pts[n]);
+            drawFaceAssist(f.id.toUpperCase(), quad, n, camForward);
+            if (!f.tex || facing <= 0.005) return;
+            applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id, n));
+            if (f.id === "front" && discImg) drawDiscTexture(discImg, quad);
+          });
+      }
+      function draw2D(a, w, h, ca) {
+        ensure2DTransform(a);
+        const m = 56,
+          r = a.w / a.h;
+        let fw = w - m * 2,
+          fh = fw / r;
+        if (fh > h - m * 2) {
+          fh = h - m * 2;
+          fw = fh * r;
+        }
+        const fx = (w - fw) / 2,
+          fy = (h - fh) / 2;
+        X.save();
+        X.setLineDash([8, 6]);
+        X.strokeStyle = ca;
+        X.strokeRect(fx, fy, fw, fh);
+        X.restore();
+        X.fillStyle =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-text-muted")
+            .trim() || "#999";
+        X.font = "12px sans-serif";
+        X.fillText(`${a.label} template ${a.w}x${a.h}`, fx, fy - 10);
+        if (!a.image) {
+          const cb =
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--ds-border")
+              .trim() || "#5d6876";
+          X.save();
+          X.setLineDash([8, 6]);
+          X.lineWidth = 2;
+          X.strokeStyle = S.view.dragOver ? ca : cb;
+          X.strokeRect(fx + 6, fy + 6, fw - 12, fh - 12);
+          X.restore();
+          X.font = "14px sans-serif";
+          X.fillText(
+            "Drop image here or use Upload Image",
+            fx + 14,
+            fy + 26,
+          );
+          X.font = "12px sans-serif";
+          X.fillText("Supports PNG/JPG/WebP", fx + 14, fy + 46);
+          return;
+        }
+        const im = getRenderableImage(a),
+          fit = Math.min(fw / im.width, fh / im.height),
+          sc = fit * a.tr.s;
+        const dw = im.width * sc,
+          dh = im.height * sc,
+          cx = fx + fw / 2 + a.tr.x,
+          cy = fy + fh / 2 + a.tr.y;
+        X.save();
+        X.translate(cx, cy);
+        X.rotate((a.tr.r * Math.PI) / 180);
+        X.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
+        X.drawImage(im, -dw / 2, -dh / 2, dw, dh);
+        X.restore();
+      }
+      function draw() {
+        if (S.screen !== "workspace") return;
+        resizeCanvas();
+        const w = U.stageCanvas.width,
+          h = U.stageCanvas.height;
+        X.clearRect(0, 0, w, h);
+        const ca =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-accent")
+            .trim() || "#7bd0ff";
+        const ci =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-info")
+            .trim() || "#79c6ff";
+        const cg =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-border")
+            .trim() || "#2b3950";
+        drawGrid(w, h, cg);
+        const c = cart(),
+          a = asset();
+        if (!c || !a) return;
+        const t = tById(c.templateId);
+        if (a.type === "3d") draw3D(c, t, w, h, ca, ci);
+        else draw2D(a, w, h, ca);
+        U.hudCamera.textContent = `Rot ${S.view.yaw.toFixed(2)}, ${S.view.pitch.toFixed(2)} | Zoom ${S.view.zoom.toFixed(2)}`;
+      }
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - last) / 1000);
+        last = ts;
+        if (S.screen === "workspace" && S.view.spin && asset()?.type === "3d")
+          S.view.yaw += dt * 0.8;
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function syncTransformFromUI() {
+        const a = asset();
+        if (!a || a.type !== "2d") return;
+        ensure2DTransform(a);
+        a.tr.x = Number(U.txRange.value);
+        a.tr.y = Number(U.tyRange.value);
+        a.tr.s = Number(U.tsRange.value) / 100;
+        a.tr.r = Number(U.trRange.value);
+        a.tr.px = Number(U.pxRange.value);
+        U.txOut.textContent = String(a.tr.x);
+        U.tyOut.textContent = String(a.tr.y);
+        U.tsOut.textContent = a.tr.s.toFixed(2);
+        U.trOut.textContent = `${Math.round(a.tr.r)}deg`;
+        U.pxOut.textContent = `${Math.round(a.tr.px)}x`;
+      }
+      function fitAsset(mode) {
+        const a = asset();
+        if (!a || a.type !== "2d" || !a.image) return;
+        const sx = a.w / a.image.width;
+        const sy = a.h / a.image.height;
+        const contain = Math.min(sx, sy);
+        const cover = Math.max(sx, sy);
+        a.tr.s = mode === "cover" ? cover / contain : 1;
+        U.tsRange.value = String(Math.round(a.tr.s * 100));
+        U.tsOut.textContent = a.tr.s.toFixed(2);
+      }
+      function reset2DTransform() {
+        const a = asset();
+        if (!a || a.type !== "2d") return;
+        a.tr = { x: 0, y: 0, s: 1, r: 0, mx: false, my: false, px: 1 };
+        syncContextFromAsset();
+      }
+      function toggle2DMirror(axis) {
+        const a = asset();
+        if (!a || a.type !== "2d") return;
+        ensure2DTransform(a);
+        if (axis === "x") a.tr.mx = !a.tr.mx;
+        if (axis === "y") a.tr.my = !a.tr.my;
+      }
+      function sync3DTransformFromUI() {
+        const c = cart();
+        if (!c) return;
+        ensureModelTransform(c);
+        c.modelTr.tx = Number(U.m3dXRange.value);
+        c.modelTr.ty = Number(U.m3dYRange.value);
+        c.modelTr.s = Number(U.m3dSRange.value) / 100;
+        U.m3dXOut.textContent = c.modelTr.tx.toFixed(2);
+        U.m3dYOut.textContent = c.modelTr.ty.toFixed(2);
+        U.m3dSOut.textContent = c.modelTr.s.toFixed(2);
+      }
+      function reset3DTransform() {
+        const c = cart();
+        if (!c) return;
+        c.modelTr = { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0, s: 1, mx: false };
+        syncContextFromAsset();
+      }
+      function downloadTemplate() {
+        const a = asset();
+        if (!a || a.type !== "2d") {
+          setStatus("Select a 2D asset card first.");
+          return;
+        }
+        const c = document.createElement("canvas");
+        c.width = a.w;
+        c.height = a.h;
+        const x = c.getContext("2d");
+        x.fillStyle = "#fff";
+        x.fillRect(0, 0, c.width, c.height);
+        x.strokeStyle = "#333";
+        x.lineWidth = 8;
+        x.strokeRect(8, 8, c.width - 16, c.height - 16);
+        x.fillStyle = "#111";
+        x.font = "28px sans-serif";
+        x.fillText(a.label, 30, 54);
+        x.font = "20px monospace";
+        x.fillText(`${a.w}x${a.h}`, 30, 84);
+        x.strokeStyle = "#777";
+        x.beginPath();
+        x.moveTo(0, 0);
+        x.lineTo(c.width, c.height);
+        x.moveTo(c.width, 0);
+        x.lineTo(0, c.height);
+        x.stroke();
+        c.toBlob((blob) => {
+          if (!blob) return;
+          const u = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = u;
+          link.download = `${a.id}_template_${a.w}x${a.h}.png`;
+          document.body.append(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(u);
+        }, "image/png");
+        setStatus(`Downloaded template for ${a.label}.`);
+      }
+      function uploadImage(file) {
+        const a = asset();
+        if (!a || a.type !== "2d") {
+          setStatus("Select a 2D asset card before upload.");
+          return;
+        }
+        if (!file) return;
+        const u = URL.createObjectURL(file),
+          im = new Image();
+        im.onload = () => {
+          a.image = { src: u, width: im.width, height: im.height, img: im };
+          a.tr = { x: 0, y: 0, s: 1, r: 0, mx: false, my: false, px: 1 };
+          const mismatch = im.width !== a.w || im.height !== a.h;
+          setStatus(
+            mismatch
+              ? `Uploaded ${file.name}. Source ${im.width}x${im.height} differs from template ${a.w}x${a.h}. Use translate/scale tools.`
+              : `Uploaded ${file.name}.`,
+          );
+          syncContextFromAsset();
+          renderAssetStrip();
+        };
+        im.onerror = () => setStatus("Failed to load image file.");
+        im.src = u;
+      }
+      function setDropHover(on) {
+        S.view.dragOver = !!on;
+        U.stageCanvas.classList.toggle("drop-hover", !!on);
+        U.dropTip.classList.toggle("show", !!on && isEmpty2DAssetActive());
+      }
+
+      function exportPayload() {
+        const c = cart();
+        if (!c) return null;
+        const t = tById(c.templateId);
+        return {
+          app: "KataCart",
+          version: "0.9.0",
+          exportedAt: new Date().toISOString(),
+          cart: {
+            id: c.id,
+            name: c.name,
+            template: t,
+            notes: c.notes,
+            tags: c.tags,
+            sku: c.sku,
+            assets: c.assets.map((a) => ({
+              id: a.id,
+              label: a.label,
+              type: a.type,
+              width: a.w,
+              height: a.h,
+              hasImage: !!a.image,
+              sourceSize: a.image
+                ? { width: a.image.width, height: a.image.height }
+                : null,
+              transform: a.tr,
+            })),
+          },
+          view: {
+            yaw: S.view.yaw,
+            pitch: S.view.pitch,
+            zoom: S.view.zoom,
+            renderMode: S.view.renderMode,
+          },
+          modelTransform: c.modelTr,
+        };
+      }
+      function dl(name, text, mime) {
+        const b = new Blob([text], { type: mime });
+        const u = URL.createObjectURL(b);
+        const a = document.createElement("a");
+        a.href = u;
+        a.download = name;
+        document.body.append(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(u);
+      }
+
+      U.cancelCreateBtn.addEventListener("click", closeCreatePanel);
+      U.createCartBtn.addEventListener("click", () => {
+        const tid = S.createTemplateId;
+        if (!tid) return;
+        const t = tById(tid);
+        const name = U.newCartNameInput.value.trim() || `${t.name} Cart`;
+        const c = createCart(t, name);
+        S.carts.unshift(c);
+        closeCreatePanel();
+        openWorkspace(c.id);
+        setStatus(`Created blank cart: ${c.name}.`);
+      });
+      U.layoutButtons.forEach((b) =>
+        b.addEventListener("click", () => {
+          S.galleryLayout = b.dataset.layout;
+          renderGallery();
+        }),
+      );
+
+      U.backToGalleryBtn.addEventListener("click", openGallery);
+      U.settingsBtn.addEventListener("click", () => {
+        S.settingsOpen = !S.settingsOpen;
+        U.settingsDrawer.classList.toggle("open", S.settingsOpen);
+      });
+      U.closeSettingsBtn.addEventListener("click", () => {
+        S.settingsOpen = false;
+        U.settingsDrawer.classList.remove("open");
+      });
+
+      U.themeSelect.addEventListener("input", () => {
+        S.theme = U.themeSelect.value;
+        document.documentElement.dataset.theme = S.theme;
+        setStatus(`Theme set to ${S.theme}.`);
+      });
+      U.spinCheckbox.addEventListener("input", () => {
+        S.view.spin = U.spinCheckbox.checked;
+        syncViewToggleUI();
+      });
+      U.gridCheckbox.addEventListener("input", () => {
+        S.view.grid = U.gridCheckbox.checked;
+        syncViewToggleUI();
+      });
+      U.glowCheckbox.addEventListener("input", () => {
+        S.view.glow = U.glowCheckbox.checked;
+        document.body.style.background = S.view.glow
+          ? "radial-gradient(1200px 700px at 86% -8%, color-mix(in oklab, var(--ds-accent) 14%, transparent), transparent 62%), radial-gradient(900px 620px at -20% 120%, color-mix(in oklab, var(--ds-info) 12%, transparent), transparent 62%), var(--ds-bg)"
+          : "var(--ds-bg)";
+      });
+
+      U.spinToggleBtn.addEventListener("click", () => {
+        S.view.spin = !S.view.spin;
+        syncViewToggleUI();
+        setStatus(`Auto rotate ${S.view.spin ? "enabled" : "disabled"}.`);
+      });
+      U.gridToggleBtn.addEventListener("click", () => {
+        S.view.grid = !S.view.grid;
+        syncViewToggleUI();
+        setStatus(`Grid ${S.view.grid ? "enabled" : "disabled"}.`);
+      });
+      U.toolAutoRotateBtn.addEventListener("click", () => {
+        S.view.spin = !S.view.spin;
+        syncViewToggleUI();
+      });
+      U.toolGridBtn.addEventListener("click", () => {
+        S.view.grid = !S.view.grid;
+        syncViewToggleUI();
+      });
+      U.toolNormalsBtn.addEventListener("click", () => {
+        S.view.normals = !S.view.normals;
+        syncViewToggleUI();
+      });
+      U.toolRenderStandardBtn.addEventListener("click", () => {
+        S.view.renderMode = "standard";
+        syncViewToggleUI();
+      });
+      U.toolRenderWobbleBtn.addEventListener("click", () => {
+        S.view.renderMode = "wobble";
+        syncViewToggleUI();
+      });
+      U.zoomInBtn.addEventListener("click", () => {
+        S.view.zoom = Math.min(2.6, S.view.zoom + 0.1);
+      });
+      U.zoomOutBtn.addEventListener("click", () => {
+        S.view.zoom = Math.max(0.45, S.view.zoom - 0.1);
+      });
+      U.zoomResetBtn.addEventListener("click", () => {
+        S.view.yaw = 0.45;
+        S.view.pitch = -0.25;
+        S.view.zoom = 1.12;
+      });
+
+      U.cartNameOverlay.addEventListener("input", () => {
+        const c = cart();
+        if (c) c.name = U.cartNameOverlay.value;
+      });
+      U.cartNameOverlay.addEventListener("blur", () => {
+        const c = cart();
+        if (!c) return;
+        c.updatedAt = new Date().toISOString();
+        renderGallery();
+        setStatus(`Renamed cart to "${c.name}".`);
+      });
+
+      U.metaNotes.addEventListener("input", () => {
+        const c = cart();
+        if (c) c.notes = U.metaNotes.value;
+      });
+      U.metaTags.addEventListener("input", () => {
+        const c = cart();
+        if (c) c.tags = U.metaTags.value;
+      });
+      U.metaSku.addEventListener("input", () => {
+        const c = cart();
+        if (c) c.sku = U.metaSku.value;
+      });
+
+      U.uploadAssetBtn.addEventListener("click", () =>
+        U.assetFileInput.click(),
+      );
+      U.assetFileInput.addEventListener("change", (e) => {
+        uploadImage(e.target.files?.[0]);
+        e.target.value = "";
+      });
+      U.downloadTemplateBtn.addEventListener("click", downloadTemplate);
+      U.txRange.addEventListener("input", syncTransformFromUI);
+      U.tyRange.addEventListener("input", syncTransformFromUI);
+      U.tsRange.addEventListener("input", syncTransformFromUI);
+      U.trRange.addEventListener("input", syncTransformFromUI);
+      U.pxRange.addEventListener("input", syncTransformFromUI);
+      U.mirrorXBtn.addEventListener("click", () => toggle2DMirror("x"));
+      U.mirrorYBtn.addEventListener("click", () => toggle2DMirror("y"));
+      U.fitContainBtn.addEventListener("click", () => fitAsset("contain"));
+      U.fitCoverBtn.addEventListener("click", () => fitAsset("cover"));
+      U.reset2dBtn.addEventListener("click", reset2DTransform);
+      U.m3dXRange.addEventListener("input", sync3DTransformFromUI);
+      U.m3dYRange.addEventListener("input", sync3DTransformFromUI);
+      U.m3dSRange.addEventListener("input", sync3DTransformFromUI);
+      U.rotX90Btn.addEventListener("click", () => {
+        const c = cart();
+        if (!c) return;
+        ensureModelTransform(c);
+        c.modelTr.rx += 90;
+      });
+      U.rotY90Btn.addEventListener("click", () => {
+        const c = cart();
+        if (!c) return;
+        ensureModelTransform(c);
+        c.modelTr.ry += 90;
+      });
+      U.mirror3dXBtn.addEventListener("click", () => {
+        const c = cart();
+        if (!c) return;
+        ensureModelTransform(c);
+        c.modelTr.mx = !c.modelTr.mx;
+      });
+      U.reset3dBtn.addEventListener("click", reset3DTransform);
+
+      U.stageCanvas.addEventListener("pointerdown", (e) => {
+        if (asset()?.type !== "3d") return;
+        S.view.drag = true;
+        U.stageCanvas.classList.add("drag");
+        lastPt = { x: e.clientX, y: e.clientY };
+        U.stageCanvas.setPointerCapture(e.pointerId);
+      });
+      U.stageCanvas.addEventListener("pointermove", (e) => {
+        if (!S.view.drag || !lastPt) return;
+        const dx = e.clientX - lastPt.x,
+          dy = e.clientY - lastPt.y;
+        lastPt = { x: e.clientX, y: e.clientY };
+        S.view.yaw += dx * 0.01;
+        S.view.pitch = Math.max(-1.2, Math.min(1.2, S.view.pitch + dy * 0.01));
+      });
+      U.stageCanvas.addEventListener("pointerup", (e) => {
+        S.view.drag = false;
+        U.stageCanvas.classList.remove("drag");
+        lastPt = null;
+        U.stageCanvas.releasePointerCapture(e.pointerId);
+      });
+      U.stageCanvas.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          S.view.zoom = Math.max(
+            0.45,
+            Math.min(2.6, S.view.zoom + (e.deltaY < 0 ? 0.08 : -0.08)),
+          );
+        },
+        { passive: false },
+      );
+      U.stageCanvas.addEventListener("dragover", (e) => {
+        if (!isEmpty2DAssetActive()) return;
+        e.preventDefault();
+        setDropHover(true);
+      });
+      U.stageCanvas.addEventListener("dragenter", (e) => {
+        if (!isEmpty2DAssetActive()) return;
+        e.preventDefault();
+        setDropHover(true);
+      });
+      U.stageCanvas.addEventListener("dragleave", () => {
+        setDropHover(false);
+      });
+      U.stageCanvas.addEventListener("drop", (e) => {
+        if (!isEmpty2DAssetActive()) return;
+        e.preventDefault();
+        setDropHover(false);
+        const f = [...(e.dataTransfer?.files || [])].find((x) =>
+          x.type.startsWith("image/"),
+        );
+        if (!f) {
+          setStatus("Drop an image file (PNG/JPG/WebP).");
+          return;
+        }
+        uploadImage(f);
+      });
+
+      U.exportJsonBtn.addEventListener("click", () => {
+        const p = exportPayload();
+        if (!p) return;
+        const name = (p.cart.name || "katacart")
+          .replace(/[^a-z0-9]+/gi, "-")
+          .toLowerCase();
+        dl(
+          `${name}.katacart.json`,
+          JSON.stringify(p, null, 2),
+          "application/json",
+        );
+        setStatus("Exported JSON.");
+      });
+      U.exportTxtBtn.addEventListener("click", () => {
+        const p = exportPayload();
+        if (!p) return;
+        const t = p.cart.template;
+        const txt = [
+          "KataCart manifest",
+          `cart: ${p.cart.name}`,
+          `template: ${t.name} (${t.family})`,
+          `notes: ${p.cart.notes || "(none)"}`,
+          `tags: ${p.cart.tags || "(none)"}`,
+          `sku: ${p.cart.sku || "(none)"}`,
+          `assets: ${p.cart.assets.map((a) => `${a.id}:${a.hasImage ? "uploaded" : "empty"}`).join(", ")}`,
+          `exported_at: ${p.exportedAt}`,
+        ].join("\n");
+        const name = (p.cart.name || "katacart")
+          .replace(/[^a-z0-9]+/gi, "-")
+          .toLowerCase();
+        dl(`${name}.manifest.txt`, txt, "text/plain");
+        setStatus("Exported TXT manifest.");
+      });
+
+      window.addEventListener("resize", resizeCanvas);
+
+      function init() {
+        U.themeSelect.innerHTML = THEMES.map(
+          (t) => `<option value="${t}">${t}</option>`,
+        ).join("");
+        U.themeSelect.value = S.theme;
+        openGallery();
+        renderCreatePanel();
+        requestAnimationFrame((ts) => {
+          last = ts;
+          requestAnimationFrame(loop);
+        });
+      }
+      init();
+    </script>
+  </body>
+</html>
