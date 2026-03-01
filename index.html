@@ -316,7 +316,8 @@
         width: 100%;
       }
       #context2D[hidden],
-      #context3D[hidden] {
+      #context3D[hidden],
+      #contextUV[hidden] {
         display: none;
       }
       .status {
@@ -493,6 +494,38 @@
         font-size: 10px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
+      }
+      .mini-gizmo {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        width: 276px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
+        display: grid;
+        gap: 4px;
+        pointer-events: none;
+      }
+      #miniCanvas {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        display: block;
+        cursor: crosshair;
+        pointer-events: auto;
+      }
+      .gizmo-meta {
+        font-size: 11px;
+        color: #dce8f8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-align: right;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+        pointer-events: none;
       }
       #assetStripShell {
         grid-column: 2;
@@ -820,6 +853,13 @@
               </button>
             </div>
           </div>
+          <div id="contextUV" class="group" hidden>
+            <h3>UV Unwrap Context</h3>
+            <div class="muted">
+              Displays current mapped textures in a flattened UV-style layout for
+              orientation and alignment checks.
+            </div>
+          </div>
           <div class="group">
             <h3>Export</h3>
             <div class="actions">
@@ -873,6 +913,15 @@
             <button id="toolRenderWobbleBtn" class="seg-btn" type="button">
               <i class="iconoir-frame-alt-empty"></i>Wobble
             </button>
+            <button id="toolFaceOpaqueBtn" class="seg-btn" type="button">
+              <i class="iconoir-eye"></i>Opaque
+            </button>
+            <button id="toolFaceGhostBtn" class="seg-btn" type="button">
+              <i class="iconoir-eye-closed"></i>Transparent
+            </button>
+            <button id="toolTemplateLabelsBtn" class="seg-btn" type="button">
+              <i class="iconoir-text-box"></i>Label Map
+            </button>
             <button id="toolAutoRotateBtn" class="seg-btn" type="button">
               <i class="iconoir-refresh-double"></i>Auto Rotate
             </button>
@@ -885,6 +934,10 @@
           </div>
           <div id="dropTip" class="drop-tip">
             <i class="iconoir-media-image-list"></i> Drop image to map texture
+          </div>
+          <div id="miniGizmo" class="mini-gizmo">
+            <canvas id="miniCanvas"></canvas>
+            <div id="gizmoMeta" class="gizmo-meta">Drag axis markers (X/Y/Z) to rotate</div>
           </div>
           <div class="tip">
             Asset cards change context panel. 2D cards use upload/template + fit
@@ -1003,28 +1056,32 @@
       ];
 
       function blueprint(template) {
+        const faceH = Math.max(1024, template.uv.h);
+        const frontW = Math.max(1024, Math.round(faceH * (template.d.w / template.d.h)));
+        const spineW = Math.max(192, Math.round(faceH * (template.d.z / template.d.h)));
         const list = [
           { id: "model_3d", label: "3D Model", type: "3d", w: 0, h: 0 },
+          { id: "uv_unwrap", label: "UV Unwrap", type: "uv", w: 0, h: 0 },
           {
             id: "cover_front",
             label: "Cover Front",
             type: "2d",
-            w: template.uv.w,
-            h: template.uv.h,
+            w: frontW,
+            h: faceH,
           },
           {
             id: "cover_back",
             label: "Cover Back",
             type: "2d",
-            w: template.uv.w,
-            h: template.uv.h,
+            w: frontW,
+            h: faceH,
           },
           {
             id: "spine",
             label: "Spine",
             type: "2d",
-            w: Math.max(512, Math.floor(template.uv.w * 0.2)),
-            h: template.uv.h,
+            w: spineW,
+            h: faceH,
           },
         ];
         if (template.family.includes("Disc"))
@@ -1082,8 +1139,19 @@
           spin: false,
           grid: true,
           normals: false,
-          renderMode: "wobble",
+          renderMode: "standard",
+          faceViz: "opaque",
+          templateLabels: false,
           glow: true,
+        },
+        gizmo: {
+          rx: 0,
+          ry: 0,
+          rz: 0,
+          axis: null,
+          px: 0,
+          py: 0,
+          handlePts: {},
         },
       };
 
@@ -1101,6 +1169,7 @@
         contextAssetType: document.getElementById("contextAssetType"),
         context2D: document.getElementById("context2D"),
         context3D: document.getElementById("context3D"),
+        contextUV: document.getElementById("contextUV"),
         statusText: document.getElementById("statusText"),
         backToGalleryBtn: document.getElementById("backToGalleryBtn"),
         settingsBtn: document.getElementById("settingsBtn"),
@@ -1111,6 +1180,8 @@
         gridCheckbox: document.getElementById("gridCheckbox"),
         glowCheckbox: document.getElementById("glowCheckbox"),
         stageCanvas: document.getElementById("stageCanvas"),
+        miniCanvas: document.getElementById("miniCanvas"),
+        gizmoMeta: document.getElementById("gizmoMeta"),
         cartNameOverlay: document.getElementById("cartNameOverlay"),
         hudAsset: document.getElementById("hudAsset"),
         hudTemplate: document.getElementById("hudTemplate"),
@@ -1148,6 +1219,9 @@
         reset3dBtn: document.getElementById("reset3dBtn"),
         toolRenderStandardBtn: document.getElementById("toolRenderStandardBtn"),
         toolRenderWobbleBtn: document.getElementById("toolRenderWobbleBtn"),
+        toolFaceOpaqueBtn: document.getElementById("toolFaceOpaqueBtn"),
+        toolFaceGhostBtn: document.getElementById("toolFaceGhostBtn"),
+        toolTemplateLabelsBtn: document.getElementById("toolTemplateLabelsBtn"),
         toolAutoRotateBtn: document.getElementById("toolAutoRotateBtn"),
         toolGridBtn: document.getElementById("toolGridBtn"),
         toolNormalsBtn: document.getElementById("toolNormalsBtn"),
@@ -1230,6 +1304,15 @@
           "active",
           S.view.renderMode === "wobble",
         );
+        U.toolFaceOpaqueBtn.classList.toggle(
+          "active",
+          S.view.faceViz === "opaque",
+        );
+        U.toolFaceGhostBtn.classList.toggle(
+          "active",
+          S.view.faceViz === "transparent",
+        );
+        U.toolTemplateLabelsBtn.classList.toggle("active", S.view.templateLabels);
       }
       function isEmpty2DAssetActive() {
         const a = asset();
@@ -1342,7 +1425,11 @@
         U.assetStrip.innerHTML = "";
         c.assets.forEach((a) => {
           const status =
-            a.type === "3d" ? "Viewer" : a.image ? "Uploaded" : "Empty";
+            a.type === "3d" || a.type === "uv"
+              ? "Viewer"
+              : a.image
+                ? "Uploaded"
+                : "Empty";
           const item = document.createElement("article");
           item.className = `asset-card${a.id === S.assetId ? " active" : ""}`;
           item.innerHTML = `<div class="asset-box"></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div>`;
@@ -1371,8 +1458,11 @@
         U.hudTemplate.textContent = `Template: ${t.name} | UV ${t.uv.w}x${t.uv.h}`;
         U.contextAssetType.textContent = a.type.toUpperCase();
         const is2d = a.type === "2d";
+        const is3d = a.type === "3d";
+        const isUV = a.type === "uv";
         U.context2D.hidden = !is2d;
-        U.context3D.hidden = is2d;
+        U.context3D.hidden = !is3d;
+        U.contextUV.hidden = !isUV;
         U.cartNameOverlay.value = c.name;
         U.metaNotes.value = c.notes || "";
         U.metaTags.value = c.tags || "";
@@ -1389,7 +1479,7 @@
           U.tsOut.textContent = a.tr.s.toFixed(2);
           U.trOut.textContent = `${Math.round(a.tr.r)}deg`;
           U.pxOut.textContent = `${Math.round(a.tr.px || 1)}x`;
-        } else {
+        } else if (is3d) {
           ensureModelTransform(c);
           U.m3dXRange.value = String(c.modelTr.tx);
           U.m3dYRange.value = String(c.modelTr.ty);
@@ -1495,28 +1585,28 @@
         y = y3;
         return { x: x + m.tx, y: y + m.ty, z: z + m.tz };
       }
-      function face(poly, pts, color, a) {
-        X.beginPath();
-        X.moveTo(pts[poly[0]].x, pts[poly[0]].y);
+      function face(poly, pts, color, a, ctx = X) {
+        ctx.beginPath();
+        ctx.moveTo(pts[poly[0]].x, pts[poly[0]].y);
         for (let i = 1; i < poly.length; i += 1)
-          X.lineTo(pts[poly[i]].x, pts[poly[i]].y);
-        X.closePath();
-        X.globalAlpha = a;
-        X.fillStyle = color;
-        X.fill();
-        X.globalAlpha = 1;
-        X.strokeStyle =
+          ctx.lineTo(pts[poly[i]].x, pts[poly[i]].y);
+        ctx.closePath();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle =
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-border")
             .trim() || "#777";
-        X.stroke();
+        ctx.stroke();
       }
       function assetImageById(cart, id) {
         if (!cart) return null;
         const a = cart.assets.find((x) => x.id === id && x.image && x.image.img);
-        return a ? getRenderableImage(a) : null;
+        return a ? getMappedTemplateImage(a) : null;
       }
-      function applyImageToTriangle(img, s0, s1, s2, d0, d1, d2) {
+      function applyImageToTriangle(img, s0, s1, s2, d0, d1, d2, ctx = X) {
         const den =
           s0.x * (s1.y - s2.y) +
           s1.x * (s2.y - s0.y) +
@@ -1552,18 +1642,18 @@
             d1.y * (s2.x * s0.y - s0.x * s2.y) +
             d2.y * (s0.x * s1.y - s1.x * s0.y)) /
           den;
-        X.save();
-        X.beginPath();
-        X.moveTo(d0.x, d0.y);
-        X.lineTo(d1.x, d1.y);
-        X.lineTo(d2.x, d2.y);
-        X.closePath();
-        X.clip();
-        X.transform(a, b, c, d, e, f);
-        X.drawImage(img, 0, 0);
-        X.restore();
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(d0.x, d0.y);
+        ctx.lineTo(d1.x, d1.y);
+        ctx.lineTo(d2.x, d2.y);
+        ctx.closePath();
+        ctx.clip();
+        ctx.transform(a, b, c, d, e, f);
+        ctx.drawImage(img, 0, 0);
+        ctx.restore();
       }
-      function applyImageToQuad(img, quad, opts = {}) {
+      function applyImageToQuad(img, quad, opts = {}, ctx = X) {
         const { flipX = false, flipY = false, rotate180 = false, rotate90 = false } = opts;
         const sw = img.width;
         const sh = img.height;
@@ -1588,6 +1678,7 @@
           quad[0],
           quad[1],
           quad[2],
+          ctx,
         );
         applyImageToTriangle(
           img,
@@ -1597,6 +1688,7 @@
           quad[0],
           quad[2],
           quad[3],
+          ctx,
         );
       }
       function vsub(a, b) {
@@ -1618,7 +1710,7 @@
       }
       function drawFaceAssist(faceName, quad, n, camForward) {
         if (!S.view.normals) return;
-        if (vdot(n, camForward) <= 0.02) return;
+        if (vdot(n, camForward) >= -0.02) return;
         const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
         const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
         const dx = n.x * 22;
@@ -1650,21 +1742,46 @@
         X.fillText(faceName, ex + 6, ey);
         X.restore();
       }
-      function resolveFaceTexOpts(faceId, n) {
-        const ax = Math.abs(n.x);
-        const ay = Math.abs(n.y);
-        const az = Math.abs(n.z);
-        if (az >= ax && az >= ay) {
-          return { flipY: true, flipX: n.z < 0 };
-        }
-        if (ax >= ay && ax >= az) {
-          return { flipY: true, rotate90: true, flipX: n.x > 0 };
-        }
-        return faceId === "top"
-          ? { flipX: true }
-          : { flipY: true };
+      function resolveFaceTexOpts(faceId) {
+        // Use fixed per-face UV orientation to prevent snapping when camera/model rotates.
+        const map = {
+          front: { flipY: true },
+          back: { flipY: true, flipX: true },
+          spine: { flipY: true, rotate90: true },
+          right: { flipY: true, rotate90: true, flipX: true },
+          top: { flipX: true },
+          bottom: { flipY: true },
+        };
+        return map[faceId] || { flipY: true };
       }
-      function getRenderableImage(a) {
+      function getFaceAssetBindings(cart) {
+        // Single source of truth for asset->face binding so UV unwrap and 3D render match.
+        return {
+          front: assetImageById(cart, "cover_back"),
+          back: assetImageById(cart, "cover_front") || assetImageById(cart, "label_front"),
+          spine: assetImageById(cart, "spine"),
+          disc: assetImageById(cart, "disc_art"),
+        };
+      }
+      function orientedImageForFace(img, opts = {}) {
+        if (!img) return null;
+        const { flipX = false, flipY = false, rotate180 = false, rotate90 = false } = opts;
+        const out = document.createElement("canvas");
+        const sw = img.width;
+        const sh = img.height;
+        out.width = rotate90 ? sh : sw;
+        out.height = rotate90 ? sw : sh;
+        const x = out.getContext("2d");
+        x.save();
+        x.translate(out.width / 2, out.height / 2);
+        if (rotate90) x.rotate(Math.PI / 2);
+        if (rotate180) x.rotate(Math.PI);
+        x.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+        x.drawImage(img, -sw / 2, -sh / 2, sw, sh);
+        x.restore();
+        return out;
+      }
+      function getPixelizedSourceImage(a) {
         if (!a?.image?.img) return null;
         const px = Math.max(1, Math.round(a.tr?.px || 1));
         if (px <= 1) return a.image.img;
@@ -1690,28 +1807,66 @@
         a.image.pixelCache[px] = out;
         return out;
       }
-      function drawDiscTexture(img, quad) {
+      function getMappedTemplateImage(a) {
+        if (!a?.image?.img) return null;
+        const src = getPixelizedSourceImage(a);
+        if (!src) return null;
+        const key = [
+          a.image.src,
+          a.w,
+          a.h,
+          a.tr.x,
+          a.tr.y,
+          a.tr.s,
+          a.tr.r,
+          a.tr.mx ? 1 : 0,
+          a.tr.my ? 1 : 0,
+          Math.round(a.tr.px || 1),
+          S.view.templateLabels ? 1 : 0,
+        ].join("|");
+        if (a.image.mappedKey === key && a.image.mappedCache) return a.image.mappedCache;
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, a.w);
+        c.height = Math.max(1, a.h);
+        const x = c.getContext("2d");
+        const fit = Math.min(c.width / src.width, c.height / src.height);
+        const sc = fit * a.tr.s;
+        const dw = src.width * sc;
+        const dh = src.height * sc;
+        const tx = (a.tr.x / 220) * (c.width * 0.45);
+        const ty = (a.tr.y / 220) * (c.height * 0.45);
+        x.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
+        x.translate(c.width / 2 + tx, c.height / 2 + ty);
+        x.rotate((a.tr.r * Math.PI) / 180);
+        x.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
+        x.drawImage(src, -dw / 2, -dh / 2, dw, dh);
+        drawInnerEdgeLabels(x, a, 0, 0, c.width, c.height);
+        a.image.mappedKey = key;
+        a.image.mappedCache = c;
+        return c;
+      }
+      function drawDiscTexture(img, quad, ctx = X) {
         const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
         const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
         const width = Math.hypot(quad[1].x - quad[0].x, quad[1].y - quad[0].y);
         const r = Math.max(8, width * 0.32);
-        X.save();
-        X.beginPath();
-        X.arc(cx, cy, r, 0, Math.PI * 2);
-        X.closePath();
-        X.clip();
-        X.drawImage(img, cx - r, cy - r, r * 2, r * 2);
-        X.restore();
-        X.save();
-        X.strokeStyle =
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+        ctx.restore();
+        ctx.save();
+        ctx.strokeStyle =
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-accent")
             .trim() || "#7bd0ff";
-        X.globalAlpha = 0.6;
-        X.beginPath();
-        X.arc(cx, cy, r * 0.2, 0, Math.PI * 2);
-        X.stroke();
-        X.restore();
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
       }
       function draw3D(cart, template, w, h, ca, ci) {
         ensureModelTransform(cart);
@@ -1737,21 +1892,17 @@
         const pts = verts.map((v, i) =>
           stylizeProjectedPoint(proj(v, k, cx, cy), v.z, i),
         );
-        const frontImg =
-          assetImageById(cart, "cover_front") || assetImageById(cart, "label_front");
-        const backImg = assetImageById(cart, "cover_back");
-        const spineImg = assetImageById(cart, "spine");
-        const discImg = assetImageById(cart, "disc_art");
+        const bind = getFaceAssetBindings(cart);
         const faces = [
           {
             id: "back",
             poly: [0, 3, 2, 1],
-            tex: backImg,
+            tex: bind.back,
           },
           {
             id: "front",
             poly: [4, 5, 6, 7],
-            tex: frontImg,
+            tex: bind.front,
           },
           { id: "bottom", poly: [0, 1, 5, 4] },
           { id: "right", poly: [1, 2, 6, 5] },
@@ -1759,7 +1910,7 @@
           {
             id: "spine",
             poly: [3, 0, 4, 7],
-            tex: spineImg,
+            tex: bind.spine,
           },
         ];
         const camForward = vnorm({ x: 0, y: 0, z: 1 });
@@ -1775,17 +1926,356 @@
             const p3 = verts[f.poly[3]];
             const n = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
             const facing = vdot(n, camForward);
+            const baseAlpha = S.view.faceViz === "transparent" ? 0.12 : 0.3;
+            const backAlpha = S.view.faceViz === "transparent" ? 0.08 : 0.14;
             const fillColor =
-              facing > 0.005
-                ? "rgba(140, 148, 160, 0.30)"
-                : "rgba(255, 255, 255, 0.14)";
+              facing < -0.005
+                ? `rgba(140, 148, 160, ${baseAlpha})`
+                : `rgba(255, 255, 255, ${backAlpha})`;
             face(f.poly, pts, fillColor, 1);
             const quad = f.poly.map((n) => pts[n]);
             drawFaceAssist(f.id.toUpperCase(), quad, n, camForward);
-            if (!f.tex || facing <= 0.005) return;
-            applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id, n));
-            if (f.id === "front" && discImg) drawDiscTexture(discImg, quad);
+            if (!f.tex || facing >= -0.005) return;
+            applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id));
+            if (f.id === "front" && bind.disc) drawDiscTexture(bind.disc, quad);
           });
+      }
+      function drawMiniModel(cart, template) {
+        const ctx = U.miniCanvas.getContext("2d");
+        if (!ctx) return;
+        const dpr = window.devicePixelRatio || 1;
+        const rw = U.miniCanvas.clientWidth || 160;
+        const rh = U.miniCanvas.clientHeight || 160;
+        const w = Math.max(1, Math.floor(rw * dpr));
+        const h = Math.max(1, Math.floor(rh * dpr));
+        if (U.miniCanvas.width !== w || U.miniCanvas.height !== h) {
+          U.miniCanvas.width = w;
+          U.miniCanvas.height = h;
+        }
+        ctx.clearRect(0, 0, w, h);
+        const d = template.d;
+        const sx = d.w / 100;
+        const sy = d.h / 100;
+        const sz = Math.max(0.1, d.z / 100);
+        const k = Math.min(w, h) * 0.34;
+        const cx = w * 0.5;
+        const cy = h * 0.56;
+        const camYaw = 0.7;
+        const camPitch = -0.35;
+        const m = { ...cart.modelTr };
+        m.rx += S.gizmo.rx;
+        m.ry += S.gizmo.ry;
+        m.rz += S.gizmo.rz;
+        function rcam(p) {
+          const cy = Math.cos(camYaw);
+          const sy = Math.sin(camYaw);
+          const cp = Math.cos(camPitch);
+          const sp = Math.sin(camPitch);
+          const x = p.x * cy - p.z * sy;
+          const z = p.x * sy + p.z * cy;
+          return { x, y: p.y * cp - z * sp, z: p.y * sp + z * cp };
+        }
+        const verts = [
+          { x: -sx, y: -sy, z: -sz },
+          { x: sx, y: -sy, z: -sz },
+          { x: sx, y: sy, z: -sz },
+          { x: -sx, y: sy, z: -sz },
+          { x: -sx, y: -sy, z: sz },
+          { x: sx, y: -sy, z: sz },
+          { x: sx, y: sy, z: sz },
+          { x: -sx, y: sy, z: sz },
+        ]
+          .map((p) => model(p, m))
+          .map(rcam);
+        const pts = verts.map((v) => {
+          const f = k / (v.z + 4.2);
+          return { x: cx + v.x * f, y: cy - v.y * f, z: v.z };
+        });
+        const bind = getFaceAssetBindings(cart);
+        const faces = [
+          { id: "back", poly: [0, 3, 2, 1], tex: bind.back },
+          { id: "front", poly: [4, 5, 6, 7], tex: bind.front },
+          { id: "bottom", poly: [0, 1, 5, 4] },
+          { id: "right", poly: [1, 2, 6, 5] },
+          { id: "top", poly: [3, 7, 6, 2] },
+          { id: "spine", poly: [3, 0, 4, 7], tex: bind.spine },
+        ];
+        const camForward = vnorm({ x: 0, y: 0, z: 1 });
+        faces
+          .map((f) => ({
+            ...f,
+            z: f.poly.reduce((acc, n) => acc + verts[n].z, 0) / f.poly.length,
+          }))
+          .sort((a, b) => a.z - b.z)
+          .forEach((f) => {
+            const p0 = verts[f.poly[0]];
+            const p1 = verts[f.poly[1]];
+            const p3 = verts[f.poly[3]];
+            const n = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
+            const facing = vdot(n, camForward);
+            const fillColor =
+              facing < -0.005 ? "rgba(140,148,160,0.24)" : "rgba(255,255,255,0.1)";
+            face(f.poly, pts, fillColor, 1, ctx);
+            if (!f.tex || facing >= -0.005) return;
+            const quad = f.poly.map((n) => pts[n]);
+            applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id), ctx);
+            if (f.id === "front" && bind.disc) drawDiscTexture(bind.disc, quad, ctx);
+          });
+        // Blender-style axis gizmo overlay
+        function projMini(v) {
+          const f = k / (v.z + 4.2);
+          return { x: cx + v.x * f, y: cy - v.y * f, z: v.z };
+        }
+        const o3 = rcam(model({ x: 0, y: 0, z: 0 }, m));
+        const px3 = rcam(model({ x: 0.95, y: 0, z: 0 }, m));
+        const py3 = rcam(model({ x: 0, y: 0.95, z: 0 }, m));
+        const pz3 = rcam(model({ x: 0, y: 0, z: 0.95 }, m));
+        const o2 = projMini(o3);
+        const gx = projMini(px3);
+        const gy = projMini(py3);
+        const gz = projMini(pz3);
+        const axes = [
+          { id: "x", p: gx, c: "#ff6d6d", l: "X" },
+          { id: "y", p: gy, c: "#7dff9a", l: "Y" },
+          { id: "z", p: gz, c: "#7aa8ff", l: "Z" },
+        ].sort((a, b) => a.p.z - b.p.z);
+        S.gizmo.handlePts = {};
+        axes.forEach((ax) => {
+          ctx.save();
+          ctx.strokeStyle = ax.c;
+          ctx.fillStyle = ax.c;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(o2.x, o2.y);
+          ctx.lineTo(ax.p.x, ax.p.y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(ax.p.x, ax.p.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#0d1118";
+          ctx.font = "700 9px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(ax.l, ax.p.x, ax.p.y + 0.5);
+          ctx.restore();
+          S.gizmo.handlePts[ax.id] = { x: ax.p.x, y: ax.p.y };
+        });
+        U.gizmoMeta.textContent = `Gizmo Rot X:${S.gizmo.rx.toFixed(0)} Y:${S.gizmo.ry.toFixed(0)} Z:${S.gizmo.rz.toFixed(0)}`;
+      }
+      function templateEdgeLabelsByAsset(a) {
+        const map = {
+          cover_front: {
+            top: "to Top Panel",
+            right: "to Opening Edge",
+            bottom: "to Bottom Panel",
+            left: "to Spine",
+          },
+          cover_back: {
+            top: "to Top Panel",
+            right: "to Spine",
+            bottom: "to Bottom Panel",
+            left: "to Outer Edge",
+          },
+          spine: {
+            top: "to Top Panel",
+            right: "to Front",
+            bottom: "to Bottom Panel",
+            left: "to Back",
+          },
+          label_front: {
+            top: "to Cart Top",
+            right: "to Right Edge",
+            bottom: "to Cart Bottom",
+            left: "to Left Edge",
+          },
+        };
+        return map[a.id] || {
+          top: "Top Edge",
+          right: "Right Edge",
+          bottom: "Bottom Edge",
+          left: "Left Edge",
+        };
+      }
+      function drawInnerEdgeLabels(ctx, a, x, y, w, h, opt = {}) {
+        const force = !!opt.force;
+        if (!S.view.templateLabels && !force) return;
+        const labels = templateEdgeLabelsByAsset(a);
+        const minPx = opt.minPx ?? 14;
+        const maxPx = opt.maxPx ?? 24;
+        const fontSize = Math.max(
+          minPx,
+          Math.min(maxPx, Math.round(Math.min(w, h) * 0.03)),
+        );
+        function drawPill(text, px, py, rot = 0) {
+          ctx.save();
+          ctx.translate(px, py);
+          if (rot) ctx.rotate(rot);
+          ctx.font = `700 ${fontSize}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const tw = ctx.measureText(text).width;
+          const padX = Math.max(8, Math.round(fontSize * 0.7));
+          const padY = Math.max(5, Math.round(fontSize * 0.42));
+          const bw = tw + padX * 2;
+          const bh = fontSize + padY * 2;
+          const r = Math.min(8, Math.floor(bh / 2));
+          ctx.fillStyle = "rgba(6,10,16,0.86)";
+          ctx.strokeStyle = "rgba(235,245,255,0.88)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect(-bw / 2, -bh / 2, bw, bh, r);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#f8fcff";
+          ctx.fillText(text, 0, 0);
+          ctx.restore();
+        }
+        ctx.save();
+        drawPill(labels.top, x + w / 2, y + fontSize * 0.9);
+        drawPill(labels.bottom, x + w / 2, y + h - fontSize * 0.9);
+        drawPill(labels.left, x + fontSize * 0.9, y + h / 2, -Math.PI / 2);
+        drawPill(labels.right, x + w - fontSize * 0.9, y + h / 2, Math.PI / 2);
+        ctx.restore();
+      }
+      function drawTemplateOverlay(a, fx, fy, fw, fh, ca) {
+        const border =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ds-border")
+            .trim() || "#6b7a8b";
+        X.save();
+        X.strokeStyle = ca;
+        X.setLineDash([8, 6]);
+        X.lineWidth = 1.5;
+        X.strokeRect(fx, fy, fw, fh);
+        X.setLineDash([]);
+        X.strokeStyle = border;
+        X.strokeRect(fx + 0.5, fy + 0.5, fw - 1, fh - 1);
+        X.restore();
+
+        drawInnerEdgeLabels(X, a, fx, fy, fw, fh);
+
+        if (a.id === "disc_art") {
+          const cx = fx + fw / 2;
+          const cy = fy + fh / 2;
+          const outer = Math.min(fw, fh) * 0.46;
+          const inner = outer * 0.2;
+          X.save();
+          X.strokeStyle = "rgba(255,255,255,0.75)";
+          X.lineWidth = 2;
+          X.beginPath();
+          X.arc(cx, cy, outer, 0, Math.PI * 2);
+          X.stroke();
+          X.beginPath();
+          X.arc(cx, cy, inner, 0, Math.PI * 2);
+          X.stroke();
+          X.fillStyle = "rgba(8,12,20,0.78)";
+          X.font = "10px sans-serif";
+          X.textAlign = "center";
+          X.fillText("Disc Printable Area", cx, cy - outer - 14);
+          X.fillText("Hub Cutout", cx, cy + inner + 14);
+          X.restore();
+        }
+      }
+      function drawUVUnwrap(cart, template, w, h, ca) {
+        const d = template.d;
+        const ratioFront = d.w / d.h;
+        const ratioSpine = d.z / d.h;
+        const pad = 28;
+        const gap = 14;
+        const totalRatio = ratioFront * 2 + ratioSpine;
+        const baseH = Math.min(h - pad * 2, (w - pad * 2 - gap * 2) / totalRatio);
+        const frontW = baseH * ratioFront;
+        const spineW = Math.max(18, baseH * ratioSpine);
+        const stripW = frontW + spineW + frontW + gap * 2;
+        const sx = (w - stripW) / 2;
+        const sy = (h - baseH) / 2;
+        const frames = [
+          { faceId: "back", label: "BACK", x: sx, y: sy, w: frontW, h: baseH },
+          {
+            faceId: "spine",
+            label: "SPINE",
+            x: sx + frontW + gap,
+            y: sy,
+            w: spineW,
+            h: baseH,
+          },
+          {
+            faceId: "front",
+            label: "FRONT",
+            x: sx + frontW + gap + spineW + gap,
+            y: sy,
+            w: frontW,
+            h: baseH,
+          },
+        ];
+        const bind = getFaceAssetBindings(cart);
+        X.save();
+        X.fillStyle = "rgba(10,14,20,0.32)";
+        X.fillRect(sx - 12, sy - 12, stripW + 24, baseH + 24);
+        X.restore();
+        frames.forEach((f) => {
+          const raw = bind[f.faceId];
+          const img = orientedImageForFace(raw, resolveFaceTexOpts(f.faceId));
+          const slot = (() => {
+            if (f.faceId === "front")
+              return cart.assets.find((x) => x.id === "cover_back");
+            if (f.faceId === "back")
+              return (
+                cart.assets.find((x) => x.id === "cover_front") ||
+                cart.assets.find((x) => x.id === "label_front")
+              );
+            if (f.faceId === "spine")
+              return cart.assets.find((x) => x.id === "spine");
+            return null;
+          })();
+          X.save();
+          X.strokeStyle = ca;
+          X.setLineDash([8, 6]);
+          X.lineWidth = 1.5;
+          X.strokeRect(f.x, f.y, f.w, f.h);
+          X.setLineDash([]);
+          if (img) X.drawImage(img, f.x, f.y, f.w, f.h);
+          X.strokeStyle = "rgba(255,255,255,0.55)";
+          X.strokeRect(f.x + 0.5, f.y + 0.5, f.w - 1, f.h - 1);
+          X.fillStyle = "rgba(8,12,20,0.84)";
+          X.font = "700 12px sans-serif";
+          X.textAlign = "center";
+          X.textBaseline = "middle";
+          X.fillText(f.label, f.x + f.w / 2, f.y + 14);
+          if (slot) drawInnerEdgeLabels(X, slot, f.x, f.y, f.w, f.h, { minPx: 16, maxPx: 26, force: true });
+          X.restore();
+        });
+        if (bind.disc) {
+          const discImg = orientedImageForFace(bind.disc, resolveFaceTexOpts("front"));
+          const dr = Math.min(baseH * 0.24, 86);
+          const dcx = sx + stripW - dr;
+          const dcy = sy + baseH - dr;
+          X.save();
+          X.beginPath();
+          X.arc(dcx, dcy, dr, 0, Math.PI * 2);
+          X.closePath();
+          X.fillStyle = "rgba(10,14,20,0.54)";
+          X.fill();
+          X.strokeStyle = "rgba(255,255,255,0.64)";
+          X.lineWidth = 2;
+          X.stroke();
+          X.beginPath();
+          X.arc(dcx, dcy, dr * 0.22, 0, Math.PI * 2);
+          X.stroke();
+          if (discImg) {
+            X.save();
+            X.beginPath();
+            X.arc(dcx, dcy, dr, 0, Math.PI * 2);
+            X.clip();
+            X.drawImage(discImg, dcx - dr, dcy - dr, dr * 2, dr * 2);
+            X.restore();
+          }
+          X.fillStyle = "rgba(8,12,20,0.84)";
+          X.font = "700 11px sans-serif";
+          X.textAlign = "center";
+          X.fillText("DISC", dcx, dcy - dr - 12);
+          X.restore();
+        }
       }
       function draw2D(a, w, h, ca) {
         ensure2DTransform(a);
@@ -1799,11 +2289,6 @@
         }
         const fx = (w - fw) / 2,
           fy = (h - fh) / 2;
-        X.save();
-        X.setLineDash([8, 6]);
-        X.strokeStyle = ca;
-        X.strokeRect(fx, fy, fw, fh);
-        X.restore();
         X.fillStyle =
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-text-muted")
@@ -1829,21 +2314,12 @@
           );
           X.font = "12px sans-serif";
           X.fillText("Supports PNG/JPG/WebP", fx + 14, fy + 46);
+          drawTemplateOverlay(a, fx, fy, fw, fh, ca);
           return;
         }
-        const im = getRenderableImage(a),
-          fit = Math.min(fw / im.width, fh / im.height),
-          sc = fit * a.tr.s;
-        const dw = im.width * sc,
-          dh = im.height * sc,
-          cx = fx + fw / 2 + a.tr.x,
-          cy = fy + fh / 2 + a.tr.y;
-        X.save();
-        X.translate(cx, cy);
-        X.rotate((a.tr.r * Math.PI) / 180);
-        X.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-        X.drawImage(im, -dw / 2, -dh / 2, dw, dh);
-        X.restore();
+        const mapped = getMappedTemplateImage(a);
+        if (mapped) X.drawImage(mapped, fx, fy, fw, fh);
+        drawTemplateOverlay(a, fx, fy, fw, fh, ca);
       }
       function draw() {
         if (S.screen !== "workspace") return;
@@ -1869,7 +2345,9 @@
         if (!c || !a) return;
         const t = tById(c.templateId);
         if (a.type === "3d") draw3D(c, t, w, h, ca, ci);
+        else if (a.type === "uv") drawUVUnwrap(c, t, w, h, ca);
         else draw2D(a, w, h, ca);
+        drawMiniModel(c, t);
         U.hudCamera.textContent = `Rot ${S.view.yaw.toFixed(2)}, ${S.view.pitch.toFixed(2)} | Zoom ${S.view.zoom.toFixed(2)}`;
       }
       function loop(ts) {
@@ -2001,6 +2479,45 @@
         im.onerror = () => setStatus("Failed to load image file.");
         im.src = u;
       }
+      function loadImageFromPath(path) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve({ img, path });
+          img.onerror = () => reject(new Error(`Failed to load ${path}`));
+          img.src = path;
+        });
+      }
+      async function preloadDemoCartAssets() {
+        const demo = S.carts[0];
+        if (!demo) return;
+        const byId = (id) => demo.assets.find((a) => a.id === id);
+        const plan = [
+          { id: "cover_front", path: "./test/frontcover.png" },
+          { id: "cover_back", path: "./test/backcover.png" },
+          { id: "spine", path: "./test/spine.png" },
+          { id: "disc_art", path: "./test/dsic.png" },
+        ];
+        const results = await Promise.allSettled(
+          plan.map(async (p) => {
+            const a = byId(p.id);
+            if (!a || a.type !== "2d") return false;
+            const { img, path } = await loadImageFromPath(p.path);
+            a.image = { src: path, width: img.width, height: img.height, img };
+            a.tr = { x: 0, y: 0, s: 1, r: 0, mx: false, my: false, px: 1 };
+            return true;
+          }),
+        );
+        const loaded = results.filter((r) => r.status === "fulfilled" && r.value).length;
+        if (loaded > 0) {
+          if (S.screen === "workspace") {
+            syncContextFromAsset();
+            renderAssetStrip();
+          } else {
+            renderGallery();
+          }
+          setStatus(`Loaded ${loaded} demo texture${loaded === 1 ? "" : "s"} from /test.`);
+        }
+      }
       function setDropHover(on) {
         S.view.dragOver = !!on;
         U.stageCanvas.classList.toggle("drop-hover", !!on);
@@ -2013,7 +2530,7 @@
         const t = tById(c.templateId);
         return {
           app: "KataCart",
-          version: "0.9.0",
+          version: "0.11.1",
           exportedAt: new Date().toISOString(),
           cart: {
             id: c.id,
@@ -2040,6 +2557,9 @@
             pitch: S.view.pitch,
             zoom: S.view.zoom,
             renderMode: S.view.renderMode,
+            faceViz: S.view.faceViz,
+            templateLabels: S.view.templateLabels,
+            gizmo: { rx: S.gizmo.rx, ry: S.gizmo.ry, rz: S.gizmo.rz },
           },
           modelTransform: c.modelTr,
         };
@@ -2135,6 +2655,18 @@
         S.view.renderMode = "wobble";
         syncViewToggleUI();
       });
+      U.toolFaceOpaqueBtn.addEventListener("click", () => {
+        S.view.faceViz = "opaque";
+        syncViewToggleUI();
+      });
+      U.toolFaceGhostBtn.addEventListener("click", () => {
+        S.view.faceViz = "transparent";
+        syncViewToggleUI();
+      });
+      U.toolTemplateLabelsBtn.addEventListener("click", () => {
+        S.view.templateLabels = !S.view.templateLabels;
+        syncViewToggleUI();
+      });
       U.zoomInBtn.addEventListener("click", () => {
         S.view.zoom = Math.min(2.6, S.view.zoom + 0.1);
       });
@@ -2212,6 +2744,50 @@
         c.modelTr.mx = !c.modelTr.mx;
       });
       U.reset3dBtn.addEventListener("click", reset3DTransform);
+      U.miniCanvas.addEventListener("pointerdown", (e) => {
+        const rect = U.miniCanvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const mx = (e.clientX - rect.left) * dpr;
+        const my = (e.clientY - rect.top) * dpr;
+        const handles = S.gizmo.handlePts || {};
+        let hit = null;
+        let best = Infinity;
+        ["x", "y", "z"].forEach((axis) => {
+          const p = handles[axis];
+          if (!p) return;
+          const dist = Math.hypot(mx - p.x, my - p.y);
+          if (dist < 18 * dpr && dist < best) {
+            best = dist;
+            hit = axis;
+          }
+        });
+        if (!hit) return;
+        e.preventDefault();
+        S.gizmo.axis = hit;
+        S.gizmo.px = e.clientX;
+        S.gizmo.py = e.clientY;
+        U.miniCanvas.setPointerCapture(e.pointerId);
+      });
+      U.miniCanvas.addEventListener("pointermove", (e) => {
+        if (!S.gizmo.axis) return;
+        const dx = e.clientX - S.gizmo.px;
+        const dy = e.clientY - S.gizmo.py;
+        S.gizmo.px = e.clientX;
+        S.gizmo.py = e.clientY;
+        if (S.gizmo.axis === "x") S.gizmo.rx += dy * 0.8;
+        if (S.gizmo.axis === "y") S.gizmo.ry += dx * 0.8;
+        if (S.gizmo.axis === "z") S.gizmo.rz += dx * 0.8;
+      });
+      U.miniCanvas.addEventListener("pointerup", (e) => {
+        S.gizmo.axis = null;
+        if (U.miniCanvas.hasPointerCapture(e.pointerId))
+          U.miniCanvas.releasePointerCapture(e.pointerId);
+      });
+      U.miniCanvas.addEventListener("pointercancel", (e) => {
+        S.gizmo.axis = null;
+        if (U.miniCanvas.hasPointerCapture(e.pointerId))
+          U.miniCanvas.releasePointerCapture(e.pointerId);
+      });
 
       U.stageCanvas.addEventListener("pointerdown", (e) => {
         if (asset()?.type !== "3d") return;
@@ -2314,6 +2890,7 @@
         ).join("");
         U.themeSelect.value = S.theme;
         openGallery();
+        preloadDemoCartAssets().catch(() => {});
         renderCreatePanel();
         requestAnimationFrame((ts) => {
           last = ts;
