@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="app-version" content="0.2" />
+    <meta name="app-version" content="0.3" />
     <title>KataCart</title>
     <link rel="stylesheet" href="./theme.css" />
     <link
@@ -12,9 +12,72 @@
     />
     <style>
       :root {
-        --gap: 12px;
-        --panel: 310px;
-        --strip: 120px;
+        --gap: var(--ds-layout-gap);
+        --panel: var(--ds-layout-panel-w);
+        --strip: 156px;
+        --gizmo-size: max(320px, var(--ds-hud-card-max-w));
+        --kc-space-1: var(--ds-space-1);
+        --kc-space-2: 6px;
+        --kc-space-3: var(--ds-space-2);
+        --kc-space-4: 10px;
+        --kc-space-5: var(--ds-space-3);
+        --kc-space-6: 14px;
+        --kc-tool-btn-h: 30px;
+        --kc-tool-btn-w: 30px;
+        --kc-header-btn-h: var(--ds-control-h-sm);
+        --kc-cam-cell-w: min(var(--ds-size-cam-cell-w), 30px);
+        --kc-cam-cell-h: min(var(--ds-size-cam-cell-h), 28px);
+        --kc-cam-gap: var(--ds-space-1);
+        --kc-overlay-gap: var(--ds-space-2);
+        --kc-overlay-inset: var(--ds-layout-overlay-inset);
+        --kc-left-col-w: min(420px, calc(100% - var(--ds-layout-col-right)));
+        --kc-right-col-w: min(220px, 32vw);
+        --kc-toolstrip-max-w: calc(100% - 520px);
+        --kc-breakpoint-head-compact: 980px;
+        --kc-drawer-w: min(340px, 92vw);
+        --kc-z-overlay: var(--ds-z-sticky);
+        --kc-z-drawer: var(--ds-z-drawer);
+        --kc-fs-micro: var(--ds-fs-micro);
+        --kc-field-textarea-h: 86px;
+        --kc-tool-label-col: 132px;
+        --kc-tool-output-col: 46px;
+        --kc-cart-name-w: min(360px, 52%);
+        --kc-hud-top: 50px;
+        --kc-camera-bottom: 56px;
+        --kc-slider-gap: var(--kc-space-tight);
+        --kc-space-tight: 2px;
+        --kc-space-compact: 4px;
+        --kc-toolstrip-pad: 3px;
+        --kc-seg-icon-gap: 5px;
+        --kc-more-menu-min-w: 170px;
+        --kc-drop-bottom: var(--kc-camera-bottom);
+        --kc-mini-top: 124px;
+        --kc-strip-col-min: 150px;
+        --kc-strip-col-max: 190px;
+        --kc-asset-card-pad: 7px;
+        --kc-asset-box-h: 46px;
+        --kc-asset-action-h: 24px;
+        --kc-asset-action-pad-x: 6px;
+        --kc-canvas-meta-top: 52px;
+        --kc-canvas-meta-w: min(420px, 58%);
+        --kc-canvas-notes-h: 54px;
+        --kc-canvas-notes-h-alt: 56px;
+        --kc-canvas-context-top: 194px;
+        --kc-canvas-context-max-h: calc(100% - 250px);
+        --kc-canvas-status-max-w: min(50%, 560px);
+        --kc-tool-divider-h: 22px;
+        --kc-mini-max-w: min(220px, 100%);
+        --kc-gizmo-pad-w: 98px;
+        --kc-seg-min-w: 34px;
+        --kc-asset-card-min-h: 122px;
+        --kc-gallery-thumb-ratio: 5 / 4;
+        --kc-gallery-thumb-list-w: 140px;
+        --kc-gallery-thumb-tile-ratio: 1 / 1;
+        --kc-gallery-thumb-min-h: 110px;
+        --kc-gallery-card-pad: var(--ds-space-2);
+        --kc-gallery-action-min-h: var(--ds-control-h-sm);
+        --kc-gallery-action-shift: 6px;
+        --kc-mini-anchor-gap: var(--ds-space-2);
       }
       * {
         box-sizing: border-box;
@@ -58,11 +121,11 @@
         background: var(--ds-btn-bg);
         color: var(--ds-text);
         font: inherit;
-        padding: 0 10px;
+        padding: 0 var(--ds-btn-pad-x);
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--ds-space-2);
       }
       .btn.primary {
         background: var(--ds-btn-primary-bg);
@@ -70,8 +133,8 @@
         color: var(--ds-btn-primary-text);
       }
       .btn.destructive {
-        background: color-mix(in oklab, var(--ds-error) 18%, var(--ds-btn-bg));
-        border-color: color-mix(in oklab, var(--ds-error) 45%, var(--ds-border));
+        background: color-mix(in oklab, var(--ds-danger) 18%, var(--ds-btn-bg));
+        border-color: color-mix(in oklab, var(--ds-danger) 45%, var(--ds-border));
         color: var(--ds-text);
       }
       .btn.active {
@@ -86,6 +149,12 @@
         color: var(--ds-text-muted);
         font-size: var(--ds-fs-1);
       }
+      .u-m0 {
+        margin: 0;
+      }
+      .u-mt-1 {
+        margin: var(--ds-space-1) 0 0 0;
+      }
       .screen {
         width: 100%;
         height: 100%;
@@ -95,12 +164,12 @@
       }
       .field {
         display: grid;
-        gap: 4px;
+        gap: var(--ds-space-1);
       }
       .field label {
-        font-size: 10px;
+        font-size: var(--kc-fs-micro);
         text-transform: uppercase;
-        letter-spacing: 0.12em;
+        letter-spacing: var(--ds-tracking-ui-sm);
         color: var(--ds-text-muted);
       }
       .field input,
@@ -113,15 +182,26 @@
         background: var(--ds-input-bg);
         color: var(--ds-input-text);
         font: inherit;
-        padding: 6px 8px;
+        padding: var(--ds-space-2) var(--ds-space-2);
       }
       .field textarea {
-        min-height: 86px;
+        min-height: var(--kc-field-textarea-h);
         resize: vertical;
       }
       #galleryScreen {
         position: relative;
         padding: var(--gap);
+        background:
+          repeating-linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--ds-bg) 92%, transparent) 0 2px,
+            transparent 2px 4px
+          ),
+          radial-gradient(
+            900px 420px at 50% -18%,
+            color-mix(in oklab, var(--ds-accent) 8%, transparent),
+            transparent 70%
+          );
       }
       .gallery-shell {
         height: 100%;
@@ -133,7 +213,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 10px;
+        gap: var(--kc-space-4);
       }
       .gallery-top h1 {
         margin: 0;
@@ -141,7 +221,7 @@
       }
       .layout-switch {
         display: flex;
-        gap: 6px;
+        gap: var(--ds-space-2);
       }
       .layout-switch .btn.active {
         border-color: var(--ds-accent);
@@ -151,7 +231,7 @@
         min-height: 0;
         overflow: auto;
         display: grid;
-        gap: 8px;
+        gap: var(--ds-space-2);
         align-content: start;
         grid-auto-rows: max-content;
       }
@@ -168,51 +248,189 @@
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-raised) 84%, transparent);
-        padding: 10px;
+        padding: var(--kc-gallery-card-pad);
         display: grid;
-        gap: 6px;
+        gap: var(--ds-space-2);
         align-self: start;
+        min-height: 0;
+        cursor: pointer;
+        transition:
+          border-color var(--ds-dur-fast) var(--ds-ease-standard),
+          background var(--ds-dur-fast) var(--ds-ease-standard),
+          transform var(--ds-dur-fast) var(--ds-ease-standard),
+          box-shadow var(--ds-dur-fast) var(--ds-ease-standard);
+        overflow: hidden;
+      }
+      .cart-card:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--ds-shadow-sm);
+      }
+      .cart-card:active {
+        transform: translateY(0);
+      }
+      .cart-card.is-selected {
+        border-color: color-mix(in oklab, var(--ds-accent) 72%, var(--ds-border));
+        background: color-mix(in oklab, var(--ds-accent) 8%, var(--ds-bg-raised));
+      }
+      .cart-card:focus-visible {
+        outline: 0;
+        border-color: var(--ds-focus);
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--ds-focus) 46%, transparent);
       }
       #galleryList.layout-list .cart-card {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: var(--kc-gallery-thumb-list-w) 1fr auto;
         align-items: center;
-        gap: 10px;
+        gap: var(--ds-space-2);
       }
       .cart-meta {
         display: grid;
-        gap: 4px;
+        gap: var(--ds-space-1);
+      }
+      .gallery-thumb {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        aspect-ratio: var(--kc-gallery-thumb-ratio);
+        min-height: var(--kc-gallery-thumb-min-h);
+        background:
+          linear-gradient(
+            160deg,
+            color-mix(in oklab, var(--ds-accent) 8%, transparent),
+            transparent 58%
+          ),
+          color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        position: relative;
+      }
+      .gallery-thumb::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(
+            155deg,
+            color-mix(in oklab, white 18%, transparent) 0%,
+            transparent 42%
+          ),
+          repeating-linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--ds-bg) 24%, transparent) 0 1px,
+            transparent 1px 3px
+          );
+        opacity: 0.35;
+      }
+      #galleryList.layout-tile .gallery-thumb {
+        aspect-ratio: var(--kc-gallery-thumb-tile-ratio);
+        min-height: 98px;
+      }
+      #galleryList.layout-list .gallery-thumb {
+        min-height: 82px;
+        aspect-ratio: 4 / 3;
+      }
+      .gallery-thumb-media {
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+      }
+      .gallery-thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        gap: var(--ds-space-1);
+        color: var(--ds-text-muted);
+        font-size: var(--kc-fs-micro);
+        text-transform: uppercase;
+        letter-spacing: var(--ds-tracking-ui-sm);
+        text-align: center;
+        padding: var(--ds-space-2);
+      }
+      .gallery-thumb-placeholder i {
+        font-size: 20px;
+      }
+      .gallery-thumb-placeholder strong {
+        color: var(--ds-text);
+        font-size: var(--ds-fs-1);
+        text-transform: none;
+        letter-spacing: 0;
+        line-height: 1.2;
+      }
+      .gallery-thumb-placeholder span {
+        font-size: var(--kc-fs-micro);
+      }
+      .gallery-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .gallery-actions .btn {
+        min-height: var(--kc-gallery-action-min-h);
+        opacity: 0;
+        transform: translateY(var(--kc-gallery-action-shift));
+        pointer-events: none;
+        transition: opacity var(--ds-dur-fast) var(--ds-ease-standard),
+          transform var(--ds-dur-fast) var(--ds-ease-standard);
+      }
+      .cart-card:hover .gallery-actions .btn,
+      .cart-card.is-selected .gallery-actions .btn,
+      #galleryList.layout-list .cart-card .gallery-actions .btn {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
       }
       .new-cart-card {
-        border: 1px dashed color-mix(in oklab, var(--ds-accent) 60%, var(--ds-border));
+        border: 0;
+        border-radius: var(--ds-radius-2);
+        background: transparent;
+        padding: 0;
+        align-self: start;
+      }
+      .new-cart-btn {
+        width: 100%;
+        border: 1px dashed color-mix(in oklab, var(--ds-accent) 62%, var(--ds-border));
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-accent) 8%, var(--ds-bg-raised));
-        padding: 10px;
+        padding: var(--kc-gallery-card-pad);
+        min-height: calc(var(--kc-gallery-thumb-min-h) + 64px);
         display: grid;
-        gap: 6px;
-        align-self: start;
+        align-content: center;
+        justify-items: center;
+        gap: var(--ds-space-2);
+        color: var(--ds-text);
         cursor: pointer;
+        font: inherit;
       }
-      .new-cart-card:hover {
+      .new-cart-btn:hover {
         border-color: var(--ds-accent);
-        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-bg-raised));
+        background: color-mix(in oklab, var(--ds-accent) 15%, var(--ds-bg-raised));
+      }
+      .new-cart-btn i {
+        font-size: 24px;
+      }
+      .new-cart-btn .muted {
+        text-align: center;
       }
       #createPanel {
         position: fixed;
         top: 0;
         left: 0;
-        width: min(340px, 92vw);
+        width: var(--kc-drawer-w);
         height: 100%;
         border-right: 1px solid var(--ds-border);
         background: color-mix(in oklab, var(--ds-bg-elevated) 96%, transparent);
         box-shadow: var(--ds-card-shadow);
         transform: translateX(-102%);
         transition: transform var(--ds-dur-med) var(--ds-ease-standard);
-        z-index: 110;
-        padding: 14px;
+        z-index: var(--kc-z-drawer);
+        padding: var(--kc-space-6);
         display: grid;
         grid-template-rows: auto auto minmax(0, 1fr) auto;
-        gap: 10px;
+        gap: var(--kc-space-4);
       }
       #createPanel.open {
         transform: translateX(0);
@@ -221,7 +439,7 @@
         min-height: 0;
         overflow: auto;
         display: grid;
-        gap: 6px;
+        gap: var(--ds-space-2);
       }
       .template-option {
         border: 1px solid var(--ds-border);
@@ -230,10 +448,10 @@
         color: var(--ds-text);
         font: inherit;
         text-align: left;
-        padding: 8px;
+        padding: var(--ds-space-2);
         cursor: pointer;
         display: grid;
-        gap: 2px;
+        gap: var(--kc-space-tight);
       }
       .template-option[aria-selected="true"] {
         border-color: var(--ds-accent);
@@ -241,26 +459,26 @@
       }
       .create-actions {
         display: flex;
-        gap: 8px;
+        gap: var(--ds-space-2);
       }
       #workspaceScreen {
         padding: var(--gap);
         display: grid;
         gap: var(--gap);
         grid-template-columns: var(--panel) minmax(0, 1fr);
-        grid-template-rows: minmax(0, 1fr) var(--strip);
+        grid-template-rows: minmax(0, 1fr) auto;
       }
       .context-panel {
         grid-column: 1;
         grid-row: 1 / span 2;
-        padding: 8px;
+        padding: var(--ds-space-2);
         display: grid;
         grid-template-rows: auto auto minmax(0, 1fr) auto;
-        gap: 8px;
+        gap: var(--ds-space-2);
         min-height: 0;
       }
       .brand {
-        min-height: 44px;
+        min-height: var(--ds-size-header-control);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(
@@ -271,8 +489,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
-        padding: 0 10px;
+        gap: var(--ds-space-2);
+        padding: 0 var(--kc-space-4);
         font-weight: 600;
       }
       .context-wrap {
@@ -281,28 +499,28 @@
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-raised) 86%, transparent);
-        padding: 8px;
+        padding: var(--ds-space-2);
       }
       .group {
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 86%, transparent);
-        padding: 8px;
+        padding: var(--ds-space-2);
         display: grid;
-        gap: 6px;
-        margin-bottom: 8px;
+        gap: var(--ds-space-2);
+        margin-bottom: var(--ds-space-2);
       }
       .group h3 {
         margin: 0;
-        font-size: 10px;
+        font-size: var(--kc-fs-micro);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--ds-tracking-ui-sm);
         color: var(--ds-text-muted);
       }
       .tool-row {
         display: grid;
-        grid-template-columns: 52px minmax(0, 1fr) 46px;
-        gap: 6px;
+        grid-template-columns: var(--kc-tool-label-col) minmax(0, 1fr) var(--kc-tool-output-col);
+        gap: var(--ds-space-2);
         align-items: center;
         font-size: var(--ds-fs-1);
       }
@@ -310,7 +528,7 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
-        gap: 6px;
+        gap: var(--ds-space-2);
       }
       .tool-row input[type="range"] {
         width: 100%;
@@ -324,10 +542,10 @@
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: var(--ds-bg-raised);
-        min-height: 32px;
+        min-height: var(--ds-control-h-sm);
         display: flex;
         align-items: center;
-        padding: 0 8px;
+        padding: 0 var(--ds-space-2);
         color: var(--ds-text-muted);
         font-size: var(--ds-fs-1);
       }
@@ -336,25 +554,30 @@
         grid-row: 1;
         display: grid;
         grid-template-rows: auto minmax(0, 1fr);
-        gap: 8px;
+        gap: var(--kc-space-3);
         min-height: 0;
       }
       .workspace-header {
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
-        min-height: 42px;
-        display: flex;
+        min-height: var(--ds-size-header-control);
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 0 10px;
+        gap: var(--kc-space-3);
+        padding: 0 var(--kc-space-4);
+      }
+      .workspace-header .btn,
+      .gallery-top .btn {
+        min-height: var(--kc-header-btn-h);
       }
       .workspace-header-left {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--kc-space-3);
         min-width: 0;
+        justify-self: start;
       }
       .stage {
         position: relative;
@@ -391,90 +614,199 @@
       }
       #cartNameOverlay {
         position: absolute;
-        left: 10px;
-        top: 10px;
-        width: min(360px, 52%);
-        min-height: 32px;
+        left: var(--kc-overlay-inset);
+        top: var(--kc-overlay-inset);
+        width: var(--kc-cart-name-w);
+        min-height: var(--ds-control-h-sm);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
         color: var(--ds-text);
         font: inherit;
         font-weight: 600;
-        padding: 0 8px;
+        padding: 0 var(--kc-space-3);
       }
       .hud {
         position: absolute;
-        left: 10px;
-        top: 50px;
+        right: var(--kc-overlay-inset);
+        top: var(--kc-hud-top);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
-        padding: 6px 8px;
+        padding: var(--kc-space-2) var(--kc-space-3);
         display: grid;
-        gap: 2px;
+        gap: var(--kc-space-tight);
         font-size: var(--ds-fs-1);
+        text-align: right;
         pointer-events: none;
       }
-      .canvas-controls {
+      .camera-pad {
         position: absolute;
-        right: 10px;
-        top: 10px;
+        right: var(--kc-overlay-inset);
+        bottom: var(--kc-camera-bottom);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
-        padding: 4px;
-        display: flex;
-        gap: 4px;
+        padding: var(--kc-space-2);
+        display: grid;
+        gap: var(--kc-space-1);
       }
-      .canvas-controls button {
-        min-width: 30px;
-        min-height: 30px;
+      .camera-pad-grid {
+        display: grid;
+        grid-template-columns: repeat(3, var(--kc-cam-cell-w));
+        grid-template-rows: repeat(3, var(--kc-cam-cell-h));
+        gap: var(--kc-cam-gap);
+        align-items: center;
+        justify-items: center;
+      }
+      .camera-pad .cam-btn {
+        min-width: var(--kc-cam-cell-w);
+        min-height: var(--kc-cam-cell-h);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: var(--ds-btn-bg);
         color: var(--ds-text);
+        padding: 0;
         cursor: pointer;
+      }
+      .cam-front {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      .cam-top {
+        grid-column: 2;
+        grid-row: 1;
+      }
+      .cam-back {
+        grid-column: 3;
+        grid-row: 1;
+      }
+      .cam-left {
+        grid-column: 1;
+        grid-row: 2;
+      }
+      .cam-home {
+        grid-column: 2;
+        grid-row: 2;
+      }
+      .cam-right {
+        grid-column: 3;
+        grid-row: 2;
+      }
+      .cam-iso {
+        grid-column: 1;
+        grid-row: 3;
+      }
+      .cam-bottom {
+        grid-column: 2;
+        grid-row: 3;
+      }
+      .cam-fit {
+        grid-column: 3;
+        grid-row: 3;
+      }
+      .camera-pad-zoom {
+        display: grid;
+        grid-template-columns: repeat(3, var(--kc-cam-cell-w));
+        gap: var(--kc-cam-gap);
+      }
+      .camera-pad-zoom .cam-btn {
+        min-height: calc(var(--kc-cam-cell-h) - 2px);
+      }
+      .camera-pad .gizmo-size {
+        pointer-events: auto;
+        display: block;
+        margin-bottom: var(--kc-slider-gap);
+      }
+      .camera-pad .gizmo-size input[type="range"] {
+        width: 100%;
       }
       .canvas-toolstrip {
         position: absolute;
-        top: 10px;
+        top: var(--kc-overlay-inset);
         left: 50%;
         transform: translateX(-50%);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 92%, transparent);
-        padding: 3px;
+        padding: var(--kc-toolstrip-pad);
         display: inline-flex;
         align-items: center;
-        gap: 3px;
+        gap: var(--kc-space-1);
       }
       .seg-btn {
-        min-height: 30px;
+        min-height: var(--kc-tool-btn-h);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-1);
         background: var(--ds-btn-bg);
         color: var(--ds-text);
         font: inherit;
-        padding: 0 8px;
+        padding: 0 var(--kc-space-3);
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: var(--kc-seg-icon-gap);
+      }
+      .header-more {
+        position: relative;
+        display: none;
+      }
+      .header-more-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + var(--kc-space-1));
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 94%, transparent);
+        box-shadow: var(--ds-card-shadow);
+        padding: var(--kc-space-1);
+        display: grid;
+        gap: var(--kc-space-1);
+        min-width: var(--kc-more-menu-min-w);
+        z-index: 12;
+      }
+      .header-more-menu[hidden] {
+        display: none;
+      }
+      .header-more-menu .seg-btn {
+        justify-content: flex-start;
+        min-height: var(--ds-control-h-sm);
+        min-width: 0;
+        width: 100%;
+        padding: 0 var(--kc-space-3);
+        gap: var(--kc-space-2);
       }
       .seg-btn.active {
         border-color: var(--ds-accent);
         background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
       }
+      .seg-pair {
+        display: inline-flex;
+        align-items: stretch;
+      }
+      .seg-pair .seg-btn {
+        border-radius: 0;
+      }
+      .seg-pair .seg-btn + .seg-btn {
+        margin-left: -1px;
+      }
+      .seg-pair .seg-btn:first-child {
+        border-top-left-radius: var(--ds-radius-1);
+        border-bottom-left-radius: var(--ds-radius-1);
+      }
+      .seg-pair .seg-btn:last-child {
+        border-top-right-radius: var(--ds-radius-1);
+        border-bottom-right-radius: var(--ds-radius-1);
+      }
       .drop-tip {
         position: absolute;
-        inset: auto 50% 56px auto;
+        inset: auto 50% var(--kc-drop-bottom) auto;
         transform: translateX(50%);
         border: 1px dashed var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 92%, transparent);
         color: var(--ds-text-muted);
-        padding: 6px 10px;
+        padding: var(--kc-space-2) var(--kc-space-4);
         font-size: var(--ds-fs-1);
         display: none;
         pointer-events: none;
@@ -484,28 +816,28 @@
       }
       .tip {
         position: absolute;
-        left: 10px;
-        bottom: 10px;
+        left: var(--kc-overlay-inset);
+        bottom: var(--kc-overlay-inset);
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
-        padding: 4px 6px;
+        padding: var(--kc-space-1) var(--kc-space-2);
         color: var(--ds-text-muted);
-        font-size: 10px;
-        letter-spacing: 0.12em;
+        font-size: var(--kc-fs-micro);
+        letter-spacing: var(--ds-tracking-ui-sm);
         text-transform: uppercase;
       }
       .mini-gizmo {
         position: absolute;
-        right: 14px;
-        bottom: 14px;
-        width: 276px;
+        right: var(--kc-space-6);
+        top: var(--kc-mini-top);
+        width: var(--gizmo-size);
         border: 0;
         border-radius: 0;
         background: transparent;
         padding: 0;
         display: grid;
-        gap: 4px;
+        gap: var(--ds-space-1);
         pointer-events: none;
       }
       #miniCanvas {
@@ -518,27 +850,18 @@
         cursor: crosshair;
         pointer-events: auto;
       }
-      .gizmo-meta {
-        font-size: 11px;
-        color: #dce8f8;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        text-align: right;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
-        pointer-events: none;
-      }
       #assetStripShell {
         grid-column: 2;
         grid-row: 2;
-        padding: 6px 8px;
+        padding: var(--ds-space-2);
         display: grid;
-        align-items: center;
+        align-items: start;
       }
       #assetStrip {
         display: grid;
         grid-auto-flow: column;
-        grid-auto-columns: minmax(150px, 190px);
-        gap: 8px;
+        grid-auto-columns: minmax(var(--kc-strip-col-min), var(--kc-strip-col-max));
+        gap: var(--ds-space-2);
         overflow: auto hidden;
         min-height: 0;
       }
@@ -546,9 +869,10 @@
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ds-bg-elevated) 86%, transparent);
-        padding: 7px;
+        padding: var(--kc-asset-card-pad);
         display: grid;
-        gap: 6px;
+        grid-template-rows: auto auto auto;
+        gap: var(--ds-space-2);
         cursor: pointer;
       }
       .asset-card.active {
@@ -562,7 +886,8 @@
       .asset-box {
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-1);
-        min-height: 46px;
+        min-height: var(--kc-asset-box-h);
+        position: relative;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -578,6 +903,39 @@
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
+      }
+      .asset-empty {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        gap: var(--kc-space-tight);
+        font-size: var(--kc-fs-micro);
+        color: var(--ds-text-muted);
+        text-transform: uppercase;
+        letter-spacing: var(--ds-tracking-ui-sm);
+      }
+      .asset-empty strong {
+        font-size: var(--kc-fs-micro);
+        color: var(--ds-text);
+      }
+      .asset-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--kc-space-compact);
+        min-height: var(--kc-asset-action-h);
+        opacity: 0;
+        transition: opacity var(--ds-dur-fast) var(--ds-ease-standard);
+      }
+      .asset-card:hover .asset-actions,
+      .asset-card.active .asset-actions {
+        opacity: 1;
+      }
+      .asset-actions .btn {
+        min-height: var(--kc-asset-action-h);
+        padding: 0 var(--kc-asset-action-pad-x);
+        font-size: var(--kc-fs-micro);
       }
       .asset-box.is-3d {
         background:
@@ -595,24 +953,24 @@
       .asset-meta {
         display: flex;
         justify-content: space-between;
-        gap: 6px;
+        gap: var(--ds-space-2);
       }
       #settingsDrawer {
         position: fixed;
         right: 0;
         top: 0;
-        width: min(340px, 92vw);
+        width: var(--kc-drawer-w);
         height: 100%;
         border-left: 1px solid var(--ds-border);
         background: color-mix(in oklab, var(--ds-bg-elevated) 96%, transparent);
         box-shadow: var(--ds-card-shadow);
         transform: translateX(102%);
         transition: transform var(--ds-dur-med) var(--ds-ease-standard);
-        z-index: 120;
-        padding: 14px;
+        z-index: var(--kc-z-drawer);
+        padding: var(--kc-space-6);
         display: grid;
         grid-template-rows: auto auto;
-        gap: 10px;
+        gap: var(--kc-space-4);
         align-content: start;
       }
       #settingsDrawer.open {
@@ -622,20 +980,293 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: var(--ds-space-2);
       }
       .settings-body {
         display: grid;
-        gap: 10px;
+        gap: var(--kc-space-4);
         align-content: start;
+      }
+      /* Workspace simplification: single main surface + in-canvas context */
+      #workspaceScreen {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .context-panel {
+        display: none;
+      }
+      .workspace-main {
+        grid-column: 1;
+      }
+      #assetStripShell {
+        grid-column: 1;
+      }
+      .canvas-meta {
+        position: absolute;
+        left: var(--kc-overlay-inset);
+        top: var(--kc-canvas-meta-top);
+        width: var(--kc-canvas-meta-w);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        padding: var(--ds-space-2);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--ds-space-2);
+      }
+      .canvas-meta textarea {
+        grid-column: 1 / span 2;
+        min-height: var(--kc-canvas-notes-h);
+      }
+      .canvas-context {
+        position: absolute;
+        left: var(--kc-overlay-inset);
+        top: var(--kc-canvas-context-top);
+        width: var(--kc-canvas-meta-w);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        padding: var(--ds-space-2);
+        display: grid;
+        gap: var(--ds-space-2);
+        max-height: var(--kc-canvas-context-max-h);
+        overflow: auto;
+      }
+      .canvas-context-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--ds-space-2);
+      }
+      .canvas-context .group {
+        margin-bottom: 0;
+      }
+      .canvas-status {
+        position: absolute;
+        left: var(--kc-overlay-inset);
+        bottom: var(--kc-overlay-inset);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
+        color: var(--ds-text-muted);
+        font-size: var(--ds-fs-1);
+        padding: var(--ds-space-1) var(--ds-space-2);
+        max-width: var(--kc-canvas-status-max-w);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .canvas-toolstrip {
+        gap: var(--kc-space-1);
+      }
+      .seg-btn {
+        width: var(--kc-tool-btn-w);
+        min-width: var(--kc-tool-btn-w);
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+      }
+      .tool-divider {
+        width: 1px;
+        height: var(--kc-tool-divider-h);
+        background: var(--ds-border);
+        margin: 0 var(--ds-space-1);
+      }
+      /* Cleanup pass: final workspace overlay normalization */
+      .stage {
+        --overlay-gap: var(--kc-overlay-gap);
+        --left-col-w: var(--kc-left-col-w);
+      }
+      .overlay-left,
+      .overlay-right {
+        position: absolute;
+        top: var(--kc-overlay-inset);
+        bottom: var(--kc-overlay-inset);
+        display: grid;
+        gap: var(--overlay-gap);
+        min-height: 0;
+        pointer-events: none;
+        z-index: var(--kc-z-overlay);
+      }
+      .overlay-left > *,
+      .overlay-right > * {
+        pointer-events: auto;
+      }
+      .overlay-left {
+        left: var(--kc-overlay-inset);
+        top: var(--kc-canvas-meta-top);
+        width: var(--left-col-w);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        align-content: start;
+      }
+      .overlay-right {
+        right: var(--kc-overlay-inset);
+        width: var(--kc-right-col-w);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        justify-items: end;
+      }
+      .canvas-meta,
+      .canvas-context,
+      .hud,
+      .camera-pad,
+      .mini-gizmo,
+      .canvas-status {
+        position: static;
+      }
+      .canvas-meta {
+        width: 100%;
+      }
+      .canvas-meta textarea {
+        min-height: var(--kc-canvas-notes-h-alt);
+      }
+      .canvas-context {
+        width: 100%;
+        max-height: 100%;
+        overflow: auto;
+      }
+      .canvas-context-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--kc-space-3);
+        font-size: var(--ds-fs-2);
+        font-weight: 600;
+      }
+      .canvas-status {
+        max-width: 100%;
+      }
+      .hud {
+        justify-self: end;
+        width: 100%;
+      }
+      .mini-gizmo {
+        width: var(--kc-mini-max-w);
+        justify-self: end;
+        align-self: end;
+        margin-bottom: var(--kc-mini-anchor-gap);
+        pointer-events: auto;
+      }
+      .camera-pad {
+        justify-self: end;
+        align-self: end;
+        width: max-content;
+        overflow: hidden;
+        --pad-grid-w: calc(var(--kc-cam-cell-w) * 3 + var(--kc-cam-gap) * 2);
+      }
+      .camera-pad-grid,
+      .camera-pad-zoom {
+        width: var(--pad-grid-w);
+      }
+      .camera-pad .gizmo-size {
+        width: var(--pad-grid-w);
+        min-width: 0;
+        overflow: hidden;
+      }
+      .camera-pad .gizmo-size input[type="range"] {
+        width: var(--pad-grid-w);
+        min-width: 0;
+        display: block;
+      }
+      .canvas-toolstrip {
+        z-index: 4;
+        max-width: var(--kc-toolstrip-max-w);
+        overflow-x: auto;
+        scrollbar-width: thin;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
+      }
+      .seg-btn {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: max(var(--kc-seg-min-w), var(--ds-size-control-icon));
+        padding: 0 var(--kc-space-4);
+        gap: var(--kc-space-2);
+        white-space: nowrap;
+      }
+      .canvas-meta {
+        grid-template-columns: 1fr;
+      }
+      .canvas-meta textarea {
+        grid-column: auto;
+      }
+      .canvas-context,
+      .group,
+      #context3D {
+        align-content: start;
+      }
+      #assetStrip {
+        align-items: start;
+        overflow-y: hidden;
+        grid-auto-rows: max-content;
+      }
+      .asset-card {
+        align-content: start;
+        min-height: var(--kc-asset-card-min-h);
+      }
+      #assetStripShell {
+        overflow: visible;
+      }
+      #cartNameOverlay {
+        width: var(--left-col-w);
+      }
+      .workspace-header .header-toolstrip {
+        position: static !important;
+        left: auto;
+        top: auto;
+        transform: none !important;
+        max-width: none !important;
+        overflow: visible !important;
+        justify-self: center;
+        margin: 0;
+      }
+      .workspace-header .actions {
+        justify-self: end;
+      }
+      .workspace-header .header-toolstrip .seg-btn {
+        min-width: var(--kc-tool-btn-w);
+        width: var(--kc-tool-btn-w);
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+      }
+      .workspace-header .header-toolstrip .header-more-menu .seg-btn {
+        min-width: 0;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0 var(--kc-space-3);
+        gap: var(--kc-space-2);
       }
       @media (max-width: 1120px) {
         :root {
-          --panel: 260px;
+          --panel: min(260px, var(--ds-layout-panel-w));
           --strip: 108px;
+          --kc-left-col-w: min(54vw, 360px);
+          --kc-right-col-w: min(190px, 32vw);
+          --kc-toolstrip-max-w: calc(100% - 460px);
         }
-        #landing {
-          grid-template-columns: 1fr;
+      }
+      @media (max-width: 860px) {
+        :root {
+          --kc-left-col-w: min(62vw, 340px);
+          --kc-toolstrip-max-w: calc(100% - 360px);
+        }
+      }
+      @media (max-width: 980px) {
+        .workspace-header .header-toolstrip .tool-optional {
+          display: none;
+        }
+        .workspace-header .header-toolstrip .header-more {
+          display: inline-flex;
+        }
+      }
+      @media (max-width: 760px) {
+        :root {
+          --kc-left-col-w: min(88vw, 520px);
+          --kc-toolstrip-max-w: calc(100% - 24px);
+        }
+        .overlay-right {
+          display: none;
         }
       }
     </style>
@@ -643,8 +1274,8 @@
   <body>
   <aside id="createPanel">
       <div>
-        <h2 style="margin: 0">Create Cart</h2>
-        <p class="muted" style="margin: 4px 0 0 0">
+        <h2 class="u-m0">Create Cart</h2>
+        <p class="muted u-mt-1">
           Select a template first, then create blank cart.
         </p>
       </div>
@@ -665,9 +1296,9 @@
 
     <section id="galleryScreen" class="screen">
       <div class="gallery-shell">
-        <div class="gallery-top">
-          <div>
-            <h1 style="margin: 0">KataCart Gallery</h1>
+        <div class="gallery-top workspace-header">
+          <div class="workspace-header-left">
+            <h1 class="u-m0">KataCart Gallery</h1>
             <div class="muted">
               Fullscreen gallery. Open a cart or create a new blank slot.
             </div>
@@ -683,265 +1314,237 @@
               <i class="iconoir-list"></i>List
             </button>
           </div>
+          <div class="actions">
+            <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings">
+              <i class="iconoir-settings"></i>Settings
+            </button>
+          </div>
         </div>
         <div id="galleryList" class="layout-grid"></div>
       </div>
     </section>
 
     <section id="workspaceScreen" class="screen" hidden>
-      <aside class="panel context-panel">
-        <div class="brand">
-          <span><i class="iconoir-3d-select-face"></i> KataCart Work</span>
-          <span id="contextAssetType" class="muted">-</span>
-        </div>
-        <div class="muted" id="contextTemplateText">Template: -</div>
-        <div class="context-wrap">
-          <div class="group">
-            <h3>Metadata</h3>
-            <div class="field">
-              <label for="metaNotes">Notes</label
-              ><textarea id="metaNotes"></textarea>
-            </div>
-            <div class="field">
-              <label for="metaTags">Tags</label
-              ><input id="metaTags" placeholder="retro, ps2, archive" />
-            </div>
-            <div class="field">
-              <label for="metaSku">SKU</label
-              ><input id="metaSku" placeholder="KATA-0001" />
-            </div>
-          </div>
-          <div id="context2D" class="group" hidden>
-            <h3>2D Asset Context</h3>
-            <div class="actions">
-              <button id="downloadTemplateBtn" class="btn" type="button">
-                <i class="iconoir-download"></i>Template PNG
-              </button>
-              <button id="uploadAssetBtn" class="btn primary" type="button">
-                <i class="iconoir-upload"></i>Upload Image
-              </button>
-            </div>
-            <div class="tool-row">
-              <span>X</span
-              ><input
-                id="txRange"
-                type="range"
-                min="-220"
-                max="220"
-                value="0"
-              /><output id="txOut">0</output>
-            </div>
-            <div class="tool-row">
-              <span>Y</span
-              ><input
-                id="tyRange"
-                type="range"
-                min="-220"
-                max="220"
-                value="0"
-              /><output id="tyOut">0</output>
-            </div>
-            <div class="tool-row">
-              <span>Scale</span
-              ><input
-                id="tsRange"
-                type="range"
-                min="20"
-                max="300"
-                value="100"
-              /><output id="tsOut">1.00</output>
-            </div>
-            <div class="tool-row">
-              <span>Rotate</span
-              ><input
-                id="trRange"
-                type="range"
-                min="-180"
-                max="180"
-                value="0"
-              /><output id="trOut">0deg</output>
-            </div>
-            <div class="tool-row">
-              <span>Pixelize</span
-              ><input
-                id="pxRange"
-                type="range"
-                min="1"
-                max="64"
-                value="1"
-              /><output id="pxOut">1x</output>
-            </div>
-            <div class="actions">
-              <button id="mirrorXBtn" class="btn" type="button">
-                <i class="iconoir-reflect-horizontal"></i>Mirror X
-              </button>
-              <button id="mirrorYBtn" class="btn" type="button">
-                <i class="iconoir-reflect-vertical"></i>Mirror Y
-              </button>
-            </div>
-            <div class="actions">
-              <button id="reset2dBtn" class="btn destructive" type="button">
-                <i class="iconoir-undo"></i>Reset
-              </button>
-              <button id="fitContainBtn" class="btn" type="button">
-                <i class="iconoir-scale-frame-enlarge"></i>Fit
-              </button>
-              <button id="fitCoverBtn" class="btn" type="button">
-                <i class="iconoir-scale-frame-reduce"></i>Fill
-              </button>
-            </div>
-          </div>
-          <div id="context3D" class="group" hidden>
-            <h3>3D Asset Context</h3>
-            <div class="actions">
-              <button id="spinToggleBtn" class="btn" type="button">
-                <i class="iconoir-refresh-double"></i>Auto Rotate
-              </button>
-              <button id="gridToggleBtn" class="btn" type="button">
-                <i class="iconoir-grid-minus"></i>Grid
-              </button>
-            </div>
-            <div class="muted">
-              Drag inside canvas to rotate. Use wheel or +/- controls to zoom.
-            </div>
-            <div class="tool-row">
-              <span>Move X</span
-              ><input
-                id="m3dXRange"
-                type="range"
-                min="-1"
-                max="1"
-                step="0.01"
-                value="0"
-              /><output id="m3dXOut">0.00</output>
-            </div>
-            <div class="tool-row">
-              <span>Move Y</span
-              ><input
-                id="m3dYRange"
-                type="range"
-                min="-1"
-                max="1"
-                step="0.01"
-                value="0"
-              /><output id="m3dYOut">0.00</output>
-            </div>
-            <div class="tool-row">
-              <span>Scale</span
-              ><input
-                id="m3dSRange"
-                type="range"
-                min="40"
-                max="230"
-                value="100"
-              /><output id="m3dSOut">1.00</output>
-            </div>
-            <div class="actions">
-              <button id="rotX90Btn" class="btn" type="button">
-                <i class="iconoir-refresh-circle"></i>Rot X +90
-              </button>
-              <button id="rotY90Btn" class="btn" type="button">
-                <i class="iconoir-refresh-circle"></i>Rot Y +90
-              </button>
-            </div>
-            <div class="actions">
-              <button id="reset3dBtn" class="btn destructive" type="button">
-                <i class="iconoir-undo"></i>Reset 3D
-              </button>
-              <button id="mirror3dXBtn" class="btn" type="button">
-                <i class="iconoir-reflect-horizontal"></i>Mirror X
-              </button>
-            </div>
-          </div>
-          <div id="contextUV" class="group" hidden>
-            <h3>UV Unwrap Context</h3>
-            <div class="muted">
-              Displays current mapped textures in a flattened UV-style layout for
-              orientation and alignment checks.
-            </div>
-          </div>
-          <div class="group">
-            <h3>Export</h3>
-            <div class="actions">
-              <button id="exportTxtBtn" class="btn" type="button">
-                <i class="iconoir-doc-star"></i>TXT
-              </button>
-              <button id="exportJsonBtn" class="btn primary" type="button">
-                <i class="iconoir-download"></i>JSON
-              </button>
-            </div>
-          </div>
-        </div>
-        <div id="statusText" class="status">Ready.</div>
-      </aside>
-
       <div class="workspace-main">
         <header class="workspace-header">
           <div class="workspace-header-left">
             <button id="backToGalleryBtn" class="btn" type="button">
               <i class="iconoir-arrow-left"></i>Back To Gallery
             </button>
-            <strong>KataCart Workspace</strong>
           </div>
-          <button id="settingsBtn" class="btn" type="button">
-            <i class="iconoir-settings"></i>Settings
-          </button>
+          <div class="canvas-toolstrip header-toolstrip">
+            <div class="seg-pair" aria-label="Render mode">
+              <button id="toolRenderStandardBtn" class="seg-btn" type="button" title="Standard render">
+                <i class="iconoir-3d-select-face"></i>
+              </button>
+              <button id="toolRenderWobbleBtn" class="seg-btn" type="button" title="PS1 wobble render">
+                <i class="iconoir-frame-alt-empty"></i>
+              </button>
+            </div>
+            <div class="seg-pair" aria-label="Face mode">
+              <button id="toolFaceOpaqueBtn" class="seg-btn" type="button" title="Solid faces">
+                <i class="iconoir-eye"></i>
+              </button>
+              <button id="toolFaceGhostBtn" class="seg-btn" type="button" title="Ghost faces">
+                <i class="iconoir-eye-closed"></i>
+              </button>
+            </div>
+            <button id="toolTemplateLabelsBtn" class="seg-btn tool-optional" type="button" title="Toggle UV labels">
+              <i class="iconoir-text-box"></i>
+            </button>
+            <button id="toolAutoRotateBtn" class="seg-btn tool-optional" type="button" title="Auto rotate">
+              <i class="iconoir-refresh-double"></i>
+            </button>
+            <button id="toolGridBtn" class="seg-btn tool-optional" type="button" title="Toggle grid">
+              <i class="iconoir-grid-minus"></i>
+            </button>
+            <button id="toolNormalsBtn" class="seg-btn tool-optional" type="button" title="Show normals">
+              <i class="iconoir-axis-3d"></i>
+            </button>
+            <div class="header-more">
+              <button id="toolMoreBtn" class="seg-btn" type="button" title="More view tools" aria-expanded="false" aria-controls="toolMoreMenu">
+                <i class="iconoir-more-horiz-circle"></i>
+              </button>
+              <div id="toolMoreMenu" class="header-more-menu" hidden>
+                <button id="toolTemplateLabelsMenuBtn" class="seg-btn" type="button" title="Toggle UV labels">
+                  <i class="iconoir-text-box"></i><span>Label Map</span>
+                </button>
+                <button id="toolAutoRotateMenuBtn" class="seg-btn" type="button" title="Auto rotate">
+                  <i class="iconoir-refresh-double"></i><span>Auto Rotate</span>
+                </button>
+                <button id="toolGridMenuBtn" class="seg-btn" type="button" title="Toggle grid">
+                  <i class="iconoir-grid-minus"></i><span>Grid</span>
+                </button>
+                <button id="toolNormalsMenuBtn" class="seg-btn" type="button" title="Show normals">
+                  <i class="iconoir-axis-3d"></i><span>Normals</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="exportJsonBtn" class="btn primary" type="button">
+              <i class="iconoir-download"></i>Export
+            </button>
+            <button id="settingsBtn" class="btn" data-open-settings type="button">
+              <i class="iconoir-settings"></i>Settings
+            </button>
+          </div>
         </header>
         <section class="stage">
           <canvas id="stageCanvas"></canvas>
           <input id="cartNameOverlay" value="Cart" />
-          <div class="hud">
-            <div id="hudAsset">Asset: -</div>
-            <div id="hudTemplate" class="muted">Template: -</div>
-            <div id="hudCamera" class="muted">Rot 0,0 | Zoom 1.00</div>
+          <div class="overlay-left">
+            <div class="canvas-meta">
+              <div class="field">
+                <label for="metaSku">SKU</label
+                ><input id="metaSku" placeholder="KATA-0001" />
+              </div>
+              <div class="field">
+                <label for="metaNotes">Notes</label
+                ><textarea id="metaNotes"></textarea>
+              </div>
+              <div class="field">
+                <label for="metaTags">Tags</label
+                ><input id="metaTags" placeholder="retro, ps2, archive" />
+              </div>
+            </div>
+            <div class="canvas-context panel">
+              <div class="canvas-context-title">
+                <span><i class="iconoir-cube-bandage"></i> Asset Inspector</span>
+              </div>
+              <div id="context2D" class="group" hidden>
+                <h3><i class="iconoir-media-image"></i> 2D Asset Controls</h3>
+                <div class="tool-row">
+                  <span><i class="iconoir-arrows-left-right"></i> X</span
+                  ><input id="txRange" type="range" min="-220" max="220" value="0" /><output id="txOut">0</output>
+                </div>
+                <div class="tool-row">
+                  <span><i class="iconoir-arrows-up-down"></i> Y</span
+                  ><input id="tyRange" type="range" min="-220" max="220" value="0" /><output id="tyOut">0</output>
+                </div>
+                <div class="tool-row">
+                  <span><i class="iconoir-scale-frame-enlarge"></i> Scale</span
+                  ><input id="tsRange" type="range" min="20" max="300" value="100" /><output id="tsOut">1.00</output>
+                </div>
+                <div class="tool-row">
+                  <span><i class="iconoir-refresh-circle"></i> Rotate</span
+                  ><input id="trRange" type="range" min="-180" max="180" value="0" /><output id="trOut">0deg</output>
+                </div>
+                <div class="tool-row">
+                  <span><i class="iconoir-grid-minus"></i> Pixelize</span
+                  ><input id="pxRange" type="range" min="1" max="64" value="1" /><output id="pxOut">1x</output>
+                </div>
+                <div class="actions">
+                  <button id="reset2dBtn" class="btn destructive" type="button">
+                    <i class="iconoir-undo"></i>Reset
+                  </button>
+                  <button id="mirrorXBtn" class="btn" type="button">
+                    <i class="iconoir-reflect-horizontal"></i>Mirror X
+                  </button>
+                  <button id="mirrorYBtn" class="btn" type="button">
+                    <i class="iconoir-reflect-vertical"></i>Mirror Y
+                  </button>
+                  <button id="fitContainBtn" class="btn" type="button">
+                    <i class="iconoir-scale-frame-enlarge"></i>Fit
+                  </button>
+                  <button id="fitCoverBtn" class="btn" type="button">
+                    <i class="iconoir-scale-frame-reduce"></i>Fill
+                  </button>
+                </div>
+              </div>
+              <div id="context3D" class="group" hidden>
+                <h3><i class="iconoir-cube-scan"></i> 3D Asset Controls</h3>
+                <div class="tool-row">
+                  <span><i class="iconoir-arrows-left-right"></i> Move X</span
+                  ><input id="m3dXRange" type="range" min="-1" max="1" step="0.01" value="0" /><output id="m3dXOut">0.00</output>
+                </div>
+                <div class="tool-row">
+                  <span><i class="iconoir-arrows-up-down"></i> Move Y</span
+                  ><input id="m3dYRange" type="range" min="-1" max="1" step="0.01" value="0" /><output id="m3dYOut">0.00</output>
+                </div>
+                <div class="tool-row">
+                  <span><i class="iconoir-scale-frame-enlarge"></i> Scale</span
+                  ><input id="m3dSRange" type="range" min="40" max="230" value="100" /><output id="m3dSOut">1.00</output>
+                </div>
+                <div class="actions">
+                  <button id="reset3dBtn" class="btn destructive" type="button">
+                    <i class="iconoir-undo"></i>Reset
+                  </button>
+                  <button id="rotX90Btn" class="btn" type="button">
+                    <i class="iconoir-refresh-circle"></i>Rot X
+                  </button>
+                  <button id="rotY90Btn" class="btn" type="button">
+                    <i class="iconoir-refresh-circle"></i>Rot Y
+                  </button>
+                  <button id="mirror3dXBtn" class="btn" type="button">
+                    <i class="iconoir-reflect-horizontal"></i>Mirror X
+                  </button>
+                </div>
+              </div>
+              <div id="contextUV" class="group" hidden>
+                <h3>UV Unwrap Context</h3>
+                <div class="muted">Flattened UV projection preview for mapping checks.</div>
+              </div>
+            </div>
+            <div id="statusText" class="canvas-status">Ready.</div>
           </div>
-          <div class="canvas-controls">
-            <button id="zoomInBtn" type="button" title="Zoom in">
-              <i class="iconoir-plus"></i>
-            </button>
-            <button id="zoomOutBtn" type="button" title="Zoom out">
-              <i class="iconoir-minus"></i>
-            </button>
-            <button id="zoomResetBtn" type="button" title="Reset view">
-              <i class="iconoir-undo-circle"></i>
-            </button>
-          </div>
-          <div class="canvas-toolstrip">
-            <button id="toolRenderStandardBtn" class="seg-btn" type="button">
-              <i class="iconoir-3d-select-face"></i>Standard
-            </button>
-            <button id="toolRenderWobbleBtn" class="seg-btn" type="button">
-              <i class="iconoir-frame-alt-empty"></i>Wobble
-            </button>
-            <button id="toolFaceOpaqueBtn" class="seg-btn" type="button">
-              <i class="iconoir-eye"></i>Opaque
-            </button>
-            <button id="toolFaceGhostBtn" class="seg-btn" type="button">
-              <i class="iconoir-eye-closed"></i>Transparent
-            </button>
-            <button id="toolTemplateLabelsBtn" class="seg-btn" type="button">
-              <i class="iconoir-text-box"></i>Label Map
-            </button>
-            <button id="toolAutoRotateBtn" class="seg-btn" type="button">
-              <i class="iconoir-refresh-double"></i>Auto Rotate
-            </button>
-            <button id="toolGridBtn" class="seg-btn" type="button">
-              <i class="iconoir-grid-minus"></i>Show Grid
-            </button>
-            <button id="toolNormalsBtn" class="seg-btn" type="button">
-              <i class="iconoir-frame-alt-empty"></i>Normals
-            </button>
+          <div class="overlay-right">
+            <div class="hud">
+              <div id="hudAsset">Asset: -</div>
+              <div id="hudTemplate" class="muted">Template: -</div>
+              <div id="hudCamera" class="muted">Rot 0,0 | Zoom 1.00</div>
+            </div>
+            <div id="miniGizmo" class="mini-gizmo">
+              <canvas id="miniCanvas"></canvas>
+            </div>
+            <div class="camera-pad" aria-label="Camera pad">
+              <div class="gizmo-size">
+                <input id="gizmoSizeRange" type="range" min="80" max="360" value="150" />
+              </div>
+              <div class="camera-pad-grid">
+                <button id="viewFrontBtn" class="cam-btn cam-front" type="button" title="Front view">
+                  <i class="iconoir-view-grid"></i>
+                </button>
+                <button id="viewTopBtn" class="cam-btn cam-top" type="button" title="Top view">
+                  <i class="iconoir-nav-arrow-up"></i>
+                </button>
+                <button id="viewBackBtn" class="cam-btn cam-back" type="button" title="Back view">
+                  <i class="iconoir-view-columns-3"></i>
+                </button>
+                <button id="viewLeftBtn" class="cam-btn cam-left" type="button" title="Left view">
+                  <i class="iconoir-nav-arrow-left"></i>
+                </button>
+                <button id="viewHomeBtn" class="cam-btn cam-home" type="button" title="Home view">
+                  <i class="iconoir-home"></i>
+                </button>
+                <button id="viewRightBtn" class="cam-btn cam-right" type="button" title="Right view">
+                  <i class="iconoir-nav-arrow-right"></i>
+                </button>
+                <button id="viewIsoBtn" class="cam-btn cam-iso" type="button" title="Isometric view">
+                  <i class="iconoir-cube-bandage"></i>
+                </button>
+                <button id="viewBottomBtn" class="cam-btn cam-bottom" type="button" title="Bottom view">
+                  <i class="iconoir-nav-arrow-down"></i>
+                </button>
+                <button id="viewFitBtn" class="cam-btn cam-fit" type="button" title="Fit/reset view">
+                  <i class="iconoir-frame-select"></i>
+                </button>
+              </div>
+              <div class="camera-pad-zoom">
+                <button id="zoomInBtn" class="cam-btn" type="button" title="Zoom in">
+                  <i class="iconoir-plus"></i>
+                </button>
+                <button id="zoomOutBtn" class="cam-btn" type="button" title="Zoom out">
+                  <i class="iconoir-minus"></i>
+                </button>
+                <button id="zoomResetBtn" class="cam-btn" type="button" title="Reset zoom">
+                  <i class="iconoir-undo-circle"></i>
+                </button>
+              </div>
+            </div>
           </div>
           <div id="dropTip" class="drop-tip">
             <i class="iconoir-media-image-list"></i> Drop image to map texture
-          </div>
-          <div id="miniGizmo" class="mini-gizmo">
-            <canvas id="miniCanvas"></canvas>
-            <div id="gizmoMeta" class="gizmo-meta">Drag axis markers (X/Y/Z) to rotate</div>
-          </div>
-          <div class="tip">
-            Asset cards change context panel. 2D cards use upload/template + fit
-            tools.
           </div>
         </section>
       </div>
@@ -953,25 +1556,17 @@
 
     <aside id="settingsDrawer">
       <div class="settings-head">
-        <h2 style="margin: 0">Settings</h2>
+        <h2 class="u-m0">Settings</h2>
         <button id="closeSettingsBtn" class="btn" type="button">
           <i class="iconoir-xmark-circle"></i>Close
         </button>
       </div>
       <div class="settings-body">
-        <div class="muted">Workspace display and theme.</div>
+        <div class="muted">Theme and workspace appearance.</div>
         <div class="field">
           <label for="themeSelect">Theme</label
           ><select id="themeSelect"></select>
         </div>
-        <label class="field"
-          ><span class="muted">Auto Rotate</span
-          ><input id="spinCheckbox" type="checkbox"
-        /></label>
-        <label class="field"
-          ><span class="muted">Show Grid</span
-          ><input id="gridCheckbox" type="checkbox" checked
-        /></label>
         <label class="field"
           ><span class="muted">Background Glow</span
           ><input id="glowCheckbox" type="checkbox" checked
@@ -1123,6 +1718,7 @@
       const S = {
         screen: "gallery",
         galleryLayout: "grid",
+        gallerySelectedId: null,
         createOpen: false,
         createTemplateId: null,
         carts: [createCart(TEMPLATES[2], "PS2 Demo Cart")],
@@ -1131,8 +1727,8 @@
         theme: document.documentElement.dataset.theme || "mono-slate",
         settingsOpen: false,
         view: {
-          yaw: 0.45,
-          pitch: -0.25,
+          yaw: 0,
+          pitch: 0,
           zoom: 1.12,
           drag: false,
           dragOver: false,
@@ -1145,13 +1741,10 @@
           glow: true,
         },
         gizmo: {
-          rx: 0,
-          ry: 0,
-          rz: 0,
-          axis: null,
+          size: 150,
+          drag: false,
           px: 0,
           py: 0,
-          handlePts: {},
         },
       };
 
@@ -1159,20 +1752,19 @@
         galleryScreen: document.getElementById("galleryScreen"),
         workspaceScreen: document.getElementById("workspaceScreen"),
         galleryList: document.getElementById("galleryList"),
-        layoutButtons: [...document.querySelectorAll(".layout-switch .btn")],
+        layoutButtons: [...document.querySelectorAll(".layout-switch [data-layout]")],
         createPanel: document.getElementById("createPanel"),
         createTemplateList: document.getElementById("createTemplateList"),
         newCartNameInput: document.getElementById("newCartNameInput"),
         createCartBtn: document.getElementById("createCartBtn"),
         cancelCreateBtn: document.getElementById("cancelCreateBtn"),
-        contextTemplateText: document.getElementById("contextTemplateText"),
-        contextAssetType: document.getElementById("contextAssetType"),
         context2D: document.getElementById("context2D"),
         context3D: document.getElementById("context3D"),
         contextUV: document.getElementById("contextUV"),
         statusText: document.getElementById("statusText"),
         backToGalleryBtn: document.getElementById("backToGalleryBtn"),
         settingsBtn: document.getElementById("settingsBtn"),
+        settingsOpenBtns: [...document.querySelectorAll("[data-open-settings]")],
         settingsDrawer: document.getElementById("settingsDrawer"),
         closeSettingsBtn: document.getElementById("closeSettingsBtn"),
         themeSelect: document.getElementById("themeSelect"),
@@ -1180,8 +1772,9 @@
         gridCheckbox: document.getElementById("gridCheckbox"),
         glowCheckbox: document.getElementById("glowCheckbox"),
         stageCanvas: document.getElementById("stageCanvas"),
+        miniGizmo: document.getElementById("miniGizmo"),
         miniCanvas: document.getElementById("miniCanvas"),
-        gizmoMeta: document.getElementById("gizmoMeta"),
+        gizmoSizeRange: document.getElementById("gizmoSizeRange"),
         cartNameOverlay: document.getElementById("cartNameOverlay"),
         hudAsset: document.getElementById("hudAsset"),
         hudTemplate: document.getElementById("hudTemplate"),
@@ -1190,8 +1783,6 @@
         zoomOutBtn: document.getElementById("zoomOutBtn"),
         zoomResetBtn: document.getElementById("zoomResetBtn"),
         assetStrip: document.getElementById("assetStrip"),
-        uploadAssetBtn: document.getElementById("uploadAssetBtn"),
-        downloadTemplateBtn: document.getElementById("downloadTemplateBtn"),
         txRange: document.getElementById("txRange"),
         tyRange: document.getElementById("tyRange"),
         tsRange: document.getElementById("tsRange"),
@@ -1225,23 +1816,58 @@
         toolAutoRotateBtn: document.getElementById("toolAutoRotateBtn"),
         toolGridBtn: document.getElementById("toolGridBtn"),
         toolNormalsBtn: document.getElementById("toolNormalsBtn"),
+        toolMoreBtn: document.getElementById("toolMoreBtn"),
+        toolMoreMenu: document.getElementById("toolMoreMenu"),
+        toolTemplateLabelsMenuBtn: document.getElementById("toolTemplateLabelsMenuBtn"),
+        toolAutoRotateMenuBtn: document.getElementById("toolAutoRotateMenuBtn"),
+        toolGridMenuBtn: document.getElementById("toolGridMenuBtn"),
+        toolNormalsMenuBtn: document.getElementById("toolNormalsMenuBtn"),
+        viewFrontBtn: document.getElementById("viewFrontBtn"),
+        viewBackBtn: document.getElementById("viewBackBtn"),
+        viewLeftBtn: document.getElementById("viewLeftBtn"),
+        viewRightBtn: document.getElementById("viewRightBtn"),
+        viewTopBtn: document.getElementById("viewTopBtn"),
+        viewBottomBtn: document.getElementById("viewBottomBtn"),
+        viewHomeBtn: document.getElementById("viewHomeBtn"),
+        viewIsoBtn: document.getElementById("viewIsoBtn"),
+        viewFitBtn: document.getElementById("viewFitBtn"),
         dropTip: document.getElementById("dropTip"),
         metaNotes: document.getElementById("metaNotes"),
         metaTags: document.getElementById("metaTags"),
         metaSku: document.getElementById("metaSku"),
         exportJsonBtn: document.getElementById("exportJsonBtn"),
-        exportTxtBtn: document.getElementById("exportTxtBtn"),
-        spinToggleBtn: document.getElementById("spinToggleBtn"),
-        gridToggleBtn: document.getElementById("gridToggleBtn"),
         assetFileInput: document.getElementById("assetFileInput"),
       };
 
       const X = U.stageCanvas.getContext("2d");
+      const ROOT = document.documentElement;
+      function cssVar(name, fallback = "") {
+        const v = getComputedStyle(ROOT).getPropertyValue(name).trim();
+        return v || fallback;
+      }
+      function numCssVar(name, fallback) {
+        const n = Number.parseFloat(cssVar(name, String(fallback)));
+        return Number.isFinite(n) ? n : fallback;
+      }
+      function canvasFont(sizePx, weight = "400", family = cssVar("--ds-font-sans", "sans-serif")) {
+        return `${weight} ${Math.round(sizePx)}px ${family}`;
+      }
+      const CANVAS_FS_MICRO = numCssVar("--ds-fs-micro", 11);
+      const CANVAS_FS_1 = numCssVar("--ds-fs-1", 12);
+      const CANVAS_FS_2 = numCssVar("--ds-fs-2", 14);
+      const HEADER_COMPACT_MEDIA = `(max-width: ${cssVar("--kc-breakpoint-head-compact", "980px")})`;
+      const ZOOM_MIN = 0.08;
+      const ZOOM_MAX = 18;
       let last = performance.now();
       let lastPt = null;
 
       function setStatus(msg) {
         U.statusText.textContent = msg;
+      }
+      function applyGizmoSize(size) {
+        const px = Math.max(80, Math.min(360, Math.round(size)));
+        S.gizmo.size = px;
+        if (U.gizmoSizeRange) U.gizmoSizeRange.value = String(px);
       }
       function tById(id) {
         return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
@@ -1289,13 +1915,17 @@
         ensureModelTransform(c);
       }
       function syncViewToggleUI() {
-        U.spinCheckbox.checked = S.view.spin;
-        U.gridCheckbox.checked = S.view.grid;
-        U.spinToggleBtn.classList.toggle("active", S.view.spin);
-        U.gridToggleBtn.classList.toggle("active", S.view.grid);
+        if (U.spinCheckbox) U.spinCheckbox.checked = S.view.spin;
+        if (U.gridCheckbox) U.gridCheckbox.checked = S.view.grid;
         U.toolAutoRotateBtn.classList.toggle("active", S.view.spin);
+        if (U.toolAutoRotateMenuBtn)
+          U.toolAutoRotateMenuBtn.classList.toggle("active", S.view.spin);
         U.toolGridBtn.classList.toggle("active", S.view.grid);
+        if (U.toolGridMenuBtn)
+          U.toolGridMenuBtn.classList.toggle("active", S.view.grid);
         U.toolNormalsBtn.classList.toggle("active", S.view.normals);
+        if (U.toolNormalsMenuBtn)
+          U.toolNormalsMenuBtn.classList.toggle("active", S.view.normals);
         U.toolRenderStandardBtn.classList.toggle(
           "active",
           S.view.renderMode === "standard",
@@ -1313,10 +1943,55 @@
           S.view.faceViz === "transparent",
         );
         U.toolTemplateLabelsBtn.classList.toggle("active", S.view.templateLabels);
+        if (U.toolTemplateLabelsMenuBtn)
+          U.toolTemplateLabelsMenuBtn.classList.toggle(
+            "active",
+            S.view.templateLabels,
+          );
+      }
+      function setHeaderMoreOpen(open) {
+        const isOpen = !!open;
+        if (!U.toolMoreMenu || !U.toolMoreBtn) return;
+        U.toolMoreMenu.hidden = !isOpen;
+        U.toolMoreBtn.setAttribute("aria-expanded", String(isOpen));
+      }
+      function isCompactHeaderMode() {
+        return window.matchMedia(HEADER_COMPACT_MEDIA).matches;
       }
       function isEmpty2DAssetActive() {
         const a = asset();
         return !!(a && a.type === "2d" && !a.image);
+      }
+      function isModelViewActive() {
+        return asset()?.type === "3d";
+      }
+      function applyCameraPreset(mode) {
+        if (mode === "front") {
+          S.view.yaw = 0;
+          S.view.pitch = 0;
+        } else if (mode === "back") {
+          S.view.yaw = Math.PI;
+          S.view.pitch = 0;
+        } else if (mode === "left") {
+          S.view.yaw = -Math.PI / 2;
+          S.view.pitch = 0;
+        } else if (mode === "right") {
+          S.view.yaw = Math.PI / 2;
+          S.view.pitch = 0;
+        } else if (mode === "top") {
+          S.view.pitch = -1.2;
+        } else if (mode === "bottom") {
+          S.view.pitch = 1.2;
+        } else if (mode === "home") {
+          S.view.yaw = 0;
+          S.view.pitch = 0;
+          S.view.zoom = 1.12;
+        } else if (mode === "iso") {
+          S.view.yaw = 0.78;
+          S.view.pitch = -0.58;
+        } else if (mode === "fit") {
+          S.view.zoom = 1.12;
+        }
       }
 
       function openCreatePanel() {
@@ -1373,6 +2048,72 @@
         const total = c.assets.filter((a) => a.type === "2d").length;
         return { t, filled, total };
       }
+      function galleryThumb(c) {
+        const preferred = ["cover_front", "label_front", "cover_back", "disc_art", "spine"];
+        for (const id of preferred) {
+          const a = c.assets.find((x) => x.id === id && x.type === "2d" && x.image?.src);
+          if (a?.image?.src) return { src: a.image.src, label: a.label };
+        }
+        const any = c.assets.find((x) => x.type === "2d" && x.image?.src);
+        if (any?.image?.src) return { src: any.image.src, label: any.label };
+        return null;
+      }
+      function galleryPlaceholderMeta(t) {
+        const byTemplate = {
+          "cd-jewel": {
+            icon: "iconoir-compact-disc",
+            title: "CD Jewel Case",
+            subtitle: "Disc case template",
+          },
+          "ps1-jewel": {
+            icon: "iconoir-compact-disc",
+            title: "PS1 Jewel Case",
+            subtitle: "PlayStation disc case",
+          },
+          "ps2-case": {
+            icon: "iconoir-gamepad",
+            title: "PS2 Case",
+            subtitle: "PlayStation 2 case",
+          },
+          "gamecube-case": {
+            icon: "iconoir-gamepad",
+            title: "GameCube Case",
+            subtitle: "Nintendo optical case",
+          },
+          "psp-umd": {
+            icon: "iconoir-headset",
+            title: "PSP UMD",
+            subtitle: "Portable disc media",
+          },
+          "gameboy-cart": {
+            icon: "iconoir-gamepad",
+            title: "Game Boy Cart",
+            subtitle: "Handheld cartridge",
+          },
+          "sd-card": {
+            icon: "iconoir-sd-card",
+            title: "SD Card",
+            subtitle: "Storage media",
+          },
+          "mini-dv": {
+            icon: "iconoir-multiple-pages-empty",
+            title: "MiniDV",
+            subtitle: "Tape media",
+          },
+        };
+        const tid = t?.id || "";
+        if (byTemplate[tid]) return byTemplate[tid];
+        const family = (t?.family || "").toLowerCase();
+        if (family.includes("disc"))
+          return { icon: "iconoir-compact-disc", title: "Disc Case", subtitle: t?.name || "No Thumbnail" };
+        if (family.includes("handheld"))
+          return { icon: "iconoir-gamepad", title: "Handheld Cart", subtitle: t?.name || "No Thumbnail" };
+        if (family.includes("storage"))
+          return { icon: "iconoir-sd-card", title: "Storage Media", subtitle: t?.name || "No Thumbnail" };
+        if (family.includes("tape"))
+          return { icon: "iconoir-multiple-pages-empty", title: "Tape Media", subtitle: t?.name || "No Thumbnail" };
+        return { icon: "iconoir-box", title: "Cartridge", subtitle: t?.name || "No Thumbnail" };
+      }
       function renderGallery() {
         U.galleryList.className = `layout-${S.galleryLayout}`;
         U.layoutButtons.forEach((b) =>
@@ -1382,11 +2123,11 @@
         const newCard = document.createElement("article");
         newCard.className = "new-cart-card";
         newCard.innerHTML = `
-          <div class="cart-meta">
-            <strong><i class="iconoir-plus-circle"></i> Create New Cart</strong>
-            <span class="muted">Select a template and create a blank slot.</span>
-          </div>
-          <button class="btn primary" type="button"><i class="iconoir-plus-circle"></i>New Cart</button>
+          <button class="new-cart-btn" type="button">
+            <i class="iconoir-plus-circle"></i>
+            <strong>Add New Cart</strong>
+            <span class="muted">Create a blank cartridge item</span>
+          </button>
         `;
         newCard.querySelector("button").addEventListener("click", openCreatePanel);
         newCard.addEventListener("dblclick", openCreatePanel);
@@ -1401,19 +2142,50 @@
         }
         S.carts.forEach((c) => {
           const s = gallerySummary(c);
+          const th = galleryThumb(c);
+          const ph = galleryPlaceholderMeta(s.t);
           const card = document.createElement("article");
           card.className = "cart-card";
+          if (S.gallerySelectedId === c.id) card.classList.add("is-selected");
+          card.setAttribute("data-family", s.t.family || "");
+          card.tabIndex = 0;
           card.innerHTML = `
+          <div class="gallery-thumb">
+            ${
+              th
+                ? `<div class="gallery-thumb-media"></div>`
+                : `<div class="gallery-thumb-placeholder"><i class="${ph.icon}"></i><strong>${ph.title}</strong><span>${ph.subtitle}</span></div>`
+            }
+          </div>
           <div class="cart-meta">
             <strong>${c.name}</strong>
             <span class="muted">${s.t.name}</span>
             <span class="muted">${s.filled}/${s.total} 2D assets filled</span>
           </div>
-          <button class="btn" type="button"><i class="iconoir-arrow-right-circle"></i>Open</button>
+          <div class="gallery-actions">
+            <button class="btn" type="button"><i class="iconoir-arrow-right-circle"></i>Open</button>
+          </div>
         `;
-          card
-            .querySelector("button")
-            .addEventListener("click", () => openWorkspace(c.id));
+          if (th) {
+            const media = card.querySelector(".gallery-thumb-media");
+            if (media) media.style.backgroundImage = `url("${th.src}")`;
+          }
+          card.querySelector("button").addEventListener("click", (e) => {
+            e.stopPropagation();
+            openWorkspace(c.id);
+          });
+          card.addEventListener("click", () => {
+            S.gallerySelectedId = c.id;
+            renderGallery();
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") openWorkspace(c.id);
+            if (e.key === " ") {
+              e.preventDefault();
+              S.gallerySelectedId = c.id;
+              renderGallery();
+            }
+          });
           card.addEventListener("dblclick", () => openWorkspace(c.id));
           U.galleryList.append(card);
         });
@@ -1432,12 +2204,46 @@
                 : "Empty";
           const item = document.createElement("article");
           item.className = `asset-card${a.id === S.assetId ? " active" : ""}`;
-          item.innerHTML = `<div class="asset-box"></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div>`;
+          const dims = a.type === "2d" ? `${a.w}x${a.h}` : "Viewer";
+          item.innerHTML = `<div class="asset-box"><div class="asset-empty"><strong>${a.image?.src ? "" : "Empty"}</strong><span>${dims}</span></div></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div><div class="asset-actions"></div>`;
           const box = item.querySelector(".asset-box");
+          const empty = item.querySelector(".asset-empty");
+          const actions = item.querySelector(".asset-actions");
           if (a.type === "3d") box.classList.add("is-3d");
           if (a.image?.src) {
             box.classList.add("has-image");
             box.style.backgroundImage = `url("${a.image.src}")`;
+            if (empty) empty.style.display = "none";
+          }
+          if (a.type === "2d") {
+            const up = document.createElement("button");
+            up.className = "btn primary";
+            up.type = "button";
+            up.innerHTML = `<i class="iconoir-upload"></i>Upload`;
+            up.addEventListener("click", (e) => {
+              e.stopPropagation();
+              S.assetId = a.id;
+              syncContextFromAsset();
+              renderAssetStrip();
+              U.assetFileInput.click();
+            });
+            const dlBtn = document.createElement("button");
+            dlBtn.className = "btn";
+            dlBtn.type = "button";
+            dlBtn.innerHTML = `<i class="iconoir-download"></i>Template`;
+            dlBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              S.assetId = a.id;
+              syncContextFromAsset();
+              downloadTemplate();
+              renderAssetStrip();
+            });
+            actions.append(up, dlBtn);
+          } else {
+            const ph = document.createElement("span");
+            ph.className = "muted";
+            ph.textContent = "\u00A0";
+            actions.append(ph);
           }
           item.addEventListener("click", () => {
             S.assetId = a.id;
@@ -1453,16 +2259,19 @@
         const a = asset();
         if (!c || !a) return;
         const t = tById(c.templateId);
-        U.contextTemplateText.textContent = `Template: ${t.name} (${t.family})`;
         U.hudAsset.textContent = `Asset: ${a.label}`;
         U.hudTemplate.textContent = `Template: ${t.name} | UV ${t.uv.w}x${t.uv.h}`;
-        U.contextAssetType.textContent = a.type.toUpperCase();
         const is2d = a.type === "2d";
         const is3d = a.type === "3d";
         const isUV = a.type === "uv";
         U.context2D.hidden = !is2d;
         U.context3D.hidden = !is3d;
         U.contextUV.hidden = !isUV;
+        U.miniGizmo.hidden = is3d;
+        U.reset3dBtn.disabled = !is3d;
+        U.rotX90Btn.disabled = !is3d;
+        U.rotY90Btn.disabled = !is3d;
+        U.mirror3dXBtn.disabled = !is3d;
         U.cartNameOverlay.value = c.name;
         U.metaNotes.value = c.notes || "";
         U.metaTags.value = c.tags || "";
@@ -1501,6 +2310,7 @@
         syncViewToggleUI();
         U.glowCheckbox.checked = S.view.glow;
         U.settingsDrawer.classList.toggle("open", S.settingsOpen);
+        if (!isCompactHeaderMode()) setHeaderMoreOpen(false);
       }
       function resizeCanvas() {
         const r = U.stageCanvas.getBoundingClientRect();
@@ -1654,7 +2464,24 @@
         ctx.restore();
       }
       function applyImageToQuad(img, quad, opts = {}, ctx = X) {
-        const { flipX = false, flipY = false, rotate180 = false, rotate90 = false } = opts;
+        const {
+          flipX = false,
+          flipY = false,
+          rotate180 = false,
+          rotate90 = false,
+          rotate270 = false,
+        } = opts;
+        function quadSignedArea(q) {
+          let s = 0;
+          for (let i = 0; i < q.length; i += 1) {
+            const a = q[i];
+            const b = q[(i + 1) % q.length];
+            s += a.x * b.y - a.y * b.x;
+          }
+          return s * 0.5;
+        }
+        // If destination winding is mirrored, flip one source axis to preserve readable orientation.
+        const handedFlipX = quadSignedArea(quad) < 0 ? !flipX : flipX;
         const sw = img.width;
         const sh = img.height;
         const source = [
@@ -1663,13 +2490,15 @@
           { x: sw, y: sh },
           { x: 0, y: sh },
         ].map((p) => ({
-          x: flipX ? sw - p.x : p.x,
+          x: handedFlipX ? sw - p.x : p.x,
           y: flipY ? sh - p.y : p.y,
         }));
         const q = rotate180
           ? [source[2], source[3], source[0], source[1]]
           : source;
-        const qq = rotate90 ? [q[3], q[0], q[1], q[2]] : q;
+        let qq = q;
+        if (rotate90) qq = [q[3], q[0], q[1], q[2]];
+        if (rotate270) qq = [q[1], q[2], q[3], q[0]];
         applyImageToTriangle(
           img,
           qq[0],
@@ -1736,45 +2565,67 @@
         X.closePath();
         X.fill();
         X.fillStyle = "#eaf6ff";
-        X.font = "11px sans-serif";
+        X.font = canvasFont(CANVAS_FS_MICRO);
         X.textAlign = "left";
         X.textBaseline = "middle";
         X.fillText(faceName, ex + 6, ey);
         X.restore();
       }
       function resolveFaceTexOpts(faceId) {
-        // Use fixed per-face UV orientation to prevent snapping when camera/model rotates.
+        // Keep core case faces untransformed; orientation is defined by explicit quad corner ordering.
         const map = {
-          front: { flipY: true },
-          back: { flipY: true, flipX: true },
-          spine: { flipY: true, rotate90: true },
+          front: {},
+          back: {},
+          spine: {},
           right: { flipY: true, rotate90: true, flipX: true },
           top: { flipX: true },
           bottom: { flipY: true },
         };
         return map[faceId] || { flipY: true };
       }
+      function textureQuadForFace(faceId, pts) {
+        // Return quad corners in texture order: TL, TR, BR, BL.
+        const map = {
+          front: [2, 3, 0, 1],
+          back: [7, 6, 5, 4],
+          spine: [3, 7, 4, 0],
+          right: [2, 6, 5, 1],
+          top: [3, 2, 6, 7],
+          bottom: [0, 4, 5, 1],
+        };
+        const idx = map[faceId];
+        if (!idx) return null;
+        return [pts[idx[0]], pts[idx[1]], pts[idx[2]], pts[idx[3]]];
+      }
       function getFaceAssetBindings(cart) {
         // Single source of truth for asset->face binding so UV unwrap and 3D render match.
         return {
-          front: assetImageById(cart, "cover_back"),
-          back: assetImageById(cart, "cover_front") || assetImageById(cart, "label_front"),
+          front: assetImageById(cart, "cover_front") || assetImageById(cart, "label_front"),
+          back: assetImageById(cart, "cover_back"),
           spine: assetImageById(cart, "spine"),
           disc: assetImageById(cart, "disc_art"),
         };
       }
       function orientedImageForFace(img, opts = {}) {
         if (!img) return null;
-        const { flipX = false, flipY = false, rotate180 = false, rotate90 = false } = opts;
+        const {
+          flipX = false,
+          flipY = false,
+          rotate180 = false,
+          rotate90 = false,
+          rotate270 = false,
+        } = opts;
         const out = document.createElement("canvas");
         const sw = img.width;
         const sh = img.height;
-        out.width = rotate90 ? sh : sw;
-        out.height = rotate90 ? sw : sh;
+        const quarter = rotate90 || rotate270;
+        out.width = quarter ? sh : sw;
+        out.height = quarter ? sw : sh;
         const x = out.getContext("2d");
         x.save();
         x.translate(out.width / 2, out.height / 2);
         if (rotate90) x.rotate(Math.PI / 2);
+        if (rotate270) x.rotate(-Math.PI / 2);
         if (rotate180) x.rotate(Math.PI);
         x.scale(flipX ? -1 : 1, flipY ? -1 : 1);
         x.drawImage(img, -sw / 2, -sh / 2, sw, sh);
@@ -1846,34 +2697,58 @@
         return c;
       }
       function drawDiscTexture(img, quad, ctx = X) {
-        const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
-        const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
-        const width = Math.hypot(quad[1].x - quad[0].x, quad[1].y - quad[0].y);
-        const r = Math.max(8, width * 0.32);
+        function qp(u, v) {
+          const p0 = quad[0],
+            p1 = quad[1],
+            p2 = quad[2],
+            p3 = quad[3];
+          return {
+            x:
+              p0.x * (1 - u) * (1 - v) +
+              p1.x * u * (1 - v) +
+              p2.x * u * v +
+              p3.x * (1 - u) * v,
+            y:
+              p0.y * (1 - u) * (1 - v) +
+              p1.y * u * (1 - v) +
+              p2.y * u * v +
+              p3.y * (1 - u) * v,
+          };
+        }
+        const r = 0.33;
+        const dq = [
+          qp(0.5 - r, 0.5 - r),
+          qp(0.5 + r, 0.5 - r),
+          qp(0.5 + r, 0.5 + r),
+          qp(0.5 - r, 0.5 + r),
+        ];
+        applyImageToQuad(img, dq, {}, ctx);
+        const cx = (dq[0].x + dq[1].x + dq[2].x + dq[3].x) / 4;
+        const cy = (dq[0].y + dq[1].y + dq[2].y + dq[3].y) / 4;
+        const rr = Math.max(3, Math.hypot(dq[1].x - dq[0].x, dq[1].y - dq[0].y) * 0.08);
         ctx.save();
+        ctx.fillStyle = "rgba(10,14,20,0.78)";
         ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
-        ctx.restore();
-        ctx.save();
+        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+        ctx.fill();
         ctx.strokeStyle =
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-accent")
             .trim() || "#7bd0ff";
-        ctx.globalAlpha = 0.6;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.7;
         ctx.beginPath();
-        ctx.arc(cx, cy, r * 0.2, 0, Math.PI * 2);
+        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
       function draw3D(cart, template, w, h, ca, ci) {
         ensureModelTransform(cart);
-        const d = template.d,
-          sx = d.w / 100,
-          sy = d.h / 100,
-          sz = Math.max(0.1, d.z / 100);
+        const d = template.d;
+        const n = 1 / Math.max(d.w, d.h, d.z || 1);
+        const sx = d.w * n;
+        const sy = d.h * n;
+        const sz = Math.max(0.04, d.z * n);
         const k = Math.min(w, h) * 0.36 * S.view.zoom,
           cx = w * 0.5,
           cy = h * 0.56;
@@ -1895,14 +2770,14 @@
         const bind = getFaceAssetBindings(cart);
         const faces = [
           {
-            id: "back",
+            id: "front",
             poly: [0, 3, 2, 1],
-            tex: bind.back,
+            tex: bind.front,
           },
           {
-            id: "front",
+            id: "back",
             poly: [4, 5, 6, 7],
-            tex: bind.front,
+            tex: bind.back,
           },
           { id: "bottom", poly: [0, 1, 5, 4] },
           { id: "right", poly: [1, 2, 6, 5] },
@@ -1933,7 +2808,7 @@
                 ? `rgba(140, 148, 160, ${baseAlpha})`
                 : `rgba(255, 255, 255, ${backAlpha})`;
             face(f.poly, pts, fillColor, 1);
-            const quad = f.poly.map((n) => pts[n]);
+            const quad = textureQuadForFace(f.id, pts) || f.poly.map((n) => pts[n]);
             drawFaceAssist(f.id.toUpperCase(), quad, n, camForward);
             if (!f.tex || facing >= -0.005) return;
             applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id));
@@ -1954,18 +2829,16 @@
         }
         ctx.clearRect(0, 0, w, h);
         const d = template.d;
-        const sx = d.w / 100;
-        const sy = d.h / 100;
-        const sz = Math.max(0.1, d.z / 100);
-        const k = Math.min(w, h) * 0.34;
+        const n = 1 / Math.max(d.w, d.h, d.z || 1);
+        const sx = d.w * n;
+        const sy = d.h * n;
+        const sz = Math.max(0.04, d.z * n);
+        const k = Math.min(w, h) * 0.42 * (S.gizmo.size / 100);
         const cx = w * 0.5;
         const cy = h * 0.56;
-        const camYaw = 0.7;
-        const camPitch = -0.35;
+        const camYaw = S.view.yaw;
+        const camPitch = S.view.pitch;
         const m = { ...cart.modelTr };
-        m.rx += S.gizmo.rx;
-        m.ry += S.gizmo.ry;
-        m.rz += S.gizmo.rz;
         function rcam(p) {
           const cy = Math.cos(camYaw);
           const sy = Math.sin(camYaw);
@@ -1993,8 +2866,8 @@
         });
         const bind = getFaceAssetBindings(cart);
         const faces = [
-          { id: "back", poly: [0, 3, 2, 1], tex: bind.back },
-          { id: "front", poly: [4, 5, 6, 7], tex: bind.front },
+          { id: "front", poly: [0, 3, 2, 1], tex: bind.front },
+          { id: "back", poly: [4, 5, 6, 7], tex: bind.back },
           { id: "bottom", poly: [0, 1, 5, 4] },
           { id: "right", poly: [1, 2, 6, 5] },
           { id: "top", poly: [3, 7, 6, 2] },
@@ -2017,50 +2890,10 @@
               facing < -0.005 ? "rgba(140,148,160,0.24)" : "rgba(255,255,255,0.1)";
             face(f.poly, pts, fillColor, 1, ctx);
             if (!f.tex || facing >= -0.005) return;
-            const quad = f.poly.map((n) => pts[n]);
+            const quad = textureQuadForFace(f.id, pts) || f.poly.map((n) => pts[n]);
             applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id), ctx);
             if (f.id === "front" && bind.disc) drawDiscTexture(bind.disc, quad, ctx);
           });
-        // Blender-style axis gizmo overlay
-        function projMini(v) {
-          const f = k / (v.z + 4.2);
-          return { x: cx + v.x * f, y: cy - v.y * f, z: v.z };
-        }
-        const o3 = rcam(model({ x: 0, y: 0, z: 0 }, m));
-        const px3 = rcam(model({ x: 0.95, y: 0, z: 0 }, m));
-        const py3 = rcam(model({ x: 0, y: 0.95, z: 0 }, m));
-        const pz3 = rcam(model({ x: 0, y: 0, z: 0.95 }, m));
-        const o2 = projMini(o3);
-        const gx = projMini(px3);
-        const gy = projMini(py3);
-        const gz = projMini(pz3);
-        const axes = [
-          { id: "x", p: gx, c: "#ff6d6d", l: "X" },
-          { id: "y", p: gy, c: "#7dff9a", l: "Y" },
-          { id: "z", p: gz, c: "#7aa8ff", l: "Z" },
-        ].sort((a, b) => a.p.z - b.p.z);
-        S.gizmo.handlePts = {};
-        axes.forEach((ax) => {
-          ctx.save();
-          ctx.strokeStyle = ax.c;
-          ctx.fillStyle = ax.c;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(o2.x, o2.y);
-          ctx.lineTo(ax.p.x, ax.p.y);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(ax.p.x, ax.p.y, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = "#0d1118";
-          ctx.font = "700 9px sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(ax.l, ax.p.x, ax.p.y + 0.5);
-          ctx.restore();
-          S.gizmo.handlePts[ax.id] = { x: ax.p.x, y: ax.p.y };
-        });
-        U.gizmoMeta.textContent = `Gizmo Rot X:${S.gizmo.rx.toFixed(0)} Y:${S.gizmo.ry.toFixed(0)} Z:${S.gizmo.rz.toFixed(0)}`;
       }
       function templateEdgeLabelsByAsset(a) {
         const map = {
@@ -2110,7 +2943,7 @@
           ctx.save();
           ctx.translate(px, py);
           if (rot) ctx.rotate(rot);
-          ctx.font = `700 ${fontSize}px sans-serif`;
+          ctx.font = canvasFont(fontSize, "700");
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           const tw = ctx.measureText(text).width;
@@ -2169,7 +3002,7 @@
           X.arc(cx, cy, inner, 0, Math.PI * 2);
           X.stroke();
           X.fillStyle = "rgba(8,12,20,0.78)";
-          X.font = "10px sans-serif";
+          X.font = canvasFont(CANVAS_FS_MICRO);
           X.textAlign = "center";
           X.fillText("Disc Printable Area", cx, cy - outer - 14);
           X.fillText("Hub Cutout", cx, cy + inner + 14);
@@ -2218,12 +3051,12 @@
           const img = orientedImageForFace(raw, resolveFaceTexOpts(f.faceId));
           const slot = (() => {
             if (f.faceId === "front")
-              return cart.assets.find((x) => x.id === "cover_back");
-            if (f.faceId === "back")
               return (
                 cart.assets.find((x) => x.id === "cover_front") ||
                 cart.assets.find((x) => x.id === "label_front")
               );
+            if (f.faceId === "back")
+              return cart.assets.find((x) => x.id === "cover_back");
             if (f.faceId === "spine")
               return cart.assets.find((x) => x.id === "spine");
             return null;
@@ -2238,7 +3071,7 @@
           X.strokeStyle = "rgba(255,255,255,0.55)";
           X.strokeRect(f.x + 0.5, f.y + 0.5, f.w - 1, f.h - 1);
           X.fillStyle = "rgba(8,12,20,0.84)";
-          X.font = "700 12px sans-serif";
+          X.font = canvasFont(CANVAS_FS_1, "700");
           X.textAlign = "center";
           X.textBaseline = "middle";
           X.fillText(f.label, f.x + f.w / 2, f.y + 14);
@@ -2271,7 +3104,7 @@
             X.restore();
           }
           X.fillStyle = "rgba(8,12,20,0.84)";
-          X.font = "700 11px sans-serif";
+          X.font = canvasFont(CANVAS_FS_MICRO, "700");
           X.textAlign = "center";
           X.fillText("DISC", dcx, dcy - dr - 12);
           X.restore();
@@ -2293,7 +3126,7 @@
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-text-muted")
             .trim() || "#999";
-        X.font = "12px sans-serif";
+        X.font = canvasFont(CANVAS_FS_1);
         X.fillText(`${a.label} template ${a.w}x${a.h}`, fx, fy - 10);
         if (!a.image) {
           const cb =
@@ -2306,13 +3139,13 @@
           X.strokeStyle = S.view.dragOver ? ca : cb;
           X.strokeRect(fx + 6, fy + 6, fw - 12, fh - 12);
           X.restore();
-          X.font = "14px sans-serif";
+          X.font = canvasFont(CANVAS_FS_2);
           X.fillText(
             "Drop image here or use Upload Image",
             fx + 14,
             fy + 26,
           );
-          X.font = "12px sans-serif";
+          X.font = canvasFont(CANVAS_FS_1);
           X.fillText("Supports PNG/JPG/WebP", fx + 14, fy + 46);
           drawTemplateOverlay(a, fx, fy, fw, fh, ca);
           return;
@@ -2347,7 +3180,7 @@
         if (a.type === "3d") draw3D(c, t, w, h, ca, ci);
         else if (a.type === "uv") drawUVUnwrap(c, t, w, h, ca);
         else draw2D(a, w, h, ca);
-        drawMiniModel(c, t);
+        if (!isModelViewActive()) drawMiniModel(c, t);
         U.hudCamera.textContent = `Rot ${S.view.yaw.toFixed(2)}, ${S.view.pitch.toFixed(2)} | Zoom ${S.view.zoom.toFixed(2)}`;
       }
       function loop(ts) {
@@ -2431,9 +3264,9 @@
         x.lineWidth = 8;
         x.strokeRect(8, 8, c.width - 16, c.height - 16);
         x.fillStyle = "#111";
-        x.font = "28px sans-serif";
+        x.font = canvasFont(numCssVar("--ds-fs-5", 28));
         x.fillText(a.label, 30, 54);
-        x.font = "20px monospace";
+        x.font = canvasFont(numCssVar("--ds-fs-4", 20), "400", cssVar("--ds-font-mono", "monospace"));
         x.fillText(`${a.w}x${a.h}`, 30, 84);
         x.strokeStyle = "#777";
         x.beginPath();
@@ -2530,7 +3363,7 @@
         const t = tById(c.templateId);
         return {
           app: "KataCart",
-          version: "0.11.1",
+          version: "0.11.8",
           exportedAt: new Date().toISOString(),
           cart: {
             id: c.id,
@@ -2559,7 +3392,7 @@
             renderMode: S.view.renderMode,
             faceViz: S.view.faceViz,
             templateLabels: S.view.templateLabels,
-            gizmo: { rx: S.gizmo.rx, ry: S.gizmo.ry, rz: S.gizmo.rz },
+            miniModel: { size: S.gizmo.size },
           },
           modelTransform: c.modelTr,
         };
@@ -2596,10 +3429,12 @@
       );
 
       U.backToGalleryBtn.addEventListener("click", openGallery);
-      U.settingsBtn.addEventListener("click", () => {
-        S.settingsOpen = !S.settingsOpen;
-        U.settingsDrawer.classList.toggle("open", S.settingsOpen);
-      });
+      U.settingsOpenBtns.forEach((btn) =>
+        btn.addEventListener("click", () => {
+          S.settingsOpen = !S.settingsOpen;
+          U.settingsDrawer.classList.toggle("open", S.settingsOpen);
+        }),
+      );
       U.closeSettingsBtn.addEventListener("click", () => {
         S.settingsOpen = false;
         U.settingsDrawer.classList.remove("open");
@@ -2610,14 +3445,16 @@
         document.documentElement.dataset.theme = S.theme;
         setStatus(`Theme set to ${S.theme}.`);
       });
-      U.spinCheckbox.addEventListener("input", () => {
-        S.view.spin = U.spinCheckbox.checked;
-        syncViewToggleUI();
-      });
-      U.gridCheckbox.addEventListener("input", () => {
-        S.view.grid = U.gridCheckbox.checked;
-        syncViewToggleUI();
-      });
+      if (U.spinCheckbox)
+        U.spinCheckbox.addEventListener("input", () => {
+          S.view.spin = U.spinCheckbox.checked;
+          syncViewToggleUI();
+        });
+      if (U.gridCheckbox)
+        U.gridCheckbox.addEventListener("input", () => {
+          S.view.grid = U.gridCheckbox.checked;
+          syncViewToggleUI();
+        });
       U.glowCheckbox.addEventListener("input", () => {
         S.view.glow = U.glowCheckbox.checked;
         document.body.style.background = S.view.glow
@@ -2625,28 +3462,36 @@
           : "var(--ds-bg)";
       });
 
-      U.spinToggleBtn.addEventListener("click", () => {
-        S.view.spin = !S.view.spin;
-        syncViewToggleUI();
-        setStatus(`Auto rotate ${S.view.spin ? "enabled" : "disabled"}.`);
-      });
-      U.gridToggleBtn.addEventListener("click", () => {
-        S.view.grid = !S.view.grid;
-        syncViewToggleUI();
-        setStatus(`Grid ${S.view.grid ? "enabled" : "disabled"}.`);
-      });
       U.toolAutoRotateBtn.addEventListener("click", () => {
         S.view.spin = !S.view.spin;
         syncViewToggleUI();
       });
+      if (U.toolAutoRotateMenuBtn)
+        U.toolAutoRotateMenuBtn.addEventListener("click", () => {
+          S.view.spin = !S.view.spin;
+          syncViewToggleUI();
+          setHeaderMoreOpen(true);
+        });
       U.toolGridBtn.addEventListener("click", () => {
         S.view.grid = !S.view.grid;
         syncViewToggleUI();
       });
+      if (U.toolGridMenuBtn)
+        U.toolGridMenuBtn.addEventListener("click", () => {
+          S.view.grid = !S.view.grid;
+          syncViewToggleUI();
+          setHeaderMoreOpen(true);
+        });
       U.toolNormalsBtn.addEventListener("click", () => {
         S.view.normals = !S.view.normals;
         syncViewToggleUI();
       });
+      if (U.toolNormalsMenuBtn)
+        U.toolNormalsMenuBtn.addEventListener("click", () => {
+          S.view.normals = !S.view.normals;
+          syncViewToggleUI();
+          setHeaderMoreOpen(true);
+        });
       U.toolRenderStandardBtn.addEventListener("click", () => {
         S.view.renderMode = "standard";
         syncViewToggleUI();
@@ -2667,15 +3512,61 @@
         S.view.templateLabels = !S.view.templateLabels;
         syncViewToggleUI();
       });
+      if (U.toolTemplateLabelsMenuBtn)
+        U.toolTemplateLabelsMenuBtn.addEventListener("click", () => {
+          S.view.templateLabels = !S.view.templateLabels;
+          syncViewToggleUI();
+          setHeaderMoreOpen(true);
+        });
+      if (U.toolMoreBtn && U.toolMoreMenu)
+        U.toolMoreBtn.addEventListener("click", () => {
+          setHeaderMoreOpen(U.toolMoreMenu.hidden);
+        });
+      document.addEventListener("click", (e) => {
+        if (!U.toolMoreMenu || U.toolMoreMenu.hidden) return;
+        const inMenu = U.toolMoreMenu.contains(e.target);
+        const inTrigger = U.toolMoreBtn?.contains(e.target);
+        if (!inMenu && !inTrigger) setHeaderMoreOpen(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setHeaderMoreOpen(false);
+      });
+      U.viewFrontBtn.addEventListener("click", () => {
+        applyCameraPreset("front");
+      });
+      U.viewBackBtn.addEventListener("click", () => {
+        applyCameraPreset("back");
+      });
+      U.viewLeftBtn.addEventListener("click", () => {
+        applyCameraPreset("left");
+      });
+      U.viewRightBtn.addEventListener("click", () => {
+        applyCameraPreset("right");
+      });
+      U.viewTopBtn.addEventListener("click", () => {
+        applyCameraPreset("top");
+      });
+      U.viewBottomBtn.addEventListener("click", () => {
+        applyCameraPreset("bottom");
+      });
+      U.viewHomeBtn.addEventListener("click", () => {
+        applyCameraPreset("home");
+      });
+      U.viewIsoBtn.addEventListener("click", () => {
+        applyCameraPreset("iso");
+      });
+      U.viewFitBtn.addEventListener("click", () => {
+        applyCameraPreset("fit");
+      });
       U.zoomInBtn.addEventListener("click", () => {
-        S.view.zoom = Math.min(2.6, S.view.zoom + 0.1);
+        S.view.zoom = Math.min(ZOOM_MAX, S.view.zoom + 0.16);
       });
       U.zoomOutBtn.addEventListener("click", () => {
-        S.view.zoom = Math.max(0.45, S.view.zoom - 0.1);
+        S.view.zoom = Math.max(ZOOM_MIN, S.view.zoom - 0.16);
       });
       U.zoomResetBtn.addEventListener("click", () => {
-        S.view.yaw = 0.45;
-        S.view.pitch = -0.25;
+        S.view.yaw = 0;
+        S.view.pitch = 0;
         S.view.zoom = 1.12;
       });
 
@@ -2704,14 +3595,10 @@
         if (c) c.sku = U.metaSku.value;
       });
 
-      U.uploadAssetBtn.addEventListener("click", () =>
-        U.assetFileInput.click(),
-      );
       U.assetFileInput.addEventListener("change", (e) => {
         uploadImage(e.target.files?.[0]);
         e.target.value = "";
       });
-      U.downloadTemplateBtn.addEventListener("click", downloadTemplate);
       U.txRange.addEventListener("input", syncTransformFromUI);
       U.tyRange.addEventListener("input", syncTransformFromUI);
       U.tsRange.addEventListener("input", syncTransformFromUI);
@@ -2745,48 +3632,34 @@
       });
       U.reset3dBtn.addEventListener("click", reset3DTransform);
       U.miniCanvas.addEventListener("pointerdown", (e) => {
-        const rect = U.miniCanvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        const mx = (e.clientX - rect.left) * dpr;
-        const my = (e.clientY - rect.top) * dpr;
-        const handles = S.gizmo.handlePts || {};
-        let hit = null;
-        let best = Infinity;
-        ["x", "y", "z"].forEach((axis) => {
-          const p = handles[axis];
-          if (!p) return;
-          const dist = Math.hypot(mx - p.x, my - p.y);
-          if (dist < 18 * dpr && dist < best) {
-            best = dist;
-            hit = axis;
-          }
-        });
-        if (!hit) return;
+        if (isModelViewActive()) return;
         e.preventDefault();
-        S.gizmo.axis = hit;
+        S.gizmo.drag = true;
         S.gizmo.px = e.clientX;
         S.gizmo.py = e.clientY;
         U.miniCanvas.setPointerCapture(e.pointerId);
       });
       U.miniCanvas.addEventListener("pointermove", (e) => {
-        if (!S.gizmo.axis) return;
+        if (!S.gizmo.drag) return;
         const dx = e.clientX - S.gizmo.px;
         const dy = e.clientY - S.gizmo.py;
         S.gizmo.px = e.clientX;
         S.gizmo.py = e.clientY;
-        if (S.gizmo.axis === "x") S.gizmo.rx += dy * 0.8;
-        if (S.gizmo.axis === "y") S.gizmo.ry += dx * 0.8;
-        if (S.gizmo.axis === "z") S.gizmo.rz += dx * 0.8;
+        S.view.yaw += dx * 0.01;
+        S.view.pitch = Math.max(-1.2, Math.min(1.2, S.view.pitch + dy * 0.01));
       });
       U.miniCanvas.addEventListener("pointerup", (e) => {
-        S.gizmo.axis = null;
+        S.gizmo.drag = false;
         if (U.miniCanvas.hasPointerCapture(e.pointerId))
           U.miniCanvas.releasePointerCapture(e.pointerId);
       });
       U.miniCanvas.addEventListener("pointercancel", (e) => {
-        S.gizmo.axis = null;
+        S.gizmo.drag = false;
         if (U.miniCanvas.hasPointerCapture(e.pointerId))
           U.miniCanvas.releasePointerCapture(e.pointerId);
+      });
+      U.gizmoSizeRange.addEventListener("input", () => {
+        applyGizmoSize(Number(U.gizmoSizeRange.value));
       });
 
       U.stageCanvas.addEventListener("pointerdown", (e) => {
@@ -2815,8 +3688,8 @@
         (e) => {
           e.preventDefault();
           S.view.zoom = Math.max(
-            0.45,
-            Math.min(2.6, S.view.zoom + (e.deltaY < 0 ? 0.08 : -0.08)),
+            ZOOM_MIN,
+            Math.min(ZOOM_MAX, S.view.zoom + (e.deltaY < 0 ? 0.12 : -0.12)),
           );
         },
         { passive: false },
@@ -2861,34 +3734,17 @@
         );
         setStatus("Exported JSON.");
       });
-      U.exportTxtBtn.addEventListener("click", () => {
-        const p = exportPayload();
-        if (!p) return;
-        const t = p.cart.template;
-        const txt = [
-          "KataCart manifest",
-          `cart: ${p.cart.name}`,
-          `template: ${t.name} (${t.family})`,
-          `notes: ${p.cart.notes || "(none)"}`,
-          `tags: ${p.cart.tags || "(none)"}`,
-          `sku: ${p.cart.sku || "(none)"}`,
-          `assets: ${p.cart.assets.map((a) => `${a.id}:${a.hasImage ? "uploaded" : "empty"}`).join(", ")}`,
-          `exported_at: ${p.exportedAt}`,
-        ].join("\n");
-        const name = (p.cart.name || "katacart")
-          .replace(/[^a-z0-9]+/gi, "-")
-          .toLowerCase();
-        dl(`${name}.manifest.txt`, txt, "text/plain");
-        setStatus("Exported TXT manifest.");
+      window.addEventListener("resize", () => {
+        resizeCanvas();
+        if (!isCompactHeaderMode()) setHeaderMoreOpen(false);
       });
-
-      window.addEventListener("resize", resizeCanvas);
 
       function init() {
         U.themeSelect.innerHTML = THEMES.map(
           (t) => `<option value="${t}">${t}</option>`,
         ).join("");
         U.themeSelect.value = S.theme;
+        applyGizmoSize(S.gizmo.size);
         openGallery();
         preloadDemoCartAssets().catch(() => {});
         renderCreatePanel();
