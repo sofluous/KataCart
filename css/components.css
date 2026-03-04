@@ -955,7 +955,14 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: var(--ds-shadow-md);
   padding: var(--ds-space-3);
   color: var(--ds-text-muted);
-  display: none;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-standard),
+    transform var(--ds-dur-fast) var(--ds-ease-standard),
+    visibility 0s linear var(--ds-dur-fast);
   z-index: var(--ds-z-dropdown);
 }
 
@@ -966,7 +973,11 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .ds-popover-wrap.is-open .ds-popover {
-  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
 }
 
 .ds-modal-panel .ds-toolbar,
