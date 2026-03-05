@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="app-version" content="0.8" />
+    <meta name="app-version" content="0.11" />
     <title>KataCart</title>
     <link rel="stylesheet" href="./theme.css" />
     <link
@@ -1163,6 +1163,110 @@
         gap: var(--kc-space-4);
         align-content: start;
       }
+      .export-dialog {
+        width: min(720px, 94vw);
+        max-height: 88vh;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-3);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 96%, transparent);
+        color: var(--ds-text);
+        padding: 0;
+        box-shadow: var(--ds-shadow-md);
+      }
+      .export-dialog::backdrop {
+        background: color-mix(in oklab, var(--ds-bg) 72%, transparent);
+      }
+      .export-shell {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        max-height: 88vh;
+      }
+      .export-head {
+        border-bottom: 1px solid var(--ds-border);
+        padding: var(--ds-space-3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--ds-space-2);
+      }
+      .export-tabs {
+        border-bottom: 1px solid var(--ds-border);
+        padding: var(--ds-space-2) var(--ds-space-3);
+        display: flex;
+        gap: 0;
+      }
+      .export-tab-btn {
+        border-radius: 0;
+        margin-right: calc(var(--ds-border-w) * -1);
+      }
+      .export-tab-btn:first-child {
+        border-top-left-radius: var(--ds-radius-2);
+        border-bottom-left-radius: var(--ds-radius-2);
+      }
+      .export-tab-btn:last-child {
+        border-top-right-radius: var(--ds-radius-2);
+        border-bottom-right-radius: var(--ds-radius-2);
+        margin-right: 0;
+      }
+      .export-tab-btn.active {
+        position: relative;
+        z-index: 1;
+      }
+      .export-body {
+        overflow: auto;
+        padding: var(--ds-space-3);
+        display: block;
+      }
+      .export-card {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-raised) 84%, transparent);
+        padding: var(--ds-space-2);
+        display: grid;
+        gap: var(--ds-space-2);
+      }
+      .export-panel[hidden] {
+        display: none !important;
+      }
+      .export-note {
+        font-size: var(--ds-fs-1);
+        color: var(--ds-text-muted);
+      }
+      .template-export-table-wrap {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        overflow: auto;
+        max-height: 44vh;
+      }
+      .template-export-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .template-export-table th,
+      .template-export-table td {
+        border-bottom: 1px solid var(--ds-border);
+        padding: var(--ds-space-2);
+        text-align: left;
+        vertical-align: top;
+        font-size: var(--ds-fs-1);
+      }
+      .template-export-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .template-export-table .dim-list {
+        margin: 0;
+        color: var(--ds-text-muted);
+        font-family: var(--ds-font-mono);
+        font-size: var(--ds-fs-micro);
+        line-height: 1.35;
+        white-space: pre-wrap;
+      }
+      .template-export-col-use {
+        width: 58px;
+      }
+      .template-export-col-assets {
+        width: 44%;
+      }
       .debug-output {
         margin: 0;
         border: 1px solid var(--ds-border);
@@ -1488,9 +1592,9 @@
       <div class="gallery-shell">
         <div class="gallery-top workspace-header">
           <div class="workspace-header-left">
-            <h1 class="u-m0">KataCart Gallery</h1>
+            <h1 class="u-m0">KataCart</h1>
             <div class="muted">
-              Fullscreen gallery. Open a cart or create a new blank slot.
+              Open a cart or create a new blank slot.
             </div>
           </div>
           <div class="layout-switch">
@@ -1531,14 +1635,9 @@
                 <i class="iconoir-frame-alt-empty"></i>
               </button>
             </div>
-            <div class="seg-pair" aria-label="Face mode">
-              <button id="toolFaceOpaqueBtn" class="seg-btn" type="button" title="Solid faces">
-                <i class="iconoir-eye"></i>
-              </button>
-              <button id="toolFaceGhostBtn" class="seg-btn" type="button" title="Ghost faces">
-                <i class="iconoir-eye-closed"></i>
-              </button>
-            </div>
+            <button id="toolFaceVizBtn" class="seg-btn" type="button" title="Toggle transparent faces">
+              <i class="iconoir-eye"></i>
+            </button>
             <button id="toolTemplateLabelsBtn" class="seg-btn tool-optional" type="button" title="Toggle UV labels">
               <i class="iconoir-text-box"></i>
             </button>
@@ -1567,7 +1666,7 @@
           </div>
           <div class="actions">
             <button id="exportJsonBtn" class="btn primary" type="button">
-              <i class="iconoir-download"></i>Export
+              <i class="iconoir-download"></i>Export...
             </button>
             <button id="settingsBtn" class="btn" data-open-settings type="button">
               <i class="iconoir-settings"></i>Settings
@@ -1680,6 +1779,8 @@
                   <select id="poseSelect">
                     <option value="default">Default</option>
                     <option value="hero">Hero Tilt</option>
+                    <option value="showcase-left">Showcase Left</option>
+                    <option value="showcase-right">Showcase Right</option>
                     <option value="flat">Lay Flat</option>
                     <option value="edge">Edge Stand</option>
                     <option value="disc-open">Open Case (Disc)</option>
@@ -1797,8 +1898,8 @@
         <div class="setting-row">
           <label class="setting-label" for="rendererSelect">3D Renderer</label>
           <select id="rendererSelect">
-            <option value="canvas">Canvas Stable</option>
-            <option value="webgl">WebGL Experimental</option>
+            <option value="webgl">WebGL Primary</option>
+            <option value="canvas">Canvas Fallback (Debug)</option>
           </select>
         </div>
         <div class="setting-row">
@@ -1823,6 +1924,122 @@
       </div>
     </aside>
 
+    <dialog id="exportModal" class="export-dialog">
+      <div class="export-shell">
+        <div class="export-head">
+          <h2 class="u-m0">Export Center</h2>
+          <button id="closeExportModalBtn" class="btn" type="button">
+            <i class="iconoir-xmark-circle"></i>Close
+          </button>
+        </div>
+        <div class="export-tabs" role="tablist" aria-label="Export Sections">
+          <button id="exportTabPackageBtn" class="btn export-tab-btn active" type="button" data-export-tab="package">
+            <i class="iconoir-box"></i>Package
+          </button>
+          <button id="exportTabTemplateBtn" class="btn export-tab-btn" type="button" data-export-tab="template">
+            <i class="iconoir-edit-pencil"></i>Template
+          </button>
+          <button id="exportTabImageBtn" class="btn export-tab-btn" type="button" data-export-tab="image">
+            <i class="iconoir-media-image"></i>Image
+          </button>
+        </div>
+        <div class="export-body">
+          <section id="exportPanelPackage" class="export-card export-panel">
+            <h3 class="u-m0">Package Export</h3>
+            <div class="setting-row">
+              <label class="setting-label" for="exportPackageType">Type</label>
+              <select id="exportPackageType">
+                <option value="full">Full Package (glTF + textures + state + manifest)</option>
+                <option value="zip">One File ZIP (recommended)</option>
+                <option value="glb">Quick Model (.glb)</option>
+                <option value="debug">Debug Mapping Pack (.zip variants)</option>
+                <option value="truth">Truth Cube Parity Pack (.zip)</option>
+                <option value="gltf">glTF Only</option>
+                <option value="state">State JSON Only</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="cancelPackageExportBtn" class="btn destructive" type="button">
+                <i class="iconoir-xmark-circle"></i>Cancel
+              </button>
+              <button id="runPackageExportBtn" class="btn primary" type="button">
+                <i class="iconoir-download"></i>Export Package
+              </button>
+            </div>
+          </section>
+
+          <section id="exportPanelTemplate" class="export-card export-panel" hidden>
+            <h3 class="u-m0">Template Export</h3>
+            <div class="export-note">Select one or more template families and download all included 2D template assets.</div>
+            <label class="setting-row" for="exportTemplateSelectAll">
+              <span class="setting-label">Select All</span>
+              <input id="exportTemplateSelectAll" class="toggle-switch" type="checkbox" />
+            </label>
+            <div class="template-export-table-wrap">
+              <table class="template-export-table">
+                <thead>
+                  <tr>
+                    <th class="template-export-col-use">Use</th>
+                    <th>Template</th>
+                    <th class="template-export-col-assets">2D Assets</th>
+                  </tr>
+                </thead>
+                <tbody id="exportTemplateTableBody"></tbody>
+              </table>
+            </div>
+            <div class="actions">
+              <button id="cancelTemplateExportBtn" class="btn destructive" type="button">
+                <i class="iconoir-xmark-circle"></i>Cancel
+              </button>
+              <button id="runTemplateBatchBtn" class="btn primary" type="button">
+                <i class="iconoir-download"></i>Download Selected
+              </button>
+            </div>
+          </section>
+
+          <section id="exportPanelImage" class="export-card export-panel" hidden>
+            <h3 class="u-m0">Image Export</h3>
+            <div class="setting-row">
+              <label class="setting-label" for="exportImageAsset">Asset</label>
+              <select id="exportImageAsset"></select>
+            </div>
+            <div class="setting-row">
+              <label class="setting-label" for="exportImageFormat">Format</label>
+              <select id="exportImageFormat">
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="webp">WEBP</option>
+              </select>
+            </div>
+            <label class="setting-row" for="exportTransparentBg">
+              <span class="setting-label">Transparent BG</span>
+              <input id="exportTransparentBg" class="toggle-switch" type="checkbox" checked />
+            </label>
+            <div id="exportModelScaleRow" class="setting-row">
+              <label class="setting-label" for="exportModelScale">Model Scale</label>
+              <select id="exportModelScale">
+                <option value="1">1x</option>
+                <option value="2">2x</option>
+                <option value="3">3x</option>
+              </select>
+            </div>
+            <div id="exportImageQualityRow" class="setting-row">
+              <label class="setting-label" for="exportImageQuality">Quality</label>
+              <input id="exportImageQuality" type="range" min="60" max="100" step="1" value="92" />
+            </div>
+            <div class="actions">
+              <button id="cancelImageExportBtn" class="btn destructive" type="button">
+                <i class="iconoir-xmark-circle"></i>Cancel
+              </button>
+              <button id="runImageExportBtn" class="btn primary" type="button">
+                <i class="iconoir-media-image"></i>Export Image
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
     <input id="assetFileInput" type="file" accept="image/*" hidden />
 
     <script>
@@ -1840,13 +2057,15 @@
         "saturn-alloy",
         "eva-unit-01",
       ];
-      const TEMPLATES = [
+      const TEMPLATE_SPECS = [
         {
           id: "cd-jewel",
           name: "CD Jewel Case",
           family: "Disc Case",
           d: { w: 142, h: 125, z: 10 },
           uv: { w: 2048, h: 2048 },
+          discDiameterMm: 120,
+          capabilities: { discAsset: true, labelFrontAsset: false, supportsDiscPose: true },
         },
         {
           id: "ps1-jewel",
@@ -1854,6 +2073,8 @@
           family: "Disc Case",
           d: { w: 142, h: 125, z: 24 },
           uv: { w: 4096, h: 2048 },
+          discDiameterMm: 120,
+          capabilities: { discAsset: true, labelFrontAsset: false, supportsDiscPose: true },
         },
         {
           id: "ps2-case",
@@ -1861,6 +2082,8 @@
           family: "Disc Case",
           d: { w: 135, h: 190, z: 14 },
           uv: { w: 4096, h: 4096 },
+          discDiameterMm: 120,
+          capabilities: { discAsset: true, labelFrontAsset: false, supportsDiscPose: true },
         },
         {
           id: "gamecube-case",
@@ -1868,6 +2091,8 @@
           family: "Disc Case",
           d: { w: 135, h: 190, z: 14 },
           uv: { w: 4096, h: 4096 },
+          discDiameterMm: 80,
+          capabilities: { discAsset: true, labelFrontAsset: false, supportsDiscPose: true },
         },
         {
           id: "psp-umd",
@@ -1875,6 +2100,8 @@
           family: "Portable Disc",
           d: { w: 64, h: 67, z: 4.5 },
           uv: { w: 2048, h: 2048 },
+          discDiameterMm: 60,
+          capabilities: { discAsset: true, labelFrontAsset: false, supportsDiscPose: true },
         },
         {
           id: "gameboy-cart",
@@ -1882,6 +2109,8 @@
           family: "Handheld Cart",
           d: { w: 58, h: 65, z: 8 },
           uv: { w: 2048, h: 2048 },
+          discDiameterMm: 0,
+          capabilities: { discAsset: false, labelFrontAsset: true, supportsDiscPose: false },
         },
         {
           id: "sd-card",
@@ -1889,6 +2118,8 @@
           family: "Storage Media",
           d: { w: 24, h: 32, z: 2.1 },
           uv: { w: 1024, h: 1024 },
+          discDiameterMm: 0,
+          capabilities: { discAsset: false, labelFrontAsset: true, supportsDiscPose: false },
         },
         {
           id: "mini-dv",
@@ -1896,10 +2127,29 @@
           family: "Tape Media",
           d: { w: 66, h: 48, z: 12 },
           uv: { w: 2048, h: 2048 },
+          discDiameterMm: 0,
+          capabilities: { discAsset: false, labelFrontAsset: false, supportsDiscPose: false },
         },
       ];
+      const TEMPLATES = TEMPLATE_SPECS.map((s) => ({
+        id: s.id,
+        name: s.name,
+        family: s.family,
+        d: s.d,
+        uv: s.uv,
+      }));
+      function templateSpecById(templateId) {
+        return (
+          TEMPLATE_SPECS.find((s) => s.id === templateId) ||
+          TEMPLATE_SPECS[0]
+        );
+      }
+      function templateSpec(template) {
+        return templateSpecById(template?.id || template);
+      }
 
       function blueprint(template) {
+        const spec = templateSpec(template);
         const faceH = Math.max(1024, template.uv.h);
         const frontW = Math.max(1024, Math.round(faceH * (template.d.w / template.d.h)));
         const spineW = Math.max(192, Math.round(faceH * (template.d.z / template.d.h)));
@@ -1928,7 +2178,7 @@
             h: faceH,
           },
         ];
-        if (template.family.includes("Disc"))
+        if (spec.capabilities?.discAsset)
           list.push({
             id: "disc_art",
             label: "Disc Art",
@@ -1936,7 +2186,7 @@
             w: 1400,
             h: 1400,
           });
-        if (template.id === "gameboy-cart" || template.id === "sd-card")
+        if (spec.capabilities?.labelFrontAsset)
           list.push({
             id: "label_front",
             label: "Label Front",
@@ -1974,9 +2224,10 @@
         cartId: null,
         assetId: null,
         theme: document.documentElement.dataset.theme || "mono-slate",
+        exportTab: "package",
         settingsOpen: false,
         renderer: {
-          engine: "canvas",
+          engine: "webgl",
         },
         view: {
           yaw: 0,
@@ -1985,7 +2236,7 @@
           drag: false,
           dragOver: false,
           spin: false,
-          grid: true,
+          grid: false,
           normals: false,
           renderMode: "standard",
           faceViz: "opaque",
@@ -2086,8 +2337,7 @@
         reset3dBtn: document.getElementById("reset3dBtn"),
         toolRenderStandardBtn: document.getElementById("toolRenderStandardBtn"),
         toolRenderWobbleBtn: document.getElementById("toolRenderWobbleBtn"),
-        toolFaceOpaqueBtn: document.getElementById("toolFaceOpaqueBtn"),
-        toolFaceGhostBtn: document.getElementById("toolFaceGhostBtn"),
+        toolFaceVizBtn: document.getElementById("toolFaceVizBtn"),
         toolTemplateLabelsBtn: document.getElementById("toolTemplateLabelsBtn"),
         toolAutoRotateBtn: document.getElementById("toolAutoRotateBtn"),
         toolNormalsBtn: document.getElementById("toolNormalsBtn"),
@@ -2110,6 +2360,28 @@
         metaTags: document.getElementById("metaTags"),
         metaSku: document.getElementById("metaSku"),
         exportJsonBtn: document.getElementById("exportJsonBtn"),
+        exportModal: document.getElementById("exportModal"),
+        closeExportModalBtn: document.getElementById("closeExportModalBtn"),
+        exportTabButtons: [...document.querySelectorAll("[data-export-tab]")],
+        exportPanelPackage: document.getElementById("exportPanelPackage"),
+        exportPanelTemplate: document.getElementById("exportPanelTemplate"),
+        exportPanelImage: document.getElementById("exportPanelImage"),
+        cancelPackageExportBtn: document.getElementById("cancelPackageExportBtn"),
+        cancelTemplateExportBtn: document.getElementById("cancelTemplateExportBtn"),
+        cancelImageExportBtn: document.getElementById("cancelImageExportBtn"),
+        exportPackageType: document.getElementById("exportPackageType"),
+        runPackageExportBtn: document.getElementById("runPackageExportBtn"),
+        exportTemplateSelectAll: document.getElementById("exportTemplateSelectAll"),
+        exportTemplateTableBody: document.getElementById("exportTemplateTableBody"),
+        runTemplateBatchBtn: document.getElementById("runTemplateBatchBtn"),
+        exportImageAsset: document.getElementById("exportImageAsset"),
+        exportImageFormat: document.getElementById("exportImageFormat"),
+        exportTransparentBg: document.getElementById("exportTransparentBg"),
+        exportModelScaleRow: document.getElementById("exportModelScaleRow"),
+        exportImageQualityRow: document.getElementById("exportImageQualityRow"),
+        exportModelScale: document.getElementById("exportModelScale"),
+        exportImageQuality: document.getElementById("exportImageQuality"),
+        runImageExportBtn: document.getElementById("runImageExportBtn"),
         assetFileInput: document.getElementById("assetFileInput"),
       };
 
@@ -2192,6 +2464,21 @@
           { u: 0, v: 1 },
         ],
       };
+      const EXPORT_MAPPING_PROFILES = {
+        webgl: {
+          id: "webgl",
+          label: "WebGL Native",
+          uvOps: [],
+          spineTargetFace: "spine",
+        },
+        blender: {
+          id: "blender",
+          label: "Blender Parity",
+          uvOps: ["rot180", "flipU"],
+          spineTargetFace: "right",
+        },
+      };
+      const ACTIVE_EXPORT_MAPPING_PROFILE = "blender";
       const WEBGL_FACE_UV_ARRAY = {
         front: [0, 1, 1, 1, 1, 0, 0, 0],
         back: [0, 1, 1, 1, 1, 0, 0, 0],
@@ -2200,6 +2487,15 @@
         top: [1, 1, 0, 1, 0, 0, 1, 0],
         bottom: [0, 0, 1, 0, 1, 1, 0, 1],
       };
+      const CASE_FACE_RENDER_ORDER = ["front", "back", "bottom", "right", "top", "spine"];
+      function caseFaceDefs(bind = {}) {
+        return CASE_FACE_RENDER_ORDER.map((id) => ({
+          id,
+          poly: WEBGL_FACE_POLY[id],
+          uvCorners: WEBGL_FACE_UV_ORDER[id],
+          tex: bind[id] || null,
+        }));
+      }
       const WEBGL_BASE_MODEL_YAW = Math.PI;
       const GLR = {
         gl: null,
@@ -2336,12 +2632,19 @@
             attribute vec2 a_uv;
             uniform mat4 u_mvp;
             uniform float u_wobble;
+            uniform float u_time;
             varying vec2 v_uv;
             void main() {
               vec4 clip = u_mvp * vec4(a_pos, 1.0);
               if (u_wobble > 0.5) {
                 vec2 ndc = clip.xy / max(clip.w, 0.0001);
-                vec2 grid = vec2(320.0, 240.0);
+                float depth = max(0.65, 1.25 / max(0.2, clip.w));
+                vec2 drift = vec2(
+                  sin(u_time * 0.55 + a_pos.y * 7.0),
+                  cos(u_time * 0.47 + a_pos.x * 6.0)
+                ) * (0.0038 * depth);
+                ndc += drift;
+                vec2 grid = vec2(208.0, 156.0);
                 ndc = floor(ndc * grid + 0.5) / grid;
                 clip.xy = ndc * clip.w;
               }
@@ -2379,6 +2682,7 @@
             uDiscMask: gl.getUniformLocation(GLR.program, "u_disc_mask"),
             uAlpha: gl.getUniformLocation(GLR.program, "u_alpha"),
             uWobble: gl.getUniformLocation(GLR.program, "u_wobble"),
+            uTime: gl.getUniformLocation(GLR.program, "u_time"),
           };
           GLR.bufPos = gl.createBuffer();
           GLR.bufUv = gl.createBuffer();
@@ -2550,11 +2854,12 @@
         gl.depthMask(true);
         gl.useProgram(GLR.program);
         gl.uniform1f(GLR.loc.uWobble, S.view.renderMode === "wobble" ? 1 : 0);
+        if (GLR.loc.uTime) gl.uniform1f(GLR.loc.uTime, performance.now() * 0.001);
 
         ensureModelTransform(c);
         const d = template.d;
         const pose = S.view.pose || "default";
-        const isDisc = template.family.includes("Disc");
+        const isDisc = !!templateSpec(template).capabilities?.discAsset;
         const showDisc = isDisc && (pose === "disc-open" || pose === "disc-split");
         const n = 1 / Math.max(d.w, d.h, d.z || 1);
         const sx = d.w * n;
@@ -2570,14 +2875,7 @@
           [sx, sy, sz],
           [-sx, sy, sz],
         ];
-        const faceDefs = [
-          { id: "front", poly: WEBGL_FACE_POLY.front, uvCorners: WEBGL_FACE_UV_ORDER.front },
-          { id: "back", poly: WEBGL_FACE_POLY.back, uvCorners: WEBGL_FACE_UV_ORDER.back },
-          { id: "spine", poly: WEBGL_FACE_POLY.spine, uvCorners: WEBGL_FACE_UV_ORDER.spine },
-          { id: "right", poly: WEBGL_FACE_POLY.right, uvCorners: WEBGL_FACE_UV_ORDER.right },
-          { id: "top", poly: WEBGL_FACE_POLY.top, uvCorners: WEBGL_FACE_UV_ORDER.top },
-          { id: "bottom", poly: WEBGL_FACE_POLY.bottom, uvCorners: WEBGL_FACE_UV_ORDER.bottom },
-        ];
+        const faceDefs = caseFaceDefs();
         const texSrc = mappedFaceSources(c);
         const discStyled = composedDiscSource(texSrc.disc, S.view.discBackStyle || "silver-rainbow");
         const texByFace = {
@@ -2587,7 +2885,7 @@
           disc: discStyled ? glTextureFor(discStyled.canvas, discStyled.key) : null,
         };
         const tint = hexToRgb01(S.view.faceTint);
-        const alpha = S.view.faceViz === "transparent" ? 0.34 : 0.9;
+        const alpha = S.view.faceViz === "transparent" ? 0.34 : 1;
         const backTint = [0.96, 0.96, 0.98];
 
         const aspect = gw / Math.max(1, gh);
@@ -2595,14 +2893,7 @@
         const camDist = 2.65;
         let model = mat4Identity();
         const poseModel = { ...c.modelTr };
-        if (pose === "hero") {
-          poseModel.ry += -28;
-          poseModel.rx += 8;
-        } else if (pose === "flat") {
-          poseModel.rx += 90;
-        } else if (pose === "edge") {
-          poseModel.ry += 90;
-        }
+        applyPosePresetToModel(poseModel, pose);
         const baseScale = 0.9 * S.view.zoom * poseModel.s;
         model = mat4Multiply(model, mat4Scale(baseScale * (poseModel.mx ? -1 : 1), baseScale, baseScale));
         // Align WebGL camera convention to existing Canvas renderer:
@@ -2677,7 +2968,7 @@
 
         if (showDisc && texByFace.disc) {
           const discDia = discDiameterMmForTemplate(template);
-          const discR = Math.max(0.08, (discDia * n * 0.5) * 0.94);
+          const discR = Math.max(0.08, (discDia * n) * 0.94);
           const splitX = -(sx + discR * 0.68);
           const discOffset = pose === "disc-split" ? [splitX, 0, 0.03] : [0, 0, 0.02];
           const disc = [
@@ -2933,14 +3224,15 @@
           "active",
           S.view.renderMode === "wobble",
         );
-        U.toolFaceOpaqueBtn.classList.toggle(
-          "active",
-          S.view.faceViz === "opaque",
-        );
-        U.toolFaceGhostBtn.classList.toggle(
-          "active",
-          S.view.faceViz === "transparent",
-        );
+        if (U.toolFaceVizBtn) {
+          const isTransparent = S.view.faceViz === "transparent";
+          U.toolFaceVizBtn.classList.toggle("active", isTransparent);
+          U.toolFaceVizBtn.title = isTransparent
+            ? "Transparent faces on"
+            : "Transparent faces off";
+          const ic = U.toolFaceVizBtn.querySelector("i");
+          if (ic) ic.className = isTransparent ? "iconoir-eye-closed" : "iconoir-eye";
+        }
         U.toolTemplateLabelsBtn.classList.toggle("active", S.view.templateLabels);
         if (U.toolTemplateLabelsMenuBtn)
           U.toolTemplateLabelsMenuBtn.classList.toggle(
@@ -3256,17 +3548,33 @@
         const c = cart();
         if (!c) return;
         U.assetStrip.innerHTML = "";
+        const hasMapped2D = c.assets.some((x) => x.type === "2d" && !!x.image?.src);
+        const previewSrc =
+          galleryThumb(c)?.src ||
+          c.assets.find((x) => x.type === "2d" && !!x.image?.src)?.image?.src ||
+          "";
+        const t = tById(c.templateId);
         c.assets.forEach((a) => {
           const status =
             a.type === "3d" || a.type === "uv"
-              ? "Viewer"
+              ? hasMapped2D
+                ? "Ready"
+                : "Viewer"
               : a.image
                 ? "Uploaded"
                 : "Empty";
           const item = document.createElement("article");
           item.className = `asset-card${a.id === S.assetId ? " active" : ""}`;
-          const dims = a.type === "2d" ? `${a.w}x${a.h}` : "Viewer";
-          item.innerHTML = `<div class="asset-box"><div class="asset-empty"><strong>${a.image?.src ? "" : "Empty"}</strong><span>${dims}</span></div></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div><div class="asset-actions"></div>`;
+          const mm = a.type === "2d" ? assetPhysicalDimsMm(a.id, t) : null;
+          const dims =
+            a.type === "2d"
+              ? `${a.w}x${a.h}px${mm ? ` | ${mm.w}x${mm.h}mm` : ""}`
+              : a.type === "3d"
+                ? "3D Viewer"
+                : "UV Viewer";
+          const emptyLabel =
+            a.type === "2d" ? (a.image?.src ? "" : "Empty") : a.type === "3d" ? "3D Live" : "UV Map";
+          item.innerHTML = `<div class="asset-box"><div class="asset-empty"><strong>${emptyLabel}</strong><span>${dims}</span></div></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div><div class="asset-actions"></div>`;
           const box = item.querySelector(".asset-box");
           const empty = item.querySelector(".asset-empty");
           const actions = item.querySelector(".asset-actions");
@@ -3275,6 +3583,9 @@
             box.classList.add("has-image");
             box.style.backgroundImage = `url("${a.image.src}")`;
             if (empty) empty.style.display = "none";
+          } else if ((a.type === "3d" || a.type === "uv") && previewSrc) {
+            box.classList.add("has-image");
+            box.style.backgroundImage = `url("${previewSrc}")`;
           }
           if (a.type === "2d") {
             const up = document.createElement("button");
@@ -3288,18 +3599,7 @@
               renderAssetStrip();
               U.assetFileInput.click();
             });
-            const dlBtn = document.createElement("button");
-            dlBtn.className = "btn";
-            dlBtn.type = "button";
-            dlBtn.innerHTML = `<i class="iconoir-download"></i>Template`;
-            dlBtn.addEventListener("click", (e) => {
-              e.stopPropagation();
-              S.assetId = a.id;
-              syncContextFromAsset();
-              downloadTemplate();
-              renderAssetStrip();
-            });
-            actions.append(up, dlBtn);
+            actions.append(up);
           } else {
             const ph = document.createElement("span");
             ph.className = "muted";
@@ -3320,11 +3620,16 @@
         const a = asset();
         if (!c || !a) return;
         const t = tById(c.templateId);
-        const isDiscTemplate = String(t?.family || "").includes("Disc");
+        const isDiscTemplate = !!templateSpec(t).capabilities?.supportsDiscPose;
+        const mm = a.type === "2d" ? assetPhysicalDimsMm(a.id, t) : null;
         U.hudAsset.textContent = `Asset: ${a.label}`;
         const assetDims =
-          a.type === "2d" ? `${a.w}x${a.h}` : a.type === "3d" ? "3D Viewer" : "UV Viewer";
-        U.hudTemplate.textContent = `Template: ${t.name} | ${a.label} ${assetDims} | UV ${t.uv.w}x${t.uv.h}`;
+          a.type === "2d"
+            ? `${a.w}x${a.h}px${mm ? ` (${mm.w}x${mm.h}mm)` : ""}`
+            : a.type === "3d"
+              ? "3D Viewer"
+              : "UV Viewer";
+        U.hudTemplate.textContent = `Template: ${t.name} ${t.d.w}x${t.d.h}x${t.d.z}mm | ${a.label} ${assetDims} | UV ${t.uv.w}x${t.uv.h}px`;
         const is2d = a.type === "2d";
         const is3d = a.type === "3d";
         const isUV = a.type === "uv";
@@ -3377,6 +3682,7 @@
         }
         setDropHover(false);
         syncViewToggleUI();
+        syncExportModalState();
       }
 
       function renderWorkspace() {
@@ -3487,13 +3793,13 @@
       }
       function stylizeProjectedPoint(pt, z, idx) {
         if (S.view.renderMode !== "wobble") return pt;
-        const wobble = 1.2 + Math.max(0, z + 0.8) * 0.9;
-        const t = performance.now() * 0.0027 + idx * 1.13;
+        const wobble = 2.3 + Math.max(0, z + 0.8) * 1.2;
+        const t = performance.now() * 0.00105 + idx * 1.13;
         const jx = Math.sin(t) * wobble;
-        const jy = Math.cos(t * 1.1) * wobble;
+        const jy = Math.cos(t * 0.93) * wobble;
         return {
-          x: Math.round((pt.x + jx) * 0.5) * 2,
-          y: Math.round((pt.y + jy) * 0.5) * 2,
+          x: Math.round((pt.x + jx) / 3) * 3,
+          y: Math.round((pt.y + jy) / 3) * 3,
           z: pt.z,
         };
       }
@@ -3998,9 +4304,48 @@
       }
       function discDiameterMmForTemplate(template) {
         if (!template) return 120;
-        if (template.id === "psp-umd") return 60;
-        if (String(template.family || "").includes("Portable Disc")) return 60;
-        return 120;
+        const spec = templateSpec(template);
+        return Number(spec?.discDiameterMm || 120);
+      }
+      function assetPhysicalDimsMm(assetId, template) {
+        if (!template || !assetId) return null;
+        const spec = templateSpec(template);
+        if (assetId === "cover_front" || assetId === "cover_back")
+          return { w: Math.round(template.d.w), h: Math.round(template.d.h) };
+        if (assetId === "spine")
+          return { w: Number(template.d.z.toFixed(1)), h: Math.round(template.d.h) };
+        if (assetId === "disc_art" && spec.capabilities?.discAsset) {
+          const dia = Math.round(discDiameterMmForTemplate(template));
+          return { w: dia, h: dia };
+        }
+        if (assetId === "label_front")
+          return { w: Math.round(template.d.w), h: Math.round(template.d.h) };
+        return null;
+      }
+      function applyPosePresetToModel(modelTr, pose) {
+        if (!modelTr) return;
+        if (pose === "hero") {
+          modelTr.ry += -28;
+          modelTr.rx += 8;
+          return;
+        }
+        if (pose === "showcase-left") {
+          modelTr.ry += -42;
+          modelTr.rx += 10;
+          return;
+        }
+        if (pose === "showcase-right") {
+          modelTr.ry += 42;
+          modelTr.rx += 10;
+          return;
+        }
+        if (pose === "flat") {
+          modelTr.rx += 90;
+          return;
+        }
+        if (pose === "edge") {
+          modelTr.ry += 90;
+        }
       }
       function quadCenter(quad) {
         if (!quad || quad.length !== 4) return { x: 0, y: 0 };
@@ -4014,6 +4359,22 @@
         const l = Math.hypot(quad[3].x - quad[0].x, quad[3].y - quad[0].y);
         const r = Math.hypot(quad[2].x - quad[1].x, quad[2].y - quad[1].y);
         return (l + r) * 0.5;
+      }
+      function quadProjectedWidth(quad) {
+        if (!quad || quad.length !== 4) return 0;
+        const t = Math.hypot(quad[1].x - quad[0].x, quad[1].y - quad[0].y);
+        const b = Math.hypot(quad[2].x - quad[3].x, quad[2].y - quad[3].y);
+        return (t + b) * 0.5;
+      }
+      function discRadiusPxForQuad(template, quad, minPx = 12, fill = 0.94) {
+        if (!template || !quad || quad.length !== 4) return minPx;
+        const pxH = quadProjectedHeight(quad);
+        const pxW = quadProjectedWidth(quad);
+        const pxPerMmH = pxH / Math.max(1, template.d.h);
+        const pxPerMmW = pxW / Math.max(1, template.d.w);
+        const pxPerMm = Math.max(0.0001, Math.min(pxPerMmH, pxPerMmW));
+        const r = discDiameterMmForTemplate(template) * 0.5 * pxPerMm * fill;
+        return Math.max(minPx, r);
       }
       function drawQuadPath(ctx, quad) {
         if (!ctx || !quad || quad.length !== 4) return;
@@ -4080,21 +4441,14 @@
         ensureModelTransform(cart);
         const d = template.d;
         const pose = S.view.pose || "default";
-        const isDisc = template.family.includes("Disc");
+        const isDisc = !!templateSpec(template).capabilities?.discAsset;
         const discVisibleInPose = pose === "disc-open" || pose === "disc-split";
         const n = 1 / Math.max(d.w, d.h, d.z || 1);
         const sx = d.w * n;
         const sy = d.h * n;
         const sz = Math.max(0.04, d.z * n);
         const poseModel = { ...cart.modelTr };
-        if (pose === "hero") {
-          poseModel.ry += -28;
-          poseModel.rx += 8;
-        } else if (pose === "flat") {
-          poseModel.rx += 90;
-        } else if (pose === "edge") {
-          poseModel.ry += 90;
-        }
+        applyPosePresetToModel(poseModel, pose);
         const splitX = pose === "disc-split" && isDisc ? -w * 0.12 : 0;
         const k = Math.min(w, h) * 0.36 * S.view.zoom,
           cx = w * 0.5 + splitX,
@@ -4115,26 +4469,7 @@
           stylizeProjectedPoint(proj(v, k, cx, cy), v.z, i),
         );
         const bind = getFaceAssetBindings(cart);
-        const faces = [
-          {
-            id: "front",
-            poly: [0, 3, 2, 1],
-            tex: bind.front,
-          },
-          {
-            id: "back",
-            poly: [4, 5, 6, 7],
-            tex: bind.back,
-          },
-          { id: "bottom", poly: [0, 1, 5, 4] },
-          { id: "right", poly: [3, 0, 4, 7] },
-          { id: "top", poly: [3, 7, 6, 2] },
-          {
-            id: "spine",
-            poly: [1, 2, 6, 5],
-            tex: bind.spine,
-          },
-        ];
+        const faces = caseFaceDefs(bind);
         const camForward = vnorm({ x: 0, y: 0, z: 1 });
         let frontQuad = null;
         let backQuad = null;
@@ -4152,8 +4487,13 @@
             const p3 = verts[f.poly[3]];
             const n = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
             const facing = vdot(n, camForward);
-            const baseAlpha = S.view.faceViz === "transparent" ? 0.12 : 0.3;
-            const backAlpha = S.view.faceViz === "transparent" ? 0.08 : 0.14;
+            const baseAlpha = S.view.faceViz === "transparent" ? 0.14 : 1;
+            const backAlpha = S.view.faceViz === "transparent" ? 0.1 : 1;
+            const quad = textureQuadForFace(f.id, pts) || f.poly.map((n) => pts[n]);
+            if (f.id === "front") frontQuad = quad;
+            if (f.id === "back") backQuad = quad;
+            if (f.id === "right") openingQuad = quad;
+            if (S.view.faceViz === "opaque" && facing >= -0.005) return;
             const tint = rgbaFromHex(S.view.faceTint, baseAlpha, { r: 140, g: 148, b: 160 });
             const fillColor =
               facing < -0.005
@@ -4162,10 +4502,6 @@
             const strokeVisible = !(S.view.faceViz === "opaque" && facing >= -0.005);
             face(f.poly, pts, fillColor, 1, X, strokeVisible);
             if (facing < -0.005) f.poly.forEach((idx) => visibleVerts.add(idx));
-            const quad = textureQuadForFace(f.id, pts) || f.poly.map((n) => pts[n]);
-            if (f.id === "front") frontQuad = quad;
-            if (f.id === "back") backQuad = quad;
-            if (f.id === "right") openingQuad = quad;
             drawFaceAssist(f.id.toUpperCase(), quad, n, camForward);
             if (facing < -0.005) drawUvAxisDebug(quad, f.id.toUpperCase());
             if (!f.tex || facing >= -0.005) return;
@@ -4201,10 +4537,7 @@
           dx /= dl;
           dy /= dl;
           const projH = quadProjectedHeight(refQuad);
-          const discR = Math.max(
-            12,
-            projH * (discDiameterMmForTemplate(template) / Math.max(template.d.h, 1)) * 0.5 * 0.94,
-          );
+          const discR = discRadiusPxForQuad(template, refQuad, 12, 0.94);
           const lift = Math.max(discR * 0.6, projH * 0.08);
           const cxSplit = openCenter.x + dx * lift;
           const cySplit = openCenter.y + dy * lift;
@@ -4242,6 +4575,8 @@
         const camYaw = S.view.yaw;
         const camPitch = S.view.pitch;
         const m = { ...cart.modelTr };
+        const pose = S.view.pose || "default";
+        applyPosePresetToModel(m, pose);
         function rcam(p) {
           const cy = Math.cos(camYaw);
           const sy = Math.sin(camYaw);
@@ -4268,18 +4603,10 @@
           return { x: cx + v.x * f, y: cy - v.y * f, z: v.z };
         });
         const bind = getFaceAssetBindings(cart);
-        const pose = S.view.pose || "default";
-        const isDisc = template.family.includes("Disc");
+        const isDisc = !!templateSpec(template).capabilities?.discAsset;
         const discVisibleInPose = pose === "disc-open" || pose === "disc-split";
         const visibleVerts = new Set();
-        const faces = [
-          { id: "front", poly: [0, 3, 2, 1], tex: bind.front },
-          { id: "back", poly: [4, 5, 6, 7], tex: bind.back },
-          { id: "bottom", poly: [0, 1, 5, 4] },
-          { id: "right", poly: [3, 0, 4, 7] },
-          { id: "top", poly: [3, 7, 6, 2] },
-          { id: "spine", poly: [1, 2, 6, 5], tex: bind.spine },
-        ];
+        const faces = caseFaceDefs(bind);
         const camForward = vnorm({ x: 0, y: 0, z: 1 });
         faces
           .map((f) => ({
@@ -4328,10 +4655,7 @@
           dx /= dl;
           dy /= dl;
           const projH = quadProjectedHeight(front);
-          const discR = Math.max(
-            7,
-            projH * (discDiameterMmForTemplate(template) / Math.max(template.d.h, 1)) * 0.5 * 0.9,
-          );
+          const discR = discRadiusPxForQuad(template, front, 7, 0.94);
           const lift = Math.max(discR * 0.55, projH * 0.08);
           const cxSplit = openCenter.x + dx * lift;
           const cySplit = openCenter.y + dy * lift;
@@ -4712,12 +5036,7 @@
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-info")
             .trim() || "#79c6ff";
-        const cg =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-border")
-            .trim() || "#2b3950";
         drawBackgroundTexture(w, h);
-        drawGrid(w, h, cg);
         const c = cart(),
           a = asset();
         if (!c || !a) return;
@@ -4747,7 +5066,7 @@
             if (S.debug.mapping && U.debugOutput) {
               U.debugOutput.hidden = false;
               U.debugOutput.textContent =
-                "Large model is using Canvas Stable renderer for parity with mini model.";
+                "Large model is using Canvas fallback/debug renderer.";
             }
           }
         } else {
@@ -4828,12 +5147,7 @@
         c.modelTr = { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0, s: 1, mx: false };
         syncContextFromAsset();
       }
-      function downloadTemplate() {
-        const a = asset();
-        if (!a || a.type !== "2d") {
-          setStatus("Select a 2D asset card first.");
-          return;
-        }
+      function templateCanvasForAsset(a) {
         const c = document.createElement("canvas");
         c.width = a.w;
         c.height = a.h;
@@ -4855,17 +5169,30 @@
         x.moveTo(c.width, 0);
         x.lineTo(0, c.height);
         x.stroke();
+        return c;
+      }
+      function downloadTemplateAsset(a, namePrefix = "") {
+        const c = templateCanvasForAsset(a);
+        const prefix = namePrefix ? `${fileSlug(namePrefix)}_` : "";
         c.toBlob((blob) => {
           if (!blob) return;
           const u = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = u;
-          link.download = `${a.id}_template_${a.w}x${a.h}.png`;
+          link.download = `${prefix}${a.id}_template_${a.w}x${a.h}.png`;
           document.body.append(link);
           link.click();
           link.remove();
           URL.revokeObjectURL(u);
         }, "image/png");
+      }
+      function downloadTemplate() {
+        const a = asset();
+        if (!a || a.type !== "2d") {
+          setStatus("Select a 2D asset card first.");
+          return;
+        }
+        downloadTemplateAsset(a);
         setStatus(`Downloaded template for ${a.label}.`);
       }
       function uploadImage(file) {
@@ -5028,6 +5355,1343 @@
         a.remove();
         URL.revokeObjectURL(u);
       }
+      function dlUrl(name, url) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.append(a);
+        a.click();
+        a.remove();
+      }
+      function dlBlob(name, blob) {
+        const u = URL.createObjectURL(blob);
+        dlUrl(name, u);
+        setTimeout(() => URL.revokeObjectURL(u), 1500);
+      }
+      function fileSlug(input, fallback = "katacart") {
+        const out = String(input || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        return out || fallback;
+      }
+      function textToBytes(text) {
+        return new TextEncoder().encode(String(text || ""));
+      }
+      function concatBytes(parts) {
+        const total = parts.reduce((n, p) => n + (p?.length || 0), 0);
+        const out = new Uint8Array(total);
+        let off = 0;
+        parts.forEach((p) => {
+          if (!p || !p.length) return;
+          out.set(p, off);
+          off += p.length;
+        });
+        return out;
+      }
+      function dataUriToBytes(uri) {
+        const m = String(uri || "").match(/^data:([^;,]+)?(;base64)?,(.*)$/);
+        if (!m) return { mime: "application/octet-stream", bytes: new Uint8Array() };
+        const mime = m[1] || "application/octet-stream";
+        const isBase64 = !!m[2];
+        const body = m[3] || "";
+        if (isBase64) {
+          const bin = atob(body);
+          const out = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
+          return { mime, bytes: out };
+        }
+        const decoded = decodeURIComponent(body);
+        return { mime, bytes: textToBytes(decoded) };
+      }
+      function bytesU16(v) {
+        const b = new Uint8Array(2);
+        new DataView(b.buffer).setUint16(0, v & 0xffff, true);
+        return b;
+      }
+      function bytesU32(v) {
+        const b = new Uint8Array(4);
+        new DataView(b.buffer).setUint32(0, v >>> 0, true);
+        return b;
+      }
+      let _crc32Table = null;
+      function crc32(bytes) {
+        if (!_crc32Table) {
+          _crc32Table = new Uint32Array(256);
+          for (let i = 0; i < 256; i += 1) {
+            let c = i;
+            for (let j = 0; j < 8; j += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+            _crc32Table[i] = c >>> 0;
+          }
+        }
+        let c = 0xffffffff;
+        for (let i = 0; i < bytes.length; i += 1) c = _crc32Table[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+        return (c ^ 0xffffffff) >>> 0;
+      }
+      function dosDateTime(date = new Date()) {
+        const year = Math.max(1980, date.getFullYear());
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hours = date.getHours();
+        const mins = date.getMinutes();
+        const secs = Math.floor(date.getSeconds() / 2);
+        const dosTime = (hours << 11) | (mins << 5) | secs;
+        const dosDate = ((year - 1980) << 9) | (month << 5) | day;
+        return { dosTime, dosDate };
+      }
+      function makeZipStore(files) {
+        const now = dosDateTime();
+        const locals = [];
+        const centrals = [];
+        let offset = 0;
+        files.forEach((f) => {
+          const nameBytes = textToBytes(f.name);
+          const data = f.bytes || new Uint8Array();
+          const csum = crc32(data);
+          const localHeader = concatBytes([
+            bytesU32(0x04034b50),
+            bytesU16(20),
+            bytesU16(0),
+            bytesU16(0),
+            bytesU16(now.dosTime),
+            bytesU16(now.dosDate),
+            bytesU32(csum),
+            bytesU32(data.length),
+            bytesU32(data.length),
+            bytesU16(nameBytes.length),
+            bytesU16(0),
+            nameBytes,
+          ]);
+          locals.push(localHeader, data);
+          const centralHeader = concatBytes([
+            bytesU32(0x02014b50),
+            bytesU16(20),
+            bytesU16(20),
+            bytesU16(0),
+            bytesU16(0),
+            bytesU16(now.dosTime),
+            bytesU16(now.dosDate),
+            bytesU32(csum),
+            bytesU32(data.length),
+            bytesU32(data.length),
+            bytesU16(nameBytes.length),
+            bytesU16(0),
+            bytesU16(0),
+            bytesU16(0),
+            bytesU16(0),
+            bytesU32(0),
+            bytesU32(offset),
+            nameBytes,
+          ]);
+          centrals.push(centralHeader);
+          offset += localHeader.length + data.length;
+        });
+        const centralBytes = concatBytes(centrals);
+        const end = concatBytes([
+          bytesU32(0x06054b50),
+          bytesU16(0),
+          bytesU16(0),
+          bytesU16(files.length),
+          bytesU16(files.length),
+          bytesU32(centralBytes.length),
+          bytesU32(offset),
+          bytesU16(0),
+        ]);
+        return new Blob([concatBytes([...locals, centralBytes, end])], {
+          type: "application/zip",
+        });
+      }
+      function makeGlbBlob(gltfObj) {
+        const json = textToBytes(JSON.stringify(gltfObj));
+        const jsonPad = (4 - (json.length % 4)) % 4;
+        const jsonChunk = new Uint8Array(json.length + jsonPad);
+        jsonChunk.set(json, 0);
+        for (let i = json.length; i < jsonChunk.length; i += 1) jsonChunk[i] = 0x20;
+        const header = new Uint8Array(12);
+        const hv = new DataView(header.buffer);
+        hv.setUint32(0, 0x46546c67, true); // glTF
+        hv.setUint32(4, 2, true);
+        hv.setUint32(8, 12 + 8 + jsonChunk.length, true);
+        const chunkHeader = new Uint8Array(8);
+        const cv = new DataView(chunkHeader.buffer);
+        cv.setUint32(0, jsonChunk.length, true);
+        cv.setUint32(4, 0x4e4f534a, true); // JSON
+        return new Blob([header, chunkHeader, jsonChunk], {
+          type: "model/gltf-binary",
+        });
+      }
+      function uint8ToBase64(bytes) {
+        let bin = "";
+        const step = 0x8000;
+        for (let i = 0; i < bytes.length; i += step) {
+          const chunk = bytes.subarray(i, i + step);
+          bin += String.fromCharCode(...chunk);
+        }
+        return btoa(bin);
+      }
+      function arrayBufferToDataUri(buf, mime = "application/octet-stream") {
+        const bytes = new Uint8Array(buf);
+        return `data:${mime};base64,${uint8ToBase64(bytes)}`;
+      }
+      function discMaskedCanvas(srcCanvas) {
+        if (!srcCanvas) return null;
+        const size = Math.max(512, srcCanvas.width || 0, srcCanvas.height || 0);
+        const c = document.createElement("canvas");
+        c.width = size;
+        c.height = size;
+        const x = c.getContext("2d");
+        x.clearRect(0, 0, size, size);
+        x.save();
+        x.beginPath();
+        x.arc(size * 0.5, size * 0.5, size * 0.48, 0, Math.PI * 2);
+        x.closePath();
+        x.clip();
+        x.drawImage(srcCanvas, 0, 0, size, size);
+        x.restore();
+        x.save();
+        x.globalCompositeOperation = "destination-out";
+        x.beginPath();
+        x.arc(size * 0.5, size * 0.5, size * 0.09, 0, Math.PI * 2);
+        x.fill();
+        x.restore();
+        return c;
+      }
+      function templateBoxVerticesMeters(template) {
+        const d = template.d;
+        const n = 1 / Math.max(d.w, d.h, d.z || 1);
+        const sx = d.w * n;
+        const sy = d.h * n;
+        const sz = Math.max(0.04, d.z * n);
+        return [
+          [-sx, -sy, -sz],
+          [sx, -sy, -sz],
+          [sx, sy, -sz],
+          [-sx, sy, -sz],
+          [-sx, -sy, sz],
+          [sx, -sy, sz],
+          [sx, sy, sz],
+          [-sx, sy, sz],
+        ];
+      }
+      function quadNormal(quadPos) {
+        const a = quadPos[0];
+        const b = quadPos[1];
+        const d = quadPos[3];
+        const ux = b[0] - a[0];
+        const uy = b[1] - a[1];
+        const uz = b[2] - a[2];
+        const vx = d[0] - a[0];
+        const vy = d[1] - a[1];
+        const vz = d[2] - a[2];
+        const nx = uy * vz - uz * vy;
+        const ny = uz * vx - ux * vz;
+        const nz = ux * vy - uy * vx;
+        const l = Math.hypot(nx, ny, nz) || 1;
+        return [nx / l, ny / l, nz / l];
+      }
+      function getExportMappingProfile(profileId = ACTIVE_EXPORT_MAPPING_PROFILE) {
+        return EXPORT_MAPPING_PROFILES[profileId] || EXPORT_MAPPING_PROFILES.blender;
+      }
+      function applyUvOpsList(points, ops = []) {
+        let out = points.map((p) => ({ u: p.u, v: p.v }));
+        (ops || []).forEach((op) => {
+          out = out.map((p) => {
+            const [u, v] = applyUvOp(p.u, p.v, op);
+            return { u, v };
+          });
+        });
+        return out;
+      }
+      function exportTextureRoleForFace(faceId, profile) {
+        let role =
+          faceId === "front"
+            ? "front"
+            : faceId === "back"
+              ? "back"
+              : faceId === "spine"
+                ? "spine"
+                : null;
+        const spineTarget = profile?.spineTargetFace || "spine";
+        if (spineTarget !== "spine") {
+          if (faceId === "spine") role = null;
+          if (faceId === spineTarget) role = "spine";
+        }
+        return role;
+      }
+      function makeKataCartExportBundle() {
+        const c = cart();
+        if (!c) return null;
+        const t = tById(c.templateId);
+        const spec = templateSpec(t);
+        const exportProfile = getExportMappingProfile();
+        const baseName = fileSlug(`${c.name}-${t.id}`, "katacart");
+        const payload = exportPayload();
+        const mapped = mappedFaceSources(c);
+        const discStyled = composedDiscSource(mapped.disc, S.view.discBackStyle || "silver-rainbow");
+        const textureRoles = [
+          { role: "front", source: mapped.front?.canvas || null },
+          { role: "back", source: mapped.back?.canvas || null },
+          { role: "spine", source: mapped.spine?.canvas || null },
+          {
+            role: "disc",
+            source: spec.capabilities?.discAsset ? discMaskedCanvas(discStyled?.canvas || null) : null,
+          },
+        ];
+        const textures = textureRoles
+          .filter((x) => !!x.source)
+          .map((x) => {
+            const filename = `${baseName}.texture.${x.role}.png`;
+            return {
+              role: x.role,
+              filename,
+              canvas: x.source,
+              dataUri: x.source.toDataURL("image/png"),
+            };
+          });
+        const imageByRole = new Map(textures.map((x) => [x.role, x]));
+
+        const faces = caseFaceDefs().map((f) => {
+          const uvPts = applyUvOpsList(WEBGL_FACE_UV_COORDS[f.id], exportProfile.uvOps);
+          const textureRole = exportTextureRoleForFace(f.id, exportProfile);
+          return {
+            id: f.id,
+            poly: WEBGL_FACE_POLY[f.id],
+            uvCorners: WEBGL_FACE_UV_ORDER[f.id],
+            uv: uvPts.flatMap((p) => [p.u, p.v]),
+            textureRole,
+          };
+        });
+        const boxVerts = templateBoxVerticesMeters(t);
+        const hasDisc = !!imageByRole.get("disc");
+        if (hasDisc) {
+          const discDia = discDiameterMmForTemplate(t);
+          const n = 1 / Math.max(t.d.w, t.d.h, t.d.z || 1);
+          const discR = (discDia * n) * 0.94;
+          const z = Math.max(0.04, t.d.z * n) + 0.02;
+          let discUv = [
+            { u: 0, v: 0 },
+            { u: 1, v: 0 },
+            { u: 1, v: 1 },
+            { u: 0, v: 1 },
+          ];
+          discUv = applyUvOpsList(discUv, exportProfile.uvOps);
+          faces.push({
+            id: "disc",
+            poly: null,
+            uvCorners: null,
+            uv: discUv.flatMap((p) => [p.u, p.v]),
+            quad: [
+              [-discR, -discR, z],
+              [discR, -discR, z],
+              [discR, discR, z],
+              [-discR, discR, z],
+            ],
+            textureRole: "disc",
+          });
+        }
+
+        const binChunks = [];
+        function pushChunk(typedArray, target) {
+          const bytes = new Uint8Array(
+            typedArray.buffer,
+            typedArray.byteOffset,
+            typedArray.byteLength,
+          );
+          let offset = 0;
+          for (const c of binChunks) offset += c.bytes.length;
+          const pad = (4 - (offset % 4)) % 4;
+          if (pad) binChunks.push({ bytes: new Uint8Array(pad), target: undefined });
+          let byteOffset = 0;
+          for (const c of binChunks) byteOffset += c.bytes.length;
+          binChunks.push({ bytes, target });
+          return { buffer: 0, byteOffset, byteLength: bytes.length, target };
+        }
+        function minMaxFor(typed, stride) {
+          const min = new Array(stride).fill(Number.POSITIVE_INFINITY);
+          const max = new Array(stride).fill(Number.NEGATIVE_INFINITY);
+          for (let i = 0; i < typed.length; i += stride) {
+            for (let j = 0; j < stride; j += 1) {
+              const v = typed[i + j];
+              if (v < min[j]) min[j] = v;
+              if (v > max[j]) max[j] = v;
+            }
+          }
+          return { min, max };
+        }
+
+        const gltf = {
+          asset: {
+            version: "2.0",
+            generator: "KataCart Exporter v1",
+          },
+          scenes: [{ nodes: [0] }],
+          scene: 0,
+          nodes: [{ mesh: 0, name: `${c.name} Node` }],
+          meshes: [{ name: `${c.name} Mesh`, primitives: [] }],
+          materials: [],
+          textures: [],
+          images: [],
+          samplers: [{ magFilter: 9729, minFilter: 9729, wrapS: 33071, wrapT: 33071 }],
+          accessors: [],
+          bufferViews: [],
+          buffers: [],
+          extras: {
+            katacart: {
+              templateId: t.id,
+              templateName: t.name,
+              templateSpec: spec,
+              exportMappingProfile: exportProfile.id,
+              modelTransform: c.modelTr,
+              exportedAt: new Date().toISOString(),
+            },
+          },
+        };
+
+        const materialByRole = new Map();
+        function ensureMaterial(role) {
+          if (materialByRole.has(role || "_tint")) return materialByRole.get(role || "_tint");
+          let matIndex = 0;
+          if (role && imageByRole.get(role)) {
+            const texDef = imageByRole.get(role);
+            const imgIndex = gltf.images.push({
+              name: `${role}_image`,
+              uri: texDef.dataUri,
+            }) - 1;
+            const texIndex = gltf.textures.push({
+              sampler: 0,
+              source: imgIndex,
+            }) - 1;
+            matIndex =
+              gltf.materials.push({
+                name: `${role}_material`,
+                pbrMetallicRoughness: {
+                  baseColorTexture: { index: texIndex },
+                  metallicFactor: 0,
+                  roughnessFactor: 1,
+                },
+                alphaMode: role === "disc" ? "BLEND" : "OPAQUE",
+                doubleSided: true,
+              }) - 1;
+          } else {
+            const tint = hexToRgb01(S.view.faceTint);
+            matIndex =
+              gltf.materials.push({
+                name: "case_tint",
+                pbrMetallicRoughness: {
+                  baseColorFactor: [tint[0], tint[1], tint[2], 1],
+                  metallicFactor: 0,
+                  roughnessFactor: 1,
+                },
+                alphaMode: "OPAQUE",
+                doubleSided: true,
+              }) - 1;
+          }
+          materialByRole.set(role || "_tint", matIndex);
+          return matIndex;
+        }
+
+        faces.forEach((f) => {
+          const quadPos = f.quad || f.uvCorners.map((vi) => boxVerts[vi]);
+          const posArr = new Float32Array(quadPos.flatMap((p) => p));
+          const n = quadNormal(quadPos);
+          const nrmArr = new Float32Array([
+            n[0], n[1], n[2],
+            n[0], n[1], n[2],
+            n[0], n[1], n[2],
+            n[0], n[1], n[2],
+          ]);
+          const uvArr = new Float32Array(f.uv);
+          const idxArr = new Uint16Array([0, 1, 2, 0, 2, 3]);
+
+          const posView = pushChunk(posArr, 34962);
+          const nrmView = pushChunk(nrmArr, 34962);
+          const uvView = pushChunk(uvArr, 34962);
+          const idxView = pushChunk(idxArr, 34963);
+
+          const posMM = minMaxFor(posArr, 3);
+          const posAccessor =
+            gltf.accessors.push({
+              bufferView: gltf.bufferViews.push(posView) - 1,
+              componentType: 5126,
+              count: 4,
+              type: "VEC3",
+              min: posMM.min,
+              max: posMM.max,
+            }) - 1;
+          const nrmAccessor =
+            gltf.accessors.push({
+              bufferView: gltf.bufferViews.push(nrmView) - 1,
+              componentType: 5126,
+              count: 4,
+              type: "VEC3",
+            }) - 1;
+          const uvAccessor =
+            gltf.accessors.push({
+              bufferView: gltf.bufferViews.push(uvView) - 1,
+              componentType: 5126,
+              count: 4,
+              type: "VEC2",
+            }) - 1;
+          const idxAccessor =
+            gltf.accessors.push({
+              bufferView: gltf.bufferViews.push(idxView) - 1,
+              componentType: 5123,
+              count: 6,
+              type: "SCALAR",
+              min: [0],
+              max: [3],
+            }) - 1;
+
+          gltf.meshes[0].primitives.push({
+            attributes: {
+              POSITION: posAccessor,
+              NORMAL: nrmAccessor,
+              TEXCOORD_0: uvAccessor,
+            },
+            indices: idxAccessor,
+            material: ensureMaterial(f.textureRole),
+            mode: 4,
+            extras: { faceId: f.id, textureRole: f.textureRole || "tint" },
+          });
+        });
+
+        const total = binChunks.reduce((acc, c) => acc + c.bytes.length, 0);
+        const merged = new Uint8Array(total);
+        let off = 0;
+        binChunks.forEach((c) => {
+          merged.set(c.bytes, off);
+          off += c.bytes.length;
+        });
+        gltf.buffers.push({
+          byteLength: merged.length,
+          uri: arrayBufferToDataUri(merged.buffer, "application/octet-stream"),
+        });
+
+        const manifest = {
+          app: "KataCart",
+          packageVersion: "1.0.0",
+          packageName: baseName,
+          exportedAt: new Date().toISOString(),
+          cart: {
+            id: c.id,
+            name: c.name,
+            templateId: t.id,
+            templateName: t.name,
+          },
+          files: {
+            state: `${baseName}.state.json`,
+            manifest: `${baseName}.manifest.json`,
+            gltf: `${baseName}.gltf`,
+            glb: `${baseName}.glb`,
+            textures: textures.map((x) => x.filename),
+          },
+          textures: textures.map((x) => ({
+            role: x.role,
+            filename: x.filename,
+          })),
+        };
+
+        return { baseName, manifest, payload, gltf, textures };
+      }
+      function deepCloneJson(v) {
+        return JSON.parse(JSON.stringify(v));
+      }
+      function applyNodeMatrix(gltf, matrix16) {
+        if (!gltf?.nodes?.length) return;
+        const n = gltf.nodes[0];
+        delete n.translation;
+        delete n.rotation;
+        delete n.scale;
+        n.matrix = matrix16.slice(0, 16);
+      }
+      function materialIndexByRole(gltf) {
+        const map = new Map();
+        (gltf.materials || []).forEach((m, i) => {
+          if (!m?.name) return;
+          const n = String(m.name).toLowerCase();
+          if (n === "case_tint") map.set("tint", i);
+          if (n.endsWith("_material")) map.set(n.replace("_material", ""), i);
+        });
+        return map;
+      }
+      function remapPrimitiveMaterials(gltf, faceRoleMap = {}) {
+        const roleMats = materialIndexByRole(gltf);
+        const tintMat = roleMats.has("tint") ? roleMats.get("tint") : 0;
+        const prims = gltf?.meshes?.[0]?.primitives || [];
+        prims.forEach((p) => {
+          const faceId = p?.extras?.faceId;
+          if (!faceId) return;
+          const override = Object.prototype.hasOwnProperty.call(faceRoleMap, faceId)
+            ? faceRoleMap[faceId]
+            : undefined;
+          if (override === undefined) return;
+          const targetRole = override || "tint";
+          p.material = roleMats.has(targetRole) ? roleMats.get(targetRole) : tintMat;
+          if (p.extras) p.extras.textureRole = targetRole;
+        });
+      }
+      function gltfPrimaryBufferBytes(gltf) {
+        const uri = gltf?.buffers?.[0]?.uri || "";
+        const parsed = dataUriToBytes(uri);
+        return parsed.bytes || new Uint8Array();
+      }
+      function setGltfPrimaryBufferBytes(gltf, bytes) {
+        if (!gltf?.buffers?.length) return;
+        gltf.buffers[0].byteLength = bytes.length;
+        gltf.buffers[0].uri = arrayBufferToDataUri(bytes.buffer, "application/octet-stream");
+      }
+      function applyUvOp(u, v, op) {
+        if (op === "rot90cw") return [1 - v, u];
+        if (op === "rot90ccw") return [v, 1 - u];
+        if (op === "rot180") return [1 - u, 1 - v];
+        if (op === "flipU") return [1 - u, v];
+        if (op === "flipV") return [u, 1 - v];
+        return [u, v];
+      }
+      function applyUvOpsByFace(gltf, faceUvOps = {}) {
+        const opsByFace = faceUvOps || {};
+        const prims = gltf?.meshes?.[0]?.primitives || [];
+        if (!prims.length) return;
+        const accessors = gltf.accessors || [];
+        const views = gltf.bufferViews || [];
+        const bytes = gltfPrimaryBufferBytes(gltf);
+        if (!bytes.length) return;
+        const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        prims.forEach((p) => {
+          const faceId = p?.extras?.faceId;
+          const ops = faceId ? opsByFace[faceId] : null;
+          if (!ops || !ops.length) return;
+          const uvAccessorIndex = p?.attributes?.TEXCOORD_0;
+          if (uvAccessorIndex === undefined || uvAccessorIndex === null) return;
+          const accessor = accessors[uvAccessorIndex];
+          if (!accessor || accessor.componentType !== 5126 || accessor.type !== "VEC2")
+            return;
+          const view = views[accessor.bufferView];
+          if (!view) return;
+          const stride = view.byteStride || 8;
+          const base = (view.byteOffset || 0) + (accessor.byteOffset || 0);
+          const count = accessor.count || 0;
+          for (let i = 0; i < count; i += 1) {
+            const off = base + i * stride;
+            let u = dv.getFloat32(off, true);
+            let v = dv.getFloat32(off + 4, true);
+            ops.forEach((op) => {
+              const next = applyUvOp(u, v, op);
+              u = next[0];
+              v = next[1];
+            });
+            dv.setFloat32(off, u, true);
+            dv.setFloat32(off + 4, v, true);
+          }
+        });
+        setGltfPrimaryBufferBytes(gltf, bytes);
+      }
+      function debugMappingVariants() {
+        const I = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        const core = [
+          {
+            id: "v01_baseline",
+            label: "Baseline (current export)",
+            matrix: I,
+            faceRoleMap: {},
+            faceUvOps: {},
+          },
+          {
+            id: "v02_rot_x_180",
+            label: "Rotate model 180 on X",
+            matrix: [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1],
+            faceRoleMap: {},
+            faceUvOps: {},
+          },
+          {
+            id: "v03_rot_y_180",
+            label: "Rotate model 180 on Y",
+            matrix: [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1],
+            faceRoleMap: {},
+            faceUvOps: {},
+          },
+          {
+            id: "v04_rot_z_180",
+            label: "Rotate model 180 on Z",
+            matrix: [-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            faceRoleMap: {},
+            faceUvOps: {},
+          },
+          {
+            id: "v05_swap_front_back",
+            label: "Swap front/back textures",
+            matrix: I,
+            faceRoleMap: { front: "back", back: "front" },
+            faceUvOps: {},
+          },
+          {
+            id: "v06_spine_on_right",
+            label: "Move spine texture to right edge face",
+            matrix: I,
+            faceRoleMap: { spine: "tint", right: "spine" },
+            faceUvOps: {},
+          },
+          {
+            id: "v07_swap_fb_rot_y_180",
+            label: "Swap front/back + rotate Y 180",
+            matrix: [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1],
+            faceRoleMap: { front: "back", back: "front" },
+            faceUvOps: {},
+          },
+          {
+            id: "v08_mirror_x",
+            label: "Mirror model on X",
+            matrix: [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            faceRoleMap: {},
+            faceUvOps: {},
+          },
+        ];
+        const uvProfiles = [
+          { id: "u00_none", label: "UV unchanged", map: {} },
+          {
+            id: "u01_fb_rot180",
+            label: "Front+Back UV rot180",
+            map: { front: ["rot180"], back: ["rot180"] },
+          },
+          {
+            id: "u02_fb_flipu",
+            label: "Front+Back UV flipU",
+            map: { front: ["flipU"], back: ["flipU"] },
+          },
+          {
+            id: "u03_fb_flipv",
+            label: "Front+Back UV flipV",
+            map: { front: ["flipV"], back: ["flipV"] },
+          },
+          {
+            id: "u04_fb_rot90cw",
+            label: "Front+Back UV rot90cw",
+            map: { front: ["rot90cw"], back: ["rot90cw"] },
+          },
+          {
+            id: "u05_fb_rot90ccw",
+            label: "Front+Back UV rot90ccw",
+            map: { front: ["rot90ccw"], back: ["rot90ccw"] },
+          },
+          {
+            id: "u06_spine_flipu",
+            label: "Spine UV flipU",
+            map: { spine: ["flipU"] },
+          },
+          {
+            id: "u07_spine_rot180",
+            label: "Spine UV rot180",
+            map: { spine: ["rot180"] },
+          },
+          {
+            id: "u08_all_flipu",
+            label: "All major faces UV flipU",
+            map: {
+              front: ["flipU"],
+              back: ["flipU"],
+              spine: ["flipU"],
+              right: ["flipU"],
+              top: ["flipU"],
+              bottom: ["flipU"],
+            },
+          },
+        ];
+        const set = [];
+        let idx = 1;
+        core.forEach((c) => {
+          uvProfiles.forEach((u, i) => {
+            if (c.id !== "v01_baseline" && i > 2) return;
+            const sid = String(idx).padStart(2, "0");
+            set.push({
+              id: `v${sid}_${c.id}_${u.id}`,
+              label: `${c.label} | ${u.label}`,
+              matrix: c.matrix,
+              faceRoleMap: c.faceRoleMap,
+              faceUvOps: u.map,
+            });
+            idx += 1;
+          });
+        });
+        return set;
+      }
+      function makeDebugMappingPack(bundle) {
+        const { baseName, gltf } = bundle;
+        const variants = debugMappingVariants();
+        const rows = [];
+        const jobs = variants.map((v, idx) => {
+          const g = deepCloneJson(gltf);
+          applyNodeMatrix(g, v.matrix);
+          remapPrimitiveMaterials(g, v.faceRoleMap);
+          applyUvOpsByFace(g, v.faceUvOps);
+          g.extras = g.extras || {};
+          g.extras.katacart = g.extras.katacart || {};
+          g.extras.katacart.debugVariant = {
+            id: v.id,
+            label: v.label,
+            index: idx + 1,
+            total: variants.length,
+            matrix: v.matrix,
+            faceRoleMap: v.faceRoleMap,
+            faceUvOps: v.faceUvOps,
+          };
+          const filename = `${baseName}.${v.id}.glb`;
+          rows.push(`${idx + 1}. ${filename}\n   ${v.label}`);
+          return makeGlbBlob(g).arrayBuffer().then((ab) => ({
+            name: filename,
+            bytes: new Uint8Array(ab),
+            meta: {
+              id: v.id,
+              label: v.label,
+              filename,
+              matrix: v.matrix,
+              faceRoleMap: v.faceRoleMap,
+            },
+          }));
+        });
+        return Promise.all(jobs).then((files) => {
+          const readme = [
+            "KataCart Mapping Debug Pack",
+            "",
+            "Goal:",
+            "Import each .glb into Blender and report which one is fully correct.",
+            "",
+            "Checks:",
+            "- front text reads correctly and is on front face",
+            "- back text reads correctly and is on back face",
+            "- spine is on expected edge",
+            "- model is upright (not upside down)",
+            "",
+            "Variants:",
+            ...rows,
+            "",
+            "Reply format suggestion:",
+            "best=<filename>",
+            "notes=<what is still wrong>",
+          ].join("\n");
+          const manifest = {
+            app: "KataCart",
+            type: "mapping-debug-pack",
+            generatedAt: new Date().toISOString(),
+            baseName,
+            variants: files.map((f) => f.meta),
+          };
+          const zipFiles = [
+            { name: `${baseName}.debug.README.txt`, bytes: textToBytes(readme) },
+            {
+              name: `${baseName}.debug.manifest.json`,
+              bytes: textToBytes(JSON.stringify(manifest, null, 2)),
+            },
+            ...files.map((f) => ({ name: f.name, bytes: f.bytes })),
+          ];
+          return {
+            blob: makeZipStore(zipFiles),
+            manifest,
+            count: files.length,
+          };
+        });
+      }
+      function makeTruthFaceDataUri(faceId, size = 1024) {
+        const c = document.createElement("canvas");
+        c.width = size;
+        c.height = size;
+        const x = c.getContext("2d");
+        const palette = {
+          front: { bg: "#a7f3d0", fg: "#06281b" },
+          back: { bg: "#fde68a", fg: "#2f2103" },
+          spine: { bg: "#bfdbfe", fg: "#061a3d" },
+          right: { bg: "#fbcfe8", fg: "#3f0820" },
+          top: { bg: "#ddd6fe", fg: "#21113f" },
+          bottom: { bg: "#fecaca", fg: "#3f0a0a" },
+          disc: { bg: "#e5e7eb", fg: "#111827" },
+        };
+        const face = String(faceId || "unknown").toLowerCase();
+        const colors = palette[face] || { bg: "#e2e8f0", fg: "#0f172a" };
+        x.fillStyle = colors.bg;
+        x.fillRect(0, 0, size, size);
+        x.strokeStyle = colors.fg;
+        x.lineWidth = Math.max(8, Math.round(size * 0.014));
+        x.strokeRect(10, 10, size - 20, size - 20);
+        x.font = `700 ${Math.round(size * 0.14)}px ${cssVar("--ds-font-mono", "monospace")}`;
+        x.textAlign = "center";
+        x.textBaseline = "middle";
+        x.fillStyle = colors.fg;
+        x.fillText(face.toUpperCase(), size * 0.5, size * 0.52);
+        x.font = `700 ${Math.round(size * 0.085)}px ${cssVar("--ds-font-mono", "monospace")}`;
+        x.fillText("UP", size * 0.5, size * 0.16);
+        x.beginPath();
+        x.moveTo(size * 0.5, size * 0.22);
+        x.lineTo(size * 0.44, size * 0.32);
+        x.lineTo(size * 0.56, size * 0.32);
+        x.closePath();
+        x.fill();
+        x.font = `700 ${Math.round(size * 0.05)}px ${cssVar("--ds-font-mono", "monospace")}`;
+        x.fillText("TL", size * 0.12, size * 0.1);
+        x.fillText("TR", size * 0.88, size * 0.1);
+        x.fillText("BL", size * 0.12, size * 0.9);
+        x.fillText("BR", size * 0.88, size * 0.9);
+        return c.toDataURL("image/png");
+      }
+      function readPrimitiveUvSample(gltf, prim, maxCount = 4) {
+        const idx = prim?.attributes?.TEXCOORD_0;
+        if (idx === undefined || idx === null) return [];
+        const accessor = gltf?.accessors?.[idx];
+        if (!accessor || accessor.componentType !== 5126 || accessor.type !== "VEC2") return [];
+        const view = gltf?.bufferViews?.[accessor.bufferView];
+        if (!view) return [];
+        const bytes = gltfPrimaryBufferBytes(gltf);
+        if (!bytes.length) return [];
+        const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const stride = view.byteStride || 8;
+        const base = (view.byteOffset || 0) + (accessor.byteOffset || 0);
+        const count = Math.min(accessor.count || 0, maxCount);
+        const out = [];
+        for (let i = 0; i < count; i += 1) {
+          const off = base + i * stride;
+          out.push({
+            u: Number(dv.getFloat32(off, true).toFixed(4)),
+            v: Number(dv.getFloat32(off + 4, true).toFixed(4)),
+          });
+        }
+        return out;
+      }
+      function makeTruthCubeGltf(bundle) {
+        const g = deepCloneJson(bundle.gltf);
+        g.extras = g.extras || {};
+        g.extras.katacart = g.extras.katacart || {};
+        const roles = ["front", "back", "spine", "right", "top", "bottom"];
+        const sampler = (g.samplers && g.samplers.length)
+          ? g.samplers[0]
+          : { magFilter: 9729, minFilter: 9729, wrapS: 33071, wrapT: 33071 };
+        g.samplers = [sampler];
+        g.images = roles.map((r) => ({
+          name: `${r}_truth_image`,
+          uri: makeTruthFaceDataUri(r, 1024),
+        }));
+        g.textures = roles.map((_, i) => ({ sampler: 0, source: i }));
+        g.materials = roles.map((r, i) => ({
+          name: `${r}_material`,
+          pbrMetallicRoughness: {
+            baseColorTexture: { index: i },
+            metallicFactor: 0,
+            roughnessFactor: 1,
+          },
+          alphaMode: "OPAQUE",
+          doubleSided: true,
+        }));
+        const tintIndex = g.materials.push({
+          name: "case_tint",
+          pbrMetallicRoughness: {
+            baseColorFactor: [0.7, 0.7, 0.7, 1],
+            metallicFactor: 0,
+            roughnessFactor: 1,
+          },
+          alphaMode: "OPAQUE",
+          doubleSided: true,
+        }) - 1;
+        const roleToMat = new Map(roles.map((r, i) => [r, i]));
+        (g.meshes?.[0]?.primitives || []).forEach((p, i) => {
+          const faceId = p?.extras?.faceId;
+          p.material = roleToMat.has(faceId) ? roleToMat.get(faceId) : tintIndex;
+          p.extras = p.extras || {};
+          p.extras.truthVariant = {
+            primitiveIndex: i,
+            assignedRole: roleToMat.has(faceId) ? faceId : "tint",
+          };
+        });
+        return g;
+      }
+      function makeTruthCubeExportPack(bundle) {
+        const { baseName } = bundle;
+        const gltfTruth = makeTruthCubeGltf(bundle);
+        const prims = gltfTruth?.meshes?.[0]?.primitives || [];
+        const mapping = prims.map((p, i) => ({
+          primitiveIndex: i,
+          faceId: p?.extras?.faceId || null,
+          textureRole: p?.extras?.textureRole || null,
+          poly: WEBGL_FACE_POLY[p?.extras?.faceId] || null,
+          uvCorners: WEBGL_FACE_UV_ORDER[p?.extras?.faceId] || null,
+          uvCoords: WEBGL_FACE_UV_COORDS[p?.extras?.faceId] || null,
+          uvSample: readPrimitiveUvSample(gltfTruth, p, 4),
+        }));
+        const manifest = {
+          app: "KataCart",
+          type: "truth-cube-parity-pack",
+          generatedAt: new Date().toISOString(),
+          baseName,
+          note: "This uses exporter geometry + UVs with generated labeled face textures.",
+          mapping,
+        };
+        const readme = [
+          "KataCart Truth Cube Parity Pack",
+          "",
+          "Goal:",
+          "Verify Blender orientation from exporter ground truth.",
+          "",
+          "Expected in Blender default import:",
+          "- FRONT label on front-facing case side",
+          "- BACK label on back-facing case side",
+          "- SPINE on intended edge",
+          "- UP arrow points toward top edge of each face",
+          "",
+          "Files:",
+          `- ${baseName}.truth.gltf`,
+          `- ${baseName}.truth.glb`,
+          `- ${baseName}.truth.manifest.json`,
+          "",
+          "Reply with:",
+          "result=<what is wrong/right>",
+        ].join("\n");
+        return makeGlbBlob(gltfTruth)
+          .arrayBuffer()
+          .then((ab) => {
+            const files = [
+              { name: `${baseName}.truth.README.txt`, bytes: textToBytes(readme) },
+              {
+                name: `${baseName}.truth.manifest.json`,
+                bytes: textToBytes(JSON.stringify(manifest, null, 2)),
+              },
+              {
+                name: `${baseName}.truth.gltf`,
+                bytes: textToBytes(JSON.stringify(gltfTruth, null, 2)),
+              },
+              { name: `${baseName}.truth.glb`, bytes: new Uint8Array(ab) },
+            ];
+            return { blob: makeZipStore(files), count: files.length };
+          });
+      }
+      function openExportModal() {
+        if (!U.exportModal) return;
+        refreshTemplateExportTable();
+        refreshExportImageAssetOptions();
+        setExportTab(S.exportTab || "package");
+        syncExportModalState();
+        if (typeof U.exportModal.showModal === "function") U.exportModal.showModal();
+      }
+      function closeExportModal() {
+        if (!U.exportModal) return;
+        if (U.exportModal.open) U.exportModal.close();
+      }
+      function setExportTab(tabId) {
+        S.exportTab = tabId;
+        const map = {
+          package: U.exportPanelPackage,
+          template: U.exportPanelTemplate,
+          image: U.exportPanelImage,
+        };
+        Object.entries(map).forEach(([id, panel]) => {
+          if (!panel) return;
+          panel.hidden = id !== tabId;
+        });
+        (U.exportTabButtons || []).forEach((btn) => {
+          const active = btn.dataset.exportTab === tabId;
+          btn.classList.toggle("active", active);
+          btn.setAttribute("aria-selected", active ? "true" : "false");
+        });
+      }
+      function templateAssetSummary(template) {
+        return blueprint(template)
+          .filter((a) => a.type === "2d")
+          .map((a) => {
+            const mm = assetPhysicalDimsMm(a.id, template);
+            const mmTxt = mm ? ` (${mm.w}x${mm.h}mm)` : "";
+            return `${a.label}: ${a.w}x${a.h}px${mmTxt}`;
+          })
+          .join("\n");
+      }
+      function refreshTemplateExportTable() {
+        if (!U.exportTemplateTableBody) return;
+        const prev = new Set(
+          [...U.exportTemplateTableBody.querySelectorAll("input[type='checkbox']:checked")].map(
+            (x) => x.value,
+          ),
+        );
+        U.exportTemplateTableBody.innerHTML = "";
+        TEMPLATES.forEach((t) => {
+          const tr = document.createElement("tr");
+          const checked = prev.has(t.id);
+          tr.innerHTML = `
+            <td><input class="export-template-check" type="checkbox" value="${t.id}" ${checked ? "checked" : ""} /></td>
+            <td><strong>${t.name}</strong><div class="muted">${t.family}</div></td>
+            <td><pre class="dim-list">${templateAssetSummary(t)}</pre></td>
+          `;
+          U.exportTemplateTableBody.append(tr);
+        });
+        const checks = [...U.exportTemplateTableBody.querySelectorAll(".export-template-check")];
+        const checkedCount = checks.filter((x) => x.checked).length;
+        if (U.exportTemplateSelectAll) {
+          U.exportTemplateSelectAll.checked = checks.length > 0 && checkedCount === checks.length;
+          U.exportTemplateSelectAll.indeterminate = checkedCount > 0 && checkedCount < checks.length;
+        }
+      }
+      function runTemplateBatchExport() {
+        if (!U.exportTemplateTableBody) return;
+        const selected = [
+          ...U.exportTemplateTableBody.querySelectorAll(".export-template-check:checked"),
+        ].map((x) => x.value);
+        if (!selected.length) {
+          setStatus("Select at least one template row to export.");
+          return;
+        }
+        let files = 0;
+        selected.forEach((tid) => {
+          const t = tById(tid);
+          const list = blueprint(t).filter((a) => a.type === "2d");
+          list.forEach((a) => {
+            downloadTemplateAsset(a, t.id);
+            files += 1;
+          });
+        });
+        setStatus(
+          `Downloaded ${files} template image${files === 1 ? "" : "s"} from ${selected.length} template set${selected.length === 1 ? "" : "s"}.`,
+        );
+      }
+      function refreshExportImageAssetOptions() {
+        if (!U.exportImageAsset) return;
+        const c = cart();
+        if (!c) return;
+        const current = U.exportImageAsset.value;
+        const currentAsset = asset();
+        const options = [];
+        options.push({ value: "__model__", label: "3D Model View" });
+        c.assets.forEach((a) => {
+          if (a.type !== "2d") return;
+          options.push({
+            value: a.id,
+            label: `${a.label} (${a.w}x${a.h})`,
+          });
+        });
+        U.exportImageAsset.innerHTML = options
+          .map((o) => `<option value="${o.value}">${o.label}</option>`)
+          .join("");
+        const fallback = currentAsset?.type === "2d" ? currentAsset.id : "__model__";
+        const wanted = options.some((o) => o.value === current) ? current : fallback;
+        U.exportImageAsset.value = options.some((o) => o.value === wanted)
+          ? wanted
+          : (options[0]?.value || "__model__");
+      }
+      function syncExportModalState() {
+        const isModel = (U.exportImageAsset?.value || "__model__") === "__model__";
+        if (U.exportModelScaleRow) U.exportModelScaleRow.hidden = !isModel;
+        if (U.exportModelScale) U.exportModelScale.disabled = !isModel;
+        if (U.exportImageFormat) {
+          const fmt = U.exportImageFormat.value;
+          if (U.exportTransparentBg) {
+            if (fmt === "jpg") {
+              U.exportTransparentBg.checked = false;
+              U.exportTransparentBg.disabled = true;
+            } else {
+              U.exportTransparentBg.disabled = false;
+            }
+          }
+        }
+      }
+      function mimeForFormat(fmt) {
+        if (fmt === "jpg" || fmt === "jpeg") return "image/jpeg";
+        if (fmt === "webp") return "image/webp";
+        return "image/png";
+      }
+      function exportCanvasDataUrl(canvas, fmt, quality = 0.92, transparent = true) {
+        if (!canvas) return null;
+        const mime = mimeForFormat(fmt);
+        const needsOpaque = !transparent || mime === "image/jpeg";
+        let source = canvas;
+        if (needsOpaque) {
+          const c = document.createElement("canvas");
+          c.width = canvas.width;
+          c.height = canvas.height;
+          const x = c.getContext("2d");
+          const bg =
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--ds-bg")
+              .trim() || "#10131a";
+          x.fillStyle = bg;
+          x.fillRect(0, 0, c.width, c.height);
+          x.drawImage(canvas, 0, 0);
+          source = c;
+        }
+        return source.toDataURL(mime, quality);
+      }
+      function canvasAlphaBounds(canvas, threshold = 2) {
+        const x = canvas.getContext("2d");
+        const { data, width, height } = x.getImageData(0, 0, canvas.width, canvas.height);
+        let minX = width;
+        let minY = height;
+        let maxX = -1;
+        let maxY = -1;
+        for (let i = 3, px = 0; i < data.length; i += 4, px += 1) {
+          if (data[i] <= threshold) continue;
+          const xPos = px % width;
+          const yPos = (px / width) | 0;
+          if (xPos < minX) minX = xPos;
+          if (xPos > maxX) maxX = xPos;
+          if (yPos < minY) minY = yPos;
+          if (yPos > maxY) maxY = yPos;
+        }
+        if (maxX < minX || maxY < minY) return null;
+        return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+      }
+      function cropCanvasWithPadding(canvas, bounds, padPx) {
+        if (!bounds) return canvas;
+        const pad = Math.max(0, Math.round(padPx));
+        const x0 = Math.max(0, bounds.x - pad);
+        const y0 = Math.max(0, bounds.y - pad);
+        const x1 = Math.min(canvas.width, bounds.x + bounds.w + pad);
+        const y1 = Math.min(canvas.height, bounds.y + bounds.h + pad);
+        const out = document.createElement("canvas");
+        out.width = Math.max(1, x1 - x0);
+        out.height = Math.max(1, y1 - y0);
+        out.getContext("2d").drawImage(canvas, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+        return out;
+      }
+      function composeModelSnapshot(scale = 1, transparent = true) {
+        const prevAssetId = S.assetId;
+        const c = cart();
+        const modelAsset = c?.assets?.find((x) => x.type === "3d");
+        if (modelAsset) S.assetId = modelAsset.id;
+        draw();
+        const stage = U.stageCanvas;
+        const gl = U.stageGlCanvas;
+        const raw = document.createElement("canvas");
+        raw.width = Math.max(1, Math.round(stage.width * scale));
+        raw.height = Math.max(1, Math.round(stage.height * scale));
+        const x = raw.getContext("2d");
+        x.scale(scale, scale);
+        if (!gl.hidden && gl.width > 0 && gl.height > 0) x.drawImage(gl, 0, 0, stage.width, stage.height);
+        x.drawImage(stage, 0, 0, stage.width, stage.height);
+        const pad = Math.max(10, Math.round(18 * scale));
+        const cropped = cropCanvasWithPadding(raw, canvasAlphaBounds(raw), pad);
+        let out = cropped;
+        if (!transparent) {
+          const bg =
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--ds-bg")
+              .trim() || "#10131a";
+          const filled = document.createElement("canvas");
+          filled.width = out.width;
+          filled.height = out.height;
+          const fx = filled.getContext("2d");
+          fx.fillStyle = bg;
+          fx.fillRect(0, 0, filled.width, filled.height);
+          fx.drawImage(out, 0, 0);
+          out = filled;
+        }
+        S.assetId = prevAssetId;
+        draw();
+        return out;
+      }
+      function exportMappedAssetImage(a, baseName, fmt, quality, transparent) {
+        if (!a || a.type !== "2d") return false;
+        const mapped = getMappedTemplateImage(a);
+        if (!mapped) return false;
+        const u = exportCanvasDataUrl(mapped, fmt, quality, transparent);
+        if (!u) return false;
+        dlUrl(`${baseName}.${fileSlug(a.id, "asset")}.${fmt}`, u);
+        return true;
+      }
+      function runPackageExport(mode) {
+        const bundle = makeKataCartExportBundle();
+        if (!bundle) return;
+        const { baseName, manifest, payload, gltf, textures } = bundle;
+        if (mode === "state") {
+          dl(`${baseName}.state.json`, JSON.stringify(payload, null, 2), "application/json");
+          setStatus("Exported state JSON.");
+          return;
+        }
+        if (mode === "glb") {
+          const glb = makeGlbBlob(gltf);
+          dlBlob(`${baseName}.glb`, glb);
+          setStatus("Exported quick GLB.");
+          return;
+        }
+        if (mode === "debug") {
+          makeDebugMappingPack(bundle)
+            .then((pack) => {
+              dlBlob(`${baseName}.mapping-debug.zip`, pack.blob);
+              setStatus(`Exported mapping debug pack (${pack.count} GLB variants).`);
+            })
+            .catch(() => {
+              setStatus("Debug mapping export failed.");
+            });
+          return;
+        }
+        if (mode === "truth") {
+          makeTruthCubeExportPack(bundle)
+            .then((pack) => {
+              dlBlob(`${baseName}.truth-cube.zip`, pack.blob);
+              setStatus("Exported truth cube parity pack.");
+            })
+            .catch(() => {
+              setStatus("Truth cube export failed.");
+            });
+          return;
+        }
+        if (mode === "zip") {
+          const glbBlob = makeGlbBlob(gltf);
+          // Build ZIP asynchronously with Blob -> ArrayBuffer conversion.
+          glbBlob
+            .arrayBuffer()
+            .then((ab) => {
+              const files = [
+                { name: `${baseName}.manifest.json`, bytes: textToBytes(JSON.stringify(manifest, null, 2)) },
+                { name: `${baseName}.state.json`, bytes: textToBytes(JSON.stringify(payload, null, 2)) },
+                { name: `${baseName}.gltf`, bytes: textToBytes(JSON.stringify(gltf, null, 2)) },
+                { name: `${baseName}.glb`, bytes: new Uint8Array(ab) },
+              ];
+              textures.forEach((t) => {
+                const parsed = dataUriToBytes(t.dataUri);
+                files.push({ name: t.filename, bytes: parsed.bytes });
+              });
+              const zip = makeZipStore(files);
+              dlBlob(`${baseName}.zip`, zip);
+              setStatus(
+                `Exported ZIP package (${files.length} files, including glTF + GLB + textures).`,
+              );
+            })
+            .catch(() => {
+              setStatus("ZIP export failed.");
+            });
+          return;
+        }
+        if (mode === "gltf") {
+          dl(`${baseName}.gltf`, JSON.stringify(gltf, null, 2), "model/gltf+json");
+          textures.forEach((t) => dlUrl(t.filename, t.dataUri));
+          setStatus(`Exported glTF + ${textures.length} texture${textures.length === 1 ? "" : "s"}.`);
+          return;
+        }
+        dl(`${baseName}.manifest.json`, JSON.stringify(manifest, null, 2), "application/json");
+        dl(`${baseName}.state.json`, JSON.stringify(payload, null, 2), "application/json");
+        dl(`${baseName}.gltf`, JSON.stringify(gltf, null, 2), "model/gltf+json");
+        dlBlob(`${baseName}.glb`, makeGlbBlob(gltf));
+        textures.forEach((t) => dlUrl(t.filename, t.dataUri));
+        setStatus(
+          `Exported package: ${baseName} (manifest + state + glTF + GLB + ${textures.length} texture${textures.length === 1 ? "" : "s"}).`,
+        );
+      }
+      function runImageExport() {
+        const c = cart();
+        if (!c) return;
+        const fmt = U.exportImageFormat?.value || "png";
+        const quality = Math.max(0.6, Math.min(1, Number(U.exportImageQuality?.value || 92) / 100));
+        const transparent = !!U.exportTransparentBg?.checked;
+        const target = U.exportImageAsset?.value || "__model__";
+        const baseName = fileSlug(`${c.name}-${c.templateId}`, "katacart");
+        if (target === "__model__") {
+          const scale = Math.max(1, Number(U.exportModelScale?.value || 1));
+          const snap = composeModelSnapshot(scale, transparent);
+          const u = exportCanvasDataUrl(snap, fmt, quality, transparent);
+          if (!u) return;
+          dlUrl(`${baseName}.model-view.${fmt}`, u);
+          setStatus("Exported 3D model view image.");
+          return;
+        }
+        const a = c.assets.find((x) => x.id === target);
+        if (!a || a.type !== "2d") {
+          setStatus("Choose a valid 2D texture asset to export.");
+          return;
+        }
+        const ok = exportMappedAssetImage(a, baseName, fmt, quality, transparent);
+        setStatus(ok ? `Exported ${a.label} image.` : "Current asset has no mapped image to export.");
+      }
 
       U.cancelCreateBtn.addEventListener("click", closeCreatePanel);
       U.createCartBtn.addEventListener("click", () => {
@@ -5071,8 +6735,8 @@
           S.renderer.engine = U.rendererSelect.value === "webgl" ? "webgl" : "canvas";
           setStatus(
             S.renderer.engine === "webgl"
-              ? "3D renderer set to WebGL Experimental."
-              : "3D renderer set to Canvas Stable.",
+              ? "3D renderer set to WebGL Primary."
+              : "3D renderer set to Canvas fallback/debug mode.",
           );
         });
       if (U.poseSelect)
@@ -5163,12 +6827,8 @@
         S.view.renderMode = "wobble";
         syncViewToggleUI();
       });
-      U.toolFaceOpaqueBtn.addEventListener("click", () => {
-        S.view.faceViz = "opaque";
-        syncViewToggleUI();
-      });
-      U.toolFaceGhostBtn.addEventListener("click", () => {
-        S.view.faceViz = "transparent";
+      U.toolFaceVizBtn.addEventListener("click", () => {
+        S.view.faceViz = S.view.faceViz === "opaque" ? "transparent" : "opaque";
         syncViewToggleUI();
       });
       U.toolTemplateLabelsBtn.addEventListener("click", () => {
@@ -5380,19 +7040,47 @@
         uploadImage(f);
       });
 
-      U.exportJsonBtn.addEventListener("click", () => {
-        const p = exportPayload();
-        if (!p) return;
-        const name = (p.cart.name || "katacart")
-          .replace(/[^a-z0-9]+/gi, "-")
-          .toLowerCase();
-        dl(
-          `${name}.katacart.json`,
-          JSON.stringify(p, null, 2),
-          "application/json",
+      U.exportJsonBtn.addEventListener("click", openExportModal);
+      if (U.closeExportModalBtn) U.closeExportModalBtn.addEventListener("click", closeExportModal);
+      if (U.cancelPackageExportBtn) U.cancelPackageExportBtn.addEventListener("click", closeExportModal);
+      if (U.cancelTemplateExportBtn) U.cancelTemplateExportBtn.addEventListener("click", closeExportModal);
+      if (U.cancelImageExportBtn) U.cancelImageExportBtn.addEventListener("click", closeExportModal);
+      if (U.exportTabButtons)
+        U.exportTabButtons.forEach((btn) =>
+          btn.addEventListener("click", () => {
+            setExportTab(btn.dataset.exportTab || "package");
+            syncExportModalState();
+          }),
         );
-        setStatus("Exported JSON.");
-      });
+      if (U.exportTemplateSelectAll)
+        U.exportTemplateSelectAll.addEventListener("input", () => {
+          const on = !!U.exportTemplateSelectAll.checked;
+          [...(U.exportTemplateTableBody?.querySelectorAll(".export-template-check") || [])].forEach(
+            (x) => {
+              x.checked = on;
+            },
+          );
+          refreshTemplateExportTable();
+        });
+      if (U.exportTemplateTableBody)
+        U.exportTemplateTableBody.addEventListener("input", (e) => {
+          if (e.target && e.target.classList.contains("export-template-check"))
+            refreshTemplateExportTable();
+        });
+      if (U.exportImageAsset) U.exportImageAsset.addEventListener("input", syncExportModalState);
+      if (U.exportImageFormat) U.exportImageFormat.addEventListener("input", syncExportModalState);
+      if (U.runPackageExportBtn)
+        U.runPackageExportBtn.addEventListener("click", () => {
+          runPackageExport(U.exportPackageType?.value || "full");
+        });
+      if (U.runTemplateBatchBtn)
+        U.runTemplateBatchBtn.addEventListener("click", () => {
+          runTemplateBatchExport();
+        });
+      if (U.runImageExportBtn)
+        U.runImageExportBtn.addEventListener("click", () => {
+          runImageExport();
+        });
       window.addEventListener("resize", () => {
         resizeCanvas();
         if (!isCompactHeaderMode()) setHeaderMoreOpen(false);
