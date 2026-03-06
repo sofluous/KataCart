@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="app-version" content="0.11" />
+    <meta name="app-version" content="0.12" />
     <title>KataCart</title>
     <link rel="stylesheet" href="./theme.css" />
     <link
@@ -1959,6 +1959,9 @@
               </select>
             </div>
             <div class="actions">
+              <button id="runTruthValidateBtn" class="btn" type="button">
+                <i class="iconoir-check-circle"></i>Truth Cube Validate
+              </button>
               <button id="cancelPackageExportBtn" class="btn destructive" type="button">
                 <i class="iconoir-xmark-circle"></i>Cancel
               </button>
@@ -2370,6 +2373,7 @@
         cancelTemplateExportBtn: document.getElementById("cancelTemplateExportBtn"),
         cancelImageExportBtn: document.getElementById("cancelImageExportBtn"),
         exportPackageType: document.getElementById("exportPackageType"),
+        runTruthValidateBtn: document.getElementById("runTruthValidateBtn"),
         runPackageExportBtn: document.getElementById("runPackageExportBtn"),
         exportTemplateSelectAll: document.getElementById("exportTemplateSelectAll"),
         exportTemplateTableBody: document.getElementById("exportTemplateTableBody"),
@@ -2464,21 +2468,12 @@
           { u: 0, v: 1 },
         ],
       };
-      const EXPORT_MAPPING_PROFILES = {
-        webgl: {
-          id: "webgl",
-          label: "WebGL Native",
-          uvOps: [],
-          spineTargetFace: "spine",
-        },
-        blender: {
-          id: "blender",
-          label: "Blender Parity",
-          uvOps: ["rot180", "flipU"],
-          spineTargetFace: "right",
-        },
+      const CANONICAL_EXPORT_MAPPING_PROFILE = {
+        id: "blender",
+        label: "Blender Parity",
+        uvOps: ["rot180", "flipU"],
+        spineTargetFace: "right",
       };
-      const ACTIVE_EXPORT_MAPPING_PROFILE = "blender";
       const WEBGL_FACE_UV_ARRAY = {
         front: [0, 1, 1, 1, 1, 0, 0, 0],
         back: [0, 1, 1, 1, 1, 0, 0, 0],
@@ -5589,8 +5584,8 @@
         const l = Math.hypot(nx, ny, nz) || 1;
         return [nx / l, ny / l, nz / l];
       }
-      function getExportMappingProfile(profileId = ACTIVE_EXPORT_MAPPING_PROFILE) {
-        return EXPORT_MAPPING_PROFILES[profileId] || EXPORT_MAPPING_PROFILES.blender;
+      function getExportMappingProfile() {
+        return CANONICAL_EXPORT_MAPPING_PROFILE;
       }
       function applyUvOpsList(points, ops = []) {
         let out = points.map((p) => ({ u: p.u, v: p.v }));
@@ -6359,6 +6354,59 @@
             return { blob: makeZipStore(files), count: files.length };
           });
       }
+      function validateTruthCubeParity() {
+        const bundle = makeKataCartExportBundle();
+        if (!bundle) {
+          setStatus("Truth validate failed: no active cart.");
+          return;
+        }
+        const profile = getExportMappingProfile();
+        const truth = makeTruthCubeGltf(bundle);
+        const prims = truth?.meshes?.[0]?.primitives || [];
+        const errors = [];
+        const eps = 0.003;
+        const caseFaces = ["front", "back", "spine", "right", "top", "bottom"];
+        caseFaces.forEach((faceId) => {
+          const prim = prims.find((p) => p?.extras?.faceId === faceId);
+          if (!prim) {
+            errors.push(`Missing primitive for face ${faceId}.`);
+            return;
+          }
+          const expected = applyUvOpsList(WEBGL_FACE_UV_COORDS[faceId], profile.uvOps);
+          const sample = readPrimitiveUvSample(truth, prim, 4);
+          if (sample.length < 4) {
+            errors.push(`UV sample missing for face ${faceId}.`);
+            return;
+          }
+          for (let i = 0; i < 4; i += 1) {
+            const du = Math.abs(sample[i].u - expected[i].u);
+            const dv = Math.abs(sample[i].v - expected[i].v);
+            if (du > eps || dv > eps) {
+              errors.push(
+                `${faceId} UV mismatch at ${i}: got (${sample[i].u},${sample[i].v}) expected (${expected[i].u},${expected[i].v})`,
+              );
+              break;
+            }
+          }
+        });
+        const exportPrims = bundle?.gltf?.meshes?.[0]?.primitives || [];
+        const spineTargetPrim = exportPrims.find(
+          (p) => p?.extras?.faceId === profile.spineTargetFace,
+        );
+        if (profile.spineTargetFace && profile.spineTargetFace !== "spine") {
+          const spineFacePrim = exportPrims.find((p) => p?.extras?.faceId === "spine");
+          if (spineFacePrim?.extras?.textureRole === "spine")
+            errors.push("Spine texture is still assigned to spine face.");
+        }
+        if (spineTargetPrim?.extras?.textureRole !== "spine")
+          errors.push(`Spine texture not assigned to ${profile.spineTargetFace} face.`);
+        if (errors.length) {
+          console.warn("[KataCart Truth Validate] Failed", errors);
+          setStatus(`Truth validate failed (${errors.length}). Check console for details.`);
+          return;
+        }
+        setStatus(`Truth validate passed for canonical profile: ${profile.id}.`);
+      }
       function openExportModal() {
         if (!U.exportModal) return;
         refreshTemplateExportTable();
@@ -7072,6 +7120,10 @@
       if (U.runPackageExportBtn)
         U.runPackageExportBtn.addEventListener("click", () => {
           runPackageExport(U.exportPackageType?.value || "full");
+        });
+      if (U.runTruthValidateBtn)
+        U.runTruthValidateBtn.addEventListener("click", () => {
+          validateTruthCubeParity();
         });
       if (U.runTemplateBatchBtn)
         U.runTemplateBatchBtn.addEventListener("click", () => {
