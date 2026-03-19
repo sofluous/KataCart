@@ -10,6 +10,8 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/iconoir@7.10.1/css/iconoir.css"
     />
+    <script src="../_DesignSystem/js/theme-registry.js"></script>
+    <script src="../_DesignSystem/js/theme-selector.js"></script>
     <style>
       :root {
         --gap: var(--ds-layout-gap);
@@ -944,6 +946,43 @@
       .header-more-menu[hidden] {
         display: none;
       }
+      .kc-context-menu {
+        position: fixed;
+        min-width: 190px;
+        max-width: min(280px, 84vw);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 96%, transparent);
+        box-shadow: var(--ds-card-shadow);
+        padding: var(--ds-space-1);
+        display: grid;
+        gap: var(--ds-space-1);
+        z-index: calc(var(--kc-z-drawer) + 8);
+      }
+      .kc-context-menu[hidden] {
+        display: none !important;
+      }
+      .kc-context-menu-btn {
+        width: 100%;
+        min-height: var(--ds-control-h-sm);
+        border: 1px solid transparent;
+        border-radius: var(--ds-radius-1);
+        background: transparent;
+        color: var(--ds-text);
+        font: inherit;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: var(--ds-space-2);
+        padding: 0 var(--ds-space-2);
+        cursor: pointer;
+      }
+      .kc-context-menu-btn:hover,
+      .kc-context-menu-btn:focus-visible {
+        border-color: var(--ds-border);
+        background: color-mix(in oklab, var(--ds-accent) 10%, var(--ds-btn-bg));
+        outline: none;
+      }
       .header-more-menu .seg-btn {
         justify-content: flex-start;
         min-height: var(--ds-control-h-sm);
@@ -1314,6 +1353,52 @@
         grid-column: 1 / span 2;
         min-height: var(--kc-canvas-notes-h);
       }
+      .canvas-meta-head,
+      .canvas-context-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--kc-space-3);
+        cursor: pointer;
+      }
+      .canvas-meta-head {
+        grid-column: 1 / span 2;
+      }
+      .panel-collapse-icon {
+        display: inline-grid;
+        place-items: center;
+        width: var(--ds-icon-md, 18px);
+        height: var(--ds-icon-md, 18px);
+        color: var(--ds-text-muted);
+        flex: 0 0 auto;
+      }
+      .canvas-meta-head:focus-visible,
+      .canvas-context-title:focus-visible {
+        outline: 1px solid var(--ds-border-strong, var(--ds-border));
+        outline-offset: 2px;
+        border-radius: var(--ds-radius-1);
+      }
+      .panel-collapse-icon i {
+        transition: transform var(--ds-dur-fast) var(--ds-ease-standard);
+      }
+      .canvas-meta-head[aria-expanded="false"] .panel-collapse-icon i,
+      .canvas-context-title[aria-expanded="false"] .panel-collapse-icon i {
+        transform: rotate(-90deg);
+      }
+      .canvas-meta-body {
+        grid-column: 1 / span 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--ds-space-2);
+      }
+      .canvas-meta.is-collapsed .canvas-meta-body,
+      .canvas-context.is-collapsed .canvas-context-body {
+        display: none;
+      }
+      .canvas-meta.is-collapsed,
+      .canvas-context.is-collapsed {
+        align-content: start;
+      }
       .canvas-context {
         position: absolute;
         left: var(--kc-overlay-inset);
@@ -1421,12 +1506,13 @@
         overflow: auto;
       }
       .canvas-context-title {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--kc-space-3);
         font-size: var(--ds-fs-2);
         font-weight: 600;
+      }
+      .canvas-context-body {
+        display: grid;
+        gap: var(--ds-space-2);
+        align-content: start;
       }
       .canvas-status {
         max-width: 100%;
@@ -1516,6 +1602,39 @@
       }
       .workspace-header .actions {
         justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: var(--kc-space-2);
+      }
+      .overlay-left.is-collapsed .canvas-meta,
+      .overlay-left.is-collapsed .canvas-context,
+      .overlay-left.is-collapsed .canvas-status {
+        display: none !important;
+      }
+      .overlay-left.is-collapsed {
+        width: 0;
+        pointer-events: none;
+      }
+      .overlay-right.is-preview .hud,
+      .overlay-right.is-preview .mini-gizmo,
+      .overlay-right.is-preview .camera-pad {
+        display: none !important;
+      }
+      .stage.is-preview #cartNameOverlay,
+      .stage.is-preview .overlay-left,
+      .stage.is-preview .overlay-right,
+      .stage.is-preview #dropTip {
+        display: none !important;
+      }
+      .workspace-main.is-preview .workspace-header {
+        background: color-mix(in oklab, var(--ds-bg-elevated) 72%, transparent);
+      }
+      #assetStripShell.is-collapsed {
+        display: none !important;
+      }
+      .workspace-header .btn.is-active {
+        border-color: var(--ds-accent);
+        background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
       }
       .workspace-header .header-toolstrip .seg-btn {
         min-width: var(--kc-tool-btn-w);
@@ -1619,7 +1738,7 @@
     </section>
 
     <section id="workspaceScreen" class="screen" hidden>
-      <div class="workspace-main">
+      <div id="workspaceMain" class="workspace-main">
         <header class="workspace-header">
           <div class="workspace-header-left">
             <button id="backToGalleryBtn" class="btn" type="button">
@@ -1665,6 +1784,18 @@
             </div>
           </div>
           <div class="actions">
+            <button id="focusWorkspaceBtn" class="btn" type="button" title="Toggle fullscreen focus">
+              <i class="iconoir-expand"></i>Focus
+            </button>
+            <button id="toggleAssetStripBtn" class="btn" type="button" title="Toggle asset strip">
+              <i class="iconoir-view-columns-3"></i>Assets
+            </button>
+            <button id="toggleInspectorBtn" class="btn" type="button" title="Toggle inspector panel">
+              <i class="iconoir-sidebar-collapse"></i>Inspector
+            </button>
+            <button id="togglePreviewBtn" class="btn" type="button" title="Toggle preview mode">
+              <i class="iconoir-eye-empty"></i>Preview
+            </button>
             <button id="exportJsonBtn" class="btn primary" type="button">
               <i class="iconoir-download"></i>Export...
             </button>
@@ -1677,25 +1808,52 @@
           <canvas id="stageGlCanvas" aria-hidden="true" hidden></canvas>
           <canvas id="stageCanvas"></canvas>
           <input id="cartNameOverlay" value="Cart" />
-          <div class="overlay-left">
-            <div class="canvas-meta">
-              <div class="field">
-                <label for="metaSku">SKU</label
-                ><input id="metaSku" placeholder="KATA-0001" />
+          <div id="overlayLeft" class="overlay-left">
+            <div id="canvasMetaPanel" class="canvas-meta">
+              <div
+                id="toggleMetaPanelBtn"
+                class="canvas-meta-head"
+                role="button"
+                tabindex="0"
+                title="Collapse metadata"
+                aria-expanded="true"
+              >
+                <span><i class="iconoir-notes"></i> Metadata</span>
+                <span class="panel-collapse-icon" aria-hidden="true">
+                  <i class="iconoir-nav-arrow-down"></i>
+                </span>
               </div>
-              <div class="field">
-                <label for="metaNotes">Notes</label
-                ><textarea id="metaNotes"></textarea>
-              </div>
-              <div class="field">
-                <label for="metaTags">Tags</label
-                ><input id="metaTags" placeholder="retro, ps2, archive" />
+              <div id="canvasMetaBody" class="canvas-meta-body">
+                <div class="field">
+                  <label for="metaSku">SKU</label
+                  ><input id="metaSku" placeholder="KATA-0001" />
+                </div>
+                <div class="field">
+                  <label for="metaNotes">Notes</label
+                  ><textarea id="metaNotes"></textarea>
+                </div>
+                <div class="field">
+                  <label for="metaTags">Tags</label
+                  ><input id="metaTags" placeholder="retro, ps2, archive" />
+                </div>
               </div>
             </div>
-            <div class="canvas-context panel">
-              <div class="canvas-context-title">
+            <div id="canvasContextPanel" class="canvas-context panel">
+              <div
+                id="toggleContextPanelBtn"
+                class="canvas-context-title"
+                role="button"
+                tabindex="0"
+                title="Collapse asset inspector"
+                aria-expanded="true"
+              >
                 <span><i class="iconoir-cube-bandage"></i> Asset Inspector</span>
+                <span class="panel-collapse-icon" aria-hidden="true">
+                  <i class="iconoir-nav-arrow-down"></i>
+                </span>
               </div>
+              <div id="canvasContextBody" class="canvas-context-body">
+                <div id="assetInspectorHint" class="muted">Select an asset to edit its current context.</div>
               <div id="context2D" class="group" hidden>
                 <h3><i class="iconoir-media-image"></i> Texture Controls</h3>
                 <div id="discArtStyleRow" class="setting-row" hidden>
@@ -1817,10 +1975,11 @@
                 <h3>UV Unwrap Context</h3>
                 <div class="muted">Flattened UV projection preview for mapping checks.</div>
               </div>
+              </div>
             </div>
             <div id="statusText" class="canvas-status">Ready.</div>
           </div>
-          <div class="overlay-right">
+          <div id="overlayRight" class="overlay-right">
             <div class="hud">
               <div id="hudAsset">Asset: -</div>
               <div id="hudTemplate" class="muted">Template: -</div>
@@ -1904,7 +2063,11 @@
         </div>
         <div class="setting-row">
           <label class="setting-label" for="themeSelect">Theme</label
-          ><select id="themeSelect"></select>
+          ><select
+            id="themeSelect"
+            data-ds-theme-select
+            data-ds-theme-storage="katacart-theme"
+          ></select>
         </div>
         <label class="setting-row" for="glowCheckbox"
           ><span class="setting-label">Background Glow</span
@@ -2044,22 +2207,9 @@
     </dialog>
 
     <input id="assetFileInput" type="file" accept="image/*" hidden />
+    <div id="contextMenu" class="kc-context-menu" hidden></div>
 
     <script>
-      const THEMES = [
-        "steel-night",
-        "paper-mint",
-        "amber-terminal",
-        "neon-grid",
-        "mono-slate",
-        "tech-grid",
-        "skeuo-panel",
-        "industrial-terminal",
-        "velvet-touch",
-        "eva-wireframe",
-        "saturn-alloy",
-        "eva-unit-01",
-      ];
       const TEMPLATE_SPECS = [
         {
           id: "cd-jewel",
@@ -2252,6 +2402,18 @@
           pose: "default",
           bgTexture: "none",
           glow: true,
+          preview: false,
+        },
+        chrome: {
+          inspectorCollapsed: false,
+          assetStripCollapsed: false,
+          metaCollapsed: false,
+          contextCollapsed: false,
+        },
+        contextMenu: {
+          open: false,
+          x: 0,
+          y: 0,
         },
         debug: {
           mapping: false,
@@ -2268,6 +2430,7 @@
       const U = {
         galleryScreen: document.getElementById("galleryScreen"),
         workspaceScreen: document.getElementById("workspaceScreen"),
+        workspaceMain: document.getElementById("workspaceMain"),
         galleryList: document.getElementById("galleryList"),
         layoutButtons: [...document.querySelectorAll(".layout-switch [data-layout]")],
         createPanel: document.getElementById("createPanel"),
@@ -2281,6 +2444,10 @@
         statusText: document.getElementById("statusText"),
         backToGalleryBtn: document.getElementById("backToGalleryBtn"),
         settingsBtn: document.getElementById("settingsBtn"),
+        focusWorkspaceBtn: document.getElementById("focusWorkspaceBtn"),
+        toggleAssetStripBtn: document.getElementById("toggleAssetStripBtn"),
+        toggleInspectorBtn: document.getElementById("toggleInspectorBtn"),
+        togglePreviewBtn: document.getElementById("togglePreviewBtn"),
         settingsOpenBtns: [...document.querySelectorAll("[data-open-settings]")],
         settingsDrawer: document.getElementById("settingsDrawer"),
         closeSettingsBtn: document.getElementById("closeSettingsBtn"),
@@ -2302,6 +2469,14 @@
         debugOutput: document.getElementById("debugOutput"),
         stageGlCanvas: document.getElementById("stageGlCanvas"),
         stageCanvas: document.getElementById("stageCanvas"),
+        overlayLeft: document.getElementById("overlayLeft"),
+        canvasMetaPanel: document.getElementById("canvasMetaPanel"),
+        canvasMetaBody: document.getElementById("canvasMetaBody"),
+        toggleMetaPanelBtn: document.getElementById("toggleMetaPanelBtn"),
+        canvasContextPanel: document.getElementById("canvasContextPanel"),
+        canvasContextBody: document.getElementById("canvasContextBody"),
+        toggleContextPanelBtn: document.getElementById("toggleContextPanelBtn"),
+        overlayRight: document.getElementById("overlayRight"),
         miniGizmo: document.getElementById("miniGizmo"),
         miniCanvas: document.getElementById("miniCanvas"),
         gizmoSizeRange: document.getElementById("gizmoSizeRange"),
@@ -2312,6 +2487,7 @@
         zoomInBtn: document.getElementById("zoomInBtn"),
         zoomOutBtn: document.getElementById("zoomOutBtn"),
         zoomResetBtn: document.getElementById("zoomResetBtn"),
+        assetStripShell: document.getElementById("assetStripShell"),
         assetStrip: document.getElementById("assetStrip"),
         txRange: document.getElementById("txRange"),
         tyRange: document.getElementById("tyRange"),
@@ -2365,6 +2541,7 @@
         exportJsonBtn: document.getElementById("exportJsonBtn"),
         exportModal: document.getElementById("exportModal"),
         closeExportModalBtn: document.getElementById("closeExportModalBtn"),
+        assetInspectorHint: document.getElementById("assetInspectorHint"),
         exportTabButtons: [...document.querySelectorAll("[data-export-tab]")],
         exportPanelPackage: document.getElementById("exportPanelPackage"),
         exportPanelTemplate: document.getElementById("exportPanelTemplate"),
@@ -2387,6 +2564,7 @@
         exportImageQuality: document.getElementById("exportImageQuality"),
         runImageExportBtn: document.getElementById("runImageExportBtn"),
         assetFileInput: document.getElementById("assetFileInput"),
+        contextMenu: document.getElementById("contextMenu"),
       };
 
       const X = U.stageCanvas.getContext("2d");
@@ -2406,6 +2584,7 @@
       const CANVAS_FS_1 = numCssVar("--ds-fs-1", 12);
       const CANVAS_FS_2 = numCssVar("--ds-fs-2", 14);
       const HEADER_COMPACT_MEDIA = `(max-width: ${cssVar("--kc-breakpoint-head-compact", "980px")})`;
+      const WORKSPACE_PREFS_KEY = "katacart-workspace-ui-v1";
       const ZOOM_MIN = 0.01;
       const ZOOM_MAX = 100;
       let last = performance.now();
@@ -3126,6 +3305,7 @@
         const px = Math.max(80, Math.min(360, Math.round(size)));
         S.gizmo.size = px;
         if (U.gizmoSizeRange) U.gizmoSizeRange.value = String(px);
+        saveWorkspacePrefs();
       }
       function tById(id) {
         return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
@@ -3197,10 +3377,194 @@
         const c = cart();
         if (!c) return;
         normalizeCartAssetsToTemplate(c);
+        const preferredAssetId =
+          c.lastAssetId && c.assets.some((a) => a.id === c.lastAssetId)
+            ? c.lastAssetId
+            : c.assets[0]?.id || null;
         if (!S.assetId || !c.assets.some((a) => a.id === S.assetId))
-          S.assetId = c.assets[0]?.id || null;
+          S.assetId = preferredAssetId;
+        if (S.assetId) c.lastAssetId = S.assetId;
         c.assets.forEach(ensure2DTransform);
         ensureModelTransform(c);
+      }
+      function saveWorkspacePrefs() {
+        try {
+          localStorage.setItem(
+            WORKSPACE_PREFS_KEY,
+            JSON.stringify({
+              preview: !!S.view.preview,
+              inspectorCollapsed: !!S.chrome.inspectorCollapsed,
+              assetStripCollapsed: !!S.chrome.assetStripCollapsed,
+              metaCollapsed: !!S.chrome.metaCollapsed,
+              contextCollapsed: !!S.chrome.contextCollapsed,
+              renderMode: S.view.renderMode,
+              faceViz: S.view.faceViz,
+              templateLabels: !!S.view.templateLabels,
+              normals: !!S.view.normals,
+              spin: !!S.view.spin,
+              pose: S.view.pose,
+              bgTexture: S.view.bgTexture,
+              glow: !!S.view.glow,
+              gizmoSize: Number(S.gizmo.size || 150),
+            }),
+          );
+        } catch {}
+      }
+      function loadWorkspacePrefs() {
+        try {
+          const raw = localStorage.getItem(WORKSPACE_PREFS_KEY);
+          if (!raw) return;
+          const data = JSON.parse(raw);
+          if (typeof data.preview === "boolean") S.view.preview = data.preview;
+          if (typeof data.inspectorCollapsed === "boolean")
+            S.chrome.inspectorCollapsed = data.inspectorCollapsed;
+          if (typeof data.assetStripCollapsed === "boolean")
+            S.chrome.assetStripCollapsed = data.assetStripCollapsed;
+          if (typeof data.metaCollapsed === "boolean")
+            S.chrome.metaCollapsed = data.metaCollapsed;
+          if (typeof data.contextCollapsed === "boolean")
+            S.chrome.contextCollapsed = data.contextCollapsed;
+          if (typeof data.renderMode === "string") S.view.renderMode = data.renderMode;
+          if (typeof data.faceViz === "string") S.view.faceViz = data.faceViz;
+          if (typeof data.templateLabels === "boolean")
+            S.view.templateLabels = data.templateLabels;
+          if (typeof data.normals === "boolean") S.view.normals = data.normals;
+          if (typeof data.spin === "boolean") S.view.spin = data.spin;
+          if (typeof data.pose === "string") S.view.pose = data.pose;
+          if (typeof data.bgTexture === "string") S.view.bgTexture = data.bgTexture;
+          if (typeof data.glow === "boolean") S.view.glow = data.glow;
+          if (Number.isFinite(Number(data.gizmoSize))) S.gizmo.size = Number(data.gizmoSize);
+        } catch {}
+      }
+      function setActiveAsset(assetId, rerender = true) {
+        const c = cart();
+        if (!c || !c.assets?.some((item) => item.id === assetId)) return;
+        S.assetId = assetId;
+        c.lastAssetId = assetId;
+        saveWorkspacePrefs();
+        if (!rerender) return;
+        syncContextFromAsset();
+        renderAssetStrip();
+      }
+      function syncInspectorPanels() {
+        const metaCollapsed = !!S.chrome.metaCollapsed;
+        const contextCollapsed = !!S.chrome.contextCollapsed;
+        U.canvasMetaPanel?.classList.toggle("is-collapsed", metaCollapsed);
+        U.canvasContextPanel?.classList.toggle("is-collapsed", contextCollapsed);
+        if (U.toggleMetaPanelBtn) {
+          U.toggleMetaPanelBtn.setAttribute("aria-expanded", metaCollapsed ? "false" : "true");
+          U.toggleMetaPanelBtn.title = metaCollapsed ? "Expand metadata" : "Collapse metadata";
+        }
+        if (U.toggleContextPanelBtn) {
+          U.toggleContextPanelBtn.setAttribute("aria-expanded", contextCollapsed ? "false" : "true");
+          U.toggleContextPanelBtn.title = contextCollapsed
+            ? "Expand asset inspector"
+            : "Collapse asset inspector";
+        }
+      }
+      function toggleMetaPanel() {
+        S.chrome.metaCollapsed = !S.chrome.metaCollapsed;
+        syncInspectorPanels();
+        saveWorkspacePrefs();
+        setStatus(S.chrome.metaCollapsed ? "Metadata collapsed." : "Metadata expanded.");
+      }
+      function toggleContextPanel() {
+        S.chrome.contextCollapsed = !S.chrome.contextCollapsed;
+        syncInspectorPanels();
+        saveWorkspacePrefs();
+        setStatus(
+          S.chrome.contextCollapsed ? "Asset inspector collapsed." : "Asset inspector expanded.",
+        );
+      }
+      function syncWorkspaceChrome() {
+        const preview = !!S.view.preview;
+        const inspectorCollapsed = preview || !!S.chrome.inspectorCollapsed;
+        const assetStripCollapsed = preview || !!S.chrome.assetStripCollapsed;
+        U.workspaceMain?.classList.toggle("is-preview", preview);
+        U.overlayLeft?.classList.toggle("is-collapsed", inspectorCollapsed);
+        U.overlayRight?.classList.toggle("is-preview", preview);
+        U.stageCanvas?.parentElement?.classList.toggle("is-preview", preview);
+        U.assetStripShell?.classList.toggle("is-collapsed", assetStripCollapsed);
+        U.togglePreviewBtn?.classList.toggle("is-active", preview);
+        U.toggleInspectorBtn?.classList.toggle("is-active", !preview && !S.chrome.inspectorCollapsed);
+        U.toggleAssetStripBtn?.classList.toggle("is-active", !preview && !S.chrome.assetStripCollapsed);
+        if (U.togglePreviewBtn) {
+          U.togglePreviewBtn.title = preview ? "Exit preview mode" : "Enter preview mode";
+          U.togglePreviewBtn.innerHTML = preview
+            ? '<i class="iconoir-eye-off"></i>Preview'
+            : '<i class="iconoir-eye-empty"></i>Preview';
+        }
+        if (U.toggleInspectorBtn) {
+          U.toggleInspectorBtn.title =
+            inspectorCollapsed && !preview ? "Show inspector panel" : "Hide inspector panel";
+        }
+        if (U.toggleAssetStripBtn) {
+          U.toggleAssetStripBtn.title =
+            assetStripCollapsed && !preview ? "Show asset strip" : "Hide asset strip";
+        }
+        syncInspectorPanels();
+        syncFocusButton();
+      }
+      function syncFocusButton() {
+        if (!U.focusWorkspaceBtn) return;
+        const active = !!document.fullscreenElement;
+        U.focusWorkspaceBtn.classList.toggle("is-active", active);
+        U.focusWorkspaceBtn.title = active
+          ? "Exit fullscreen focus"
+          : "Enter fullscreen focus";
+        U.focusWorkspaceBtn.innerHTML = active
+          ? '<i class="iconoir-minimize"></i>Focus'
+          : '<i class="iconoir-expand"></i>Focus';
+      }
+      function openExportModalToTab(tabId) {
+        S.exportTab = tabId || "package";
+        openExportModal();
+      }
+      function closeContextMenu() {
+        S.contextMenu.open = false;
+        if (!U.contextMenu) return;
+        U.contextMenu.hidden = true;
+        U.contextMenu.innerHTML = "";
+      }
+      function openContextMenu(x, y, items) {
+        if (!U.contextMenu || !items?.length) return;
+        U.contextMenu.innerHTML = "";
+        items.forEach((item) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "kc-context-menu-btn";
+          btn.innerHTML = `${item.icon ? `<i class="${item.icon}"></i>` : ""}<span>${item.label}</span>`;
+          btn.addEventListener("click", () => {
+            closeContextMenu();
+            item.action?.();
+          });
+          U.contextMenu.append(btn);
+        });
+        U.contextMenu.hidden = false;
+        const vw = window.innerWidth || 0;
+        const vh = window.innerHeight || 0;
+        const rect = U.contextMenu.getBoundingClientRect();
+        const nx = Math.max(8, Math.min(x, vw - rect.width - 8));
+        const ny = Math.max(8, Math.min(y, vh - rect.height - 8));
+        U.contextMenu.style.left = `${nx}px`;
+        U.contextMenu.style.top = `${ny}px`;
+        S.contextMenu.open = true;
+      }
+      async function toggleWorkspaceFullscreen() {
+        const target = U.workspaceMain || document.documentElement;
+        try {
+          if (document.fullscreenElement) {
+            await document.exitFullscreen();
+            setStatus("Focus mode off.");
+            return;
+          }
+          if (target?.requestFullscreen) {
+            await target.requestFullscreen();
+            setStatus("Focus mode on.");
+          }
+        } catch (_) {
+          setStatus("Fullscreen toggle failed.");
+        }
       }
       function syncViewToggleUI() {
         if (U.spinCheckbox) U.spinCheckbox.checked = S.view.spin;
@@ -3234,6 +3598,7 @@
             "active",
             S.view.templateLabels,
           );
+        syncWorkspaceChrome();
       }
       function syncSettingsControls() {
         if (U.rendererSelect) U.rendererSelect.value = S.renderer.engine;
@@ -3477,6 +3842,16 @@
         `;
         newCard.querySelector("button").addEventListener("click", openCreatePanel);
         newCard.addEventListener("dblclick", openCreatePanel);
+        newCard.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          openContextMenu(e.clientX, e.clientY, [
+            {
+              label: "Create New Cart",
+              icon: "iconoir-plus-circle",
+              action: openCreatePanel,
+            },
+          ]);
+        });
         U.galleryList.append(newCard);
 
         if (!S.carts.length) {
@@ -3535,6 +3910,31 @@
             }
           });
           card.addEventListener("dblclick", () => openWorkspace(c.id));
+          card.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            S.gallerySelectedId = c.id;
+            renderGallery();
+            openContextMenu(e.clientX, e.clientY, [
+              {
+                label: "Open Workspace",
+                icon: "iconoir-arrow-right-circle",
+                action: () => openWorkspace(c.id),
+              },
+              {
+                label: "Select Cart",
+                icon: "iconoir-check-circle",
+                action: () => {
+                  S.gallerySelectedId = c.id;
+                  renderGallery();
+                },
+              },
+              {
+                label: "Create New Cart",
+                icon: "iconoir-plus-circle",
+                action: openCreatePanel,
+              },
+            ]);
+          });
           U.galleryList.append(card);
         });
       }
@@ -3568,7 +3968,13 @@
                 ? "3D Viewer"
                 : "UV Viewer";
           const emptyLabel =
-            a.type === "2d" ? (a.image?.src ? "" : "Empty") : a.type === "3d" ? "3D Live" : "UV Map";
+            a.type === "2d"
+              ? a.image?.src
+                ? ""
+                : "Upload Art"
+              : a.type === "3d"
+                ? "3D Live"
+                : "UV Map";
           item.innerHTML = `<div class="asset-box"><div class="asset-empty"><strong>${emptyLabel}</strong><span>${dims}</span></div></div><div><strong>${a.label}</strong></div><div class="asset-meta"><span class="muted">${a.type.toUpperCase()}</span><span class="muted">${status}</span></div><div class="asset-actions"></div>`;
           const box = item.querySelector(".asset-box");
           const empty = item.querySelector(".asset-empty");
@@ -3589,9 +3995,7 @@
             up.innerHTML = `<i class="iconoir-upload"></i>Upload`;
             up.addEventListener("click", (e) => {
               e.stopPropagation();
-              S.assetId = a.id;
-              syncContextFromAsset();
-              renderAssetStrip();
+              setActiveAsset(a.id);
               U.assetFileInput.click();
             });
             actions.append(up);
@@ -3602,9 +4006,76 @@
             actions.append(ph);
           }
           item.addEventListener("click", () => {
-            S.assetId = a.id;
-            syncContextFromAsset();
-            renderAssetStrip();
+            setActiveAsset(a.id);
+          });
+          item.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            setActiveAsset(a.id);
+            const menu = [
+              {
+                label: "Select Asset",
+                icon: "iconoir-check-circle",
+                action: () => setActiveAsset(a.id),
+              },
+            ];
+            if (a.type === "2d") {
+              menu.push(
+                {
+                  label: "Upload Texture",
+                  icon: "iconoir-upload",
+                  action: () => {
+                    setActiveAsset(a.id);
+                    U.assetFileInput.click();
+                  },
+                },
+                {
+                  label: "Download Template",
+                  icon: "iconoir-download",
+                  action: () => {
+                    setActiveAsset(a.id, false);
+                    downloadTemplate();
+                  },
+                },
+                {
+                  label: "Export Image",
+                  icon: "iconoir-media-image",
+                  action: () => {
+                    U.exportImageAsset.value = a.id;
+                    openExportModalToTab("image");
+                    syncExportModalState();
+                  },
+                },
+                {
+                  label: "Reset Texture Transform",
+                  icon: "iconoir-undo",
+                  action: reset2DTransform,
+                },
+              );
+            } else if (a.type === "3d") {
+              menu.push(
+                {
+                  label: "Reset Model Transform",
+                  icon: "iconoir-undo",
+                  action: reset3DTransform,
+                },
+                {
+                  label: "Export Model View",
+                  icon: "iconoir-camera",
+                  action: () => {
+                    U.exportImageAsset.value = "__model__";
+                    openExportModalToTab("image");
+                    syncExportModalState();
+                  },
+                },
+              );
+            } else if (a.type === "uv") {
+              menu.push({
+                label: "Open UV Export",
+                icon: "iconoir-download",
+                action: () => openExportModalToTab("image"),
+              });
+            }
+            openContextMenu(e.clientX, e.clientY, menu);
           });
           U.assetStrip.append(item);
         });
@@ -3614,6 +4085,7 @@
         const c = cart();
         const a = asset();
         if (!c || !a) return;
+        c.lastAssetId = a.id;
         const t = tById(c.templateId);
         const isDiscTemplate = !!templateSpec(t).capabilities?.supportsDiscPose;
         const mm = a.type === "2d" ? assetPhysicalDimsMm(a.id, t) : null;
@@ -3629,6 +4101,15 @@
         const is3d = a.type === "3d";
         const isUV = a.type === "uv";
         const isDiscAsset = is2d && a.id === "disc_art";
+        if (U.assetInspectorHint) {
+          U.assetInspectorHint.textContent = is2d
+            ? a.image?.src
+              ? `Editing ${a.label}. Use texture controls to align artwork inside the mapped template.`
+              : `No artwork loaded for ${a.label}. Upload an image or download the template to begin.`
+            : is3d
+              ? "Live model preview of the assembled cart. Use pose, render, and camera tools to inspect it."
+              : "UV overview of the current mapping. Toggle labels and normals when you need to troubleshoot orientation.";
+        }
         U.context2D.hidden = !is2d;
         U.context3D.hidden = !is3d;
         U.contextUV.hidden = !isUV;
@@ -3687,6 +4168,7 @@
         renderAssetStrip();
         syncSettingsControls();
         syncViewToggleUI();
+        syncWorkspaceChrome();
         U.settingsDrawer.classList.toggle("open", S.settingsOpen);
         if (!isCompactHeaderMode()) setHeaderMoreOpen(false);
       }
@@ -5117,6 +5599,7 @@
         if (!a || a.type !== "2d") return;
         a.tr = { x: 0, y: 0, s: 1, r: 0, mx: false, my: false, px: 1 };
         syncContextFromAsset();
+        saveWorkspacePrefs();
       }
       function toggle2DMirror(axis) {
         const a = asset();
@@ -5141,6 +5624,7 @@
         if (!c) return;
         c.modelTr = { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0, s: 1, mx: false };
         syncContextFromAsset();
+        saveWorkspacePrefs();
       }
       function templateCanvasForAsset(a) {
         const c = document.createElement("canvas");
@@ -5210,6 +5694,7 @@
           );
           syncContextFromAsset();
           renderAssetStrip();
+          saveWorkspacePrefs();
         };
         im.onerror = () => setStatus("Failed to load image file.");
         im.src = u;
@@ -6772,8 +7257,57 @@
         S.settingsOpen = false;
         U.settingsDrawer.classList.remove("open");
       });
+      if (U.togglePreviewBtn)
+        U.togglePreviewBtn.addEventListener("click", () => {
+          S.view.preview = !S.view.preview;
+          syncWorkspaceChrome();
+          saveWorkspacePrefs();
+          setStatus(S.view.preview ? "Preview mode on." : "Preview mode off.");
+        });
+      if (U.toggleInspectorBtn)
+        U.toggleInspectorBtn.addEventListener("click", () => {
+          S.chrome.inspectorCollapsed = !S.chrome.inspectorCollapsed;
+          syncWorkspaceChrome();
+          saveWorkspacePrefs();
+          setStatus(
+            S.chrome.inspectorCollapsed ? "Inspector hidden." : "Inspector shown.",
+          );
+        });
+      if (U.toggleAssetStripBtn)
+        U.toggleAssetStripBtn.addEventListener("click", () => {
+          S.chrome.assetStripCollapsed = !S.chrome.assetStripCollapsed;
+          syncWorkspaceChrome();
+          saveWorkspacePrefs();
+          setStatus(
+            S.chrome.assetStripCollapsed ? "Asset strip hidden." : "Asset strip shown.",
+          );
+        });
+      if (U.toggleMetaPanelBtn)
+        U.toggleMetaPanelBtn.addEventListener("click", toggleMetaPanel);
+      if (U.toggleContextPanelBtn)
+        U.toggleContextPanelBtn.addEventListener("click", toggleContextPanel);
+      if (U.toggleMetaPanelBtn)
+        U.toggleMetaPanelBtn.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleMetaPanel();
+          }
+        });
+      if (U.toggleContextPanelBtn)
+        U.toggleContextPanelBtn.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleContextPanel();
+          }
+        });
 
+      U.themeSelect.addEventListener("ds-theme-change", (e) => {
+        const nextTheme = e?.detail?.theme || U.themeSelect.value;
+        S.theme = nextTheme;
+        setStatus(`Theme set to ${S.theme}.`);
+      });
       U.themeSelect.addEventListener("input", () => {
+        if (window.DesignSystemThemeSelector) return;
         S.theme = U.themeSelect.value;
         document.documentElement.dataset.theme = S.theme;
         setStatus(`Theme set to ${S.theme}.`);
@@ -6790,6 +7324,7 @@
       if (U.poseSelect)
         U.poseSelect.addEventListener("input", () => {
           S.view.pose = U.poseSelect.value;
+          saveWorkspacePrefs();
           setStatus(`Pose set to ${S.view.pose}.`);
         });
       if (U.discBackStyleAssetSelect)
@@ -6803,6 +7338,7 @@
       if (U.bgTextureSelect)
         U.bgTextureSelect.addEventListener("input", () => {
           S.view.bgTexture = U.bgTextureSelect.value;
+          saveWorkspacePrefs();
         });
       if (U.wireframeCheckbox)
         U.wireframeCheckbox.addEventListener("input", () => {
@@ -6820,6 +7356,7 @@
         U.spinCheckbox.addEventListener("input", () => {
           S.view.spin = U.spinCheckbox.checked;
           syncViewToggleUI();
+          saveWorkspacePrefs();
         });
       if (U.gridCheckbox)
         U.gridCheckbox.addEventListener("input", () => {
@@ -6828,6 +7365,7 @@
         });
       U.glowCheckbox.addEventListener("input", () => {
         S.view.glow = U.glowCheckbox.checked;
+        saveWorkspacePrefs();
         document.body.style.background = S.view.glow
           ? "radial-gradient(1200px 700px at 86% -8%, color-mix(in oklab, var(--ds-accent) 14%, transparent), transparent 62%), radial-gradient(900px 620px at -20% 120%, color-mix(in oklab, var(--ds-info) 12%, transparent), transparent 62%), var(--ds-bg)"
           : "var(--ds-bg)";
@@ -6850,43 +7388,52 @@
       U.toolAutoRotateBtn.addEventListener("click", () => {
         S.view.spin = !S.view.spin;
         syncViewToggleUI();
+        saveWorkspacePrefs();
       });
       if (U.toolAutoRotateMenuBtn)
         U.toolAutoRotateMenuBtn.addEventListener("click", () => {
           S.view.spin = !S.view.spin;
           syncViewToggleUI();
+          saveWorkspacePrefs();
           setHeaderMoreOpen(true);
         });
       U.toolNormalsBtn.addEventListener("click", () => {
         S.view.normals = !S.view.normals;
         syncViewToggleUI();
+        saveWorkspacePrefs();
       });
       if (U.toolNormalsMenuBtn)
         U.toolNormalsMenuBtn.addEventListener("click", () => {
           S.view.normals = !S.view.normals;
           syncViewToggleUI();
+          saveWorkspacePrefs();
           setHeaderMoreOpen(true);
         });
       U.toolRenderStandardBtn.addEventListener("click", () => {
         S.view.renderMode = "standard";
         syncViewToggleUI();
+        saveWorkspacePrefs();
       });
       U.toolRenderWobbleBtn.addEventListener("click", () => {
         S.view.renderMode = "wobble";
         syncViewToggleUI();
+        saveWorkspacePrefs();
       });
       U.toolFaceVizBtn.addEventListener("click", () => {
         S.view.faceViz = S.view.faceViz === "opaque" ? "transparent" : "opaque";
         syncViewToggleUI();
+        saveWorkspacePrefs();
       });
       U.toolTemplateLabelsBtn.addEventListener("click", () => {
         S.view.templateLabels = !S.view.templateLabels;
         syncViewToggleUI();
+        saveWorkspacePrefs();
       });
       if (U.toolTemplateLabelsMenuBtn)
         U.toolTemplateLabelsMenuBtn.addEventListener("click", () => {
           S.view.templateLabels = !S.view.templateLabels;
           syncViewToggleUI();
+          saveWorkspacePrefs();
           setHeaderMoreOpen(true);
         });
       if (U.toolMoreBtn && U.toolMoreMenu)
@@ -6899,9 +7446,53 @@
         const inTrigger = U.toolMoreBtn?.contains(e.target);
         if (!inMenu && !inTrigger) setHeaderMoreOpen(false);
       });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") setHeaderMoreOpen(false);
+      document.addEventListener("pointerdown", (e) => {
+        if (!S.contextMenu.open || !U.contextMenu) return;
+        if (!U.contextMenu.contains(e.target)) closeContextMenu();
       });
+      document.addEventListener("fullscreenchange", () => {
+        syncFocusButton();
+        closeContextMenu();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeContextMenu();
+          if (S.view.preview) {
+            S.view.preview = false;
+            syncWorkspaceChrome();
+            saveWorkspacePrefs();
+            setStatus("Preview mode off.");
+            return;
+          }
+          setHeaderMoreOpen(false);
+        }
+        if (
+          S.screen === "workspace" &&
+          !e.repeat &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          !(e.target instanceof HTMLInputElement) &&
+          !(e.target instanceof HTMLTextAreaElement) &&
+          !(e.target instanceof HTMLSelectElement)
+        ) {
+          if (e.key.toLowerCase() === "p") {
+            S.view.preview = !S.view.preview;
+            syncWorkspaceChrome();
+            saveWorkspacePrefs();
+            setStatus(S.view.preview ? "Preview mode on." : "Preview mode off.");
+          }
+          if (e.key.toLowerCase() === "i") {
+            S.chrome.inspectorCollapsed = !S.chrome.inspectorCollapsed;
+            syncWorkspaceChrome();
+            saveWorkspacePrefs();
+            setStatus(S.chrome.inspectorCollapsed ? "Inspector hidden." : "Inspector shown.");
+          }
+        }
+      });
+      document.addEventListener("scroll", () => {
+        closeContextMenu();
+      }, true);
       U.viewFrontBtn.addEventListener("click", () => {
         applyCameraPreset("front");
       });
@@ -6939,6 +7530,10 @@
         const c = cart();
         applyDefaultViewForTemplate(c ? tById(c.templateId) : null);
       });
+      if (U.focusWorkspaceBtn)
+        U.focusWorkspaceBtn.addEventListener("click", async () => {
+          await toggleWorkspaceFullscreen();
+        });
 
       U.cartNameOverlay.addEventListener("input", () => {
         const c = cart();
@@ -7061,6 +7656,61 @@
         },
         { passive: false },
       );
+      U.stageCanvas.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        openContextMenu(e.clientX, e.clientY, [
+          {
+            label: S.view.preview ? "Exit Preview" : "Enter Preview",
+            icon: S.view.preview ? "iconoir-eye-off" : "iconoir-eye-empty",
+            action: () => {
+              S.view.preview = !S.view.preview;
+              syncWorkspaceChrome();
+              saveWorkspacePrefs();
+              setStatus(S.view.preview ? "Preview mode on." : "Preview mode off.");
+            },
+          },
+          {
+            label: S.chrome.inspectorCollapsed ? "Show Inspector" : "Hide Inspector",
+            icon: "iconoir-sidebar-collapse",
+            action: () => {
+              S.chrome.inspectorCollapsed = !S.chrome.inspectorCollapsed;
+              syncWorkspaceChrome();
+              saveWorkspacePrefs();
+            },
+          },
+          {
+            label: S.chrome.assetStripCollapsed ? "Show Asset Strip" : "Hide Asset Strip",
+            icon: "iconoir-view-columns-3",
+            action: () => {
+              S.chrome.assetStripCollapsed = !S.chrome.assetStripCollapsed;
+              syncWorkspaceChrome();
+              saveWorkspacePrefs();
+            },
+          },
+          {
+            label: "Fit View",
+            icon: "iconoir-frame-select",
+            action: () => applyCameraPreset("fit"),
+          },
+          {
+            label: "Front View",
+            icon: "iconoir-view-grid",
+            action: () => applyCameraPreset("front"),
+          },
+          {
+            label: "Isometric View",
+            icon: "iconoir-cube-bandage",
+            action: () => applyCameraPreset("iso"),
+          },
+          {
+            label: document.fullscreenElement ? "Exit Focus" : "Enter Focus",
+            icon: document.fullscreenElement ? "iconoir-minimize" : "iconoir-expand",
+            action: () => {
+              toggleWorkspaceFullscreen();
+            },
+          },
+        ]);
+      });
       U.stageCanvas.addEventListener("dragover", (e) => {
         if (!isEmpty2DAssetActive()) return;
         e.preventDefault();
@@ -7139,12 +7789,28 @@
       });
 
       function init() {
-        U.themeSelect.innerHTML = THEMES.map(
-          (t) => `<option value="${t}">${t}</option>`,
-        ).join("");
-        U.themeSelect.value = S.theme;
+        if (window.DesignSystemThemeSelector && U.themeSelect) {
+          const controller = window.DesignSystemThemeSelector.initThemeSelector(U.themeSelect, {
+            root: document.documentElement,
+            storageKey: "katacart-theme",
+            defaultTheme:
+              document.documentElement.getAttribute("data-theme") || "mono-slate",
+          });
+          S.theme =
+            controller?.currentTheme ||
+            document.documentElement.getAttribute("data-theme") ||
+            S.theme;
+        } else if (U.themeSelect && !U.themeSelect.options.length) {
+          U.themeSelect.innerHTML =
+            `<option value="${S.theme}">${S.theme}</option>`;
+          U.themeSelect.value = S.theme;
+        }
+        loadWorkspacePrefs();
         S.carts = buildStarterCarts();
         applyGizmoSize(S.gizmo.size);
+        document.body.style.background = S.view.glow
+          ? "radial-gradient(1200px 700px at 86% -8%, color-mix(in oklab, var(--ds-accent) 14%, transparent), transparent 62%), radial-gradient(900px 620px at -20% 120%, color-mix(in oklab, var(--ds-info) 12%, transparent), transparent 62%), var(--ds-bg)"
+          : "var(--ds-bg)";
         openGallery();
         preloadSampleFolderAssets().catch(() => {});
         renderCreatePanel();
