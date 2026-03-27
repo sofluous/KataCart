@@ -1,17 +1,22 @@
 <!doctype html>
-<html lang="en" data-theme="mono-slate">
+<html
+  lang="en"
+  data-theme="mono-slate"
+  data-ds-theme-storage="katacart-theme"
+  data-ds-theme-default="mono-slate"
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="app-version" content="0.12" />
     <title>KataCart</title>
     <link rel="stylesheet" href="./_DesignSystem/theme.css" />
+    <script src="./_DesignSystem/js/theme-registry.js"></script>
+    <script src="./_DesignSystem/js/theme-selector.js"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/iconoir@7.10.1/css/iconoir.css"
     />
-    <script src="./_DesignSystem/js/theme-registry.js"></script>
-    <script src="./_DesignSystem/js/theme-selector.js"></script>
     <style>
       :root {
         --gap: var(--ds-layout-gap);
@@ -2066,7 +2071,6 @@
           ><select
             id="themeSelect"
             data-ds-theme-select
-            data-ds-theme-storage="katacart-theme"
           ></select>
         </div>
         <label class="setting-row" for="glowCheckbox"
@@ -7790,16 +7794,9 @@
 
       function init() {
         if (window.DesignSystemThemeSelector && U.themeSelect) {
-          const controller = window.DesignSystemThemeSelector.initThemeSelector(U.themeSelect, {
-            root: document.documentElement,
-            storageKey: "katacart-theme",
-            defaultTheme:
-              document.documentElement.getAttribute("data-theme") || "mono-slate",
-          });
           S.theme =
-            controller?.currentTheme ||
-            document.documentElement.getAttribute("data-theme") ||
-            S.theme;
+            document.documentElement.getAttribute("data-theme") || S.theme;
+          U.themeSelect.value = S.theme;
         } else if (U.themeSelect && !U.themeSelect.options.length) {
           U.themeSelect.innerHTML =
             `<option value="${S.theme}">${S.theme}</option>`;
