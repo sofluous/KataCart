@@ -87,11 +87,13 @@
         --kc-setting-control-w: min(220px, 48%);
         --kc-camera-pad-inner-w: calc(var(--kc-cam-cell-w) * 3 + var(--kc-cam-gap) * 2);
         --kc-camera-pad-w: calc(var(--kc-camera-pad-inner-w) + (var(--kc-space-2) * 2) + (var(--ds-border-w) * 2));
+        --kc-stage-center-min: 180px;
         --kc-toggle-h: max(var(--ds-check-size), calc(var(--ds-control-h-sm) - 10px));
         --kc-toggle-w: calc(var(--kc-toggle-h) * 1.9);
         --kc-toggle-thumb: calc(var(--kc-toggle-h) - 6px);
         --kc-toggle-pad: 2px;
         --kc-meta-label-col: 78px;
+        --kc-panel-label-col: var(--kc-tool-label-col);
         --kc-edge-btn-offset: 28px;
       }
       * {
@@ -771,6 +773,12 @@
         min-width: 0;
         justify-self: start;
       }
+      .workspace-header-center {
+        min-width: 0;
+        justify-self: center;
+        display: flex;
+        align-items: center;
+      }
       .workspace-header-right {
         display: flex;
         align-items: center;
@@ -829,13 +837,6 @@
         font-weight: 600;
       }
       .hud {
-        position: absolute;
-        right: var(--kc-overlay-inset);
-        top: var(--kc-hud-top);
-        border: 1px solid var(--ds-border);
-        border-radius: var(--ds-radius-2);
-        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
-        padding: var(--kc-space-2) var(--kc-space-3);
         display: grid;
         gap: var(--kc-space-tight);
         font-size: var(--ds-fs-1);
@@ -843,14 +844,6 @@
         pointer-events: none;
       }
       .camera-pad {
-        position: absolute;
-        right: var(--kc-overlay-inset);
-        bottom: var(--kc-camera-bottom);
-        width: var(--kc-camera-pad-w);
-        border: 1px solid var(--ds-border);
-        border-radius: var(--ds-radius-2);
-        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
-        padding: var(--kc-space-2);
         display: grid;
         gap: var(--kc-space-1);
       }
@@ -925,14 +918,6 @@
         width: 100%;
       }
       .canvas-toolstrip {
-        position: absolute;
-        top: var(--kc-overlay-inset);
-        left: 50%;
-        transform: translateX(-50%);
-        border: 1px solid var(--ds-border);
-        border-radius: var(--ds-radius-2);
-        background: color-mix(in oklab, var(--ds-bg-elevated) 92%, transparent);
-        padding: var(--kc-toolstrip-pad);
         display: inline-flex;
         align-items: center;
         gap: var(--kc-space-1);
@@ -1068,16 +1053,6 @@
         text-transform: uppercase;
       }
       .mini-gizmo {
-        position: absolute;
-        right: var(--kc-overlay-inset);
-        bottom: calc(var(--kc-camera-bottom) + 170px + var(--kc-mini-anchor-gap));
-        width: var(--kc-camera-pad-w);
-        border: 0;
-        border-radius: 0;
-        background: transparent;
-        padding: 0;
-        display: grid;
-        gap: var(--ds-space-1);
         pointer-events: none;
       }
       #miniCanvas {
@@ -1089,13 +1064,6 @@
         display: block;
         cursor: crosshair;
         pointer-events: auto;
-      }
-      #assetStripShell {
-        grid-column: 2;
-        grid-row: 2;
-        padding: var(--ds-space-2);
-        display: grid;
-        align-items: start;
       }
       #assetStrip {
         display: grid;
@@ -1175,6 +1143,39 @@
       }
       .asset-card strong {
         line-height: 1.2;
+      }
+      .asset-card-copy {
+        display: grid;
+        gap: 2px;
+      }
+      .asset-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--ds-space-1);
+        align-items: center;
+        font-size: var(--kc-fs-micro);
+        color: var(--ds-text-muted);
+      }
+      .asset-card-state {
+        display: inline-flex;
+        align-items: center;
+        min-height: 18px;
+        padding: 0 7px;
+        border: 1px solid color-mix(in oklab, var(--ds-border) 85%, transparent);
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--ds-bg-raised) 88%, transparent);
+        text-transform: uppercase;
+        letter-spacing: var(--ds-tracking-ui-sm);
+      }
+      .asset-card-state.is-ready {
+        border-color: color-mix(in oklab, var(--ds-accent) 40%, var(--ds-border));
+        color: var(--ds-text);
+      }
+      .asset-card-state.is-empty {
+        border-style: dashed;
+      }
+      .asset-card-state.is-view {
+        border-color: color-mix(in oklab, var(--ds-info) 32%, var(--ds-border));
       }
       #settingsDrawer {
         position: fixed;
@@ -1339,26 +1340,6 @@
       .workspace-main {
         grid-column: 1;
       }
-      #assetStripShell {
-        grid-column: 1;
-      }
-      .canvas-meta {
-        position: absolute;
-        left: var(--kc-overlay-inset);
-        top: var(--kc-canvas-meta-top);
-        width: var(--kc-canvas-meta-w);
-        border: 1px solid var(--ds-border);
-        border-radius: var(--ds-radius-2);
-        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
-        padding: var(--ds-space-2);
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--ds-space-2);
-      }
-      .canvas-meta textarea {
-        grid-column: 1 / span 2;
-        min-height: var(--kc-canvas-notes-h);
-      }
       .canvas-meta-head,
       .canvas-context-title {
         display: flex;
@@ -1366,9 +1347,6 @@
         justify-content: space-between;
         gap: var(--kc-space-3);
         cursor: pointer;
-      }
-      .canvas-meta-head {
-        grid-column: 1 / span 2;
       }
       .panel-collapse-icon {
         display: inline-grid;
@@ -1390,47 +1368,6 @@
       .canvas-meta-head[aria-expanded="false"] .panel-collapse-icon i,
       .canvas-context-title[aria-expanded="false"] .panel-collapse-icon i {
         transform: rotate(-90deg);
-      }
-      .canvas-meta-body {
-        grid-column: 1 / span 2;
-        display: grid;
-        gap: var(--ds-space-2);
-      }
-      .canvas-meta.is-collapsed .canvas-meta-body,
-      .canvas-context.is-collapsed .canvas-context-body {
-        display: none;
-      }
-      .canvas-meta.is-collapsed,
-      .canvas-context.is-collapsed {
-        align-content: start;
-      }
-      .canvas-context.is-collapsed {
-        overflow: hidden;
-        max-height: none;
-        padding-bottom: var(--ds-space-2);
-      }
-      .canvas-context.is-collapsed .canvas-context-title {
-        margin-bottom: 0;
-      }
-      .canvas-context {
-        position: absolute;
-        left: var(--kc-overlay-inset);
-        top: var(--kc-canvas-context-top);
-        width: var(--kc-canvas-meta-w);
-        border: 1px solid var(--ds-border);
-        border-radius: var(--ds-radius-2);
-        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
-        padding: var(--ds-space-2);
-        display: grid;
-        gap: var(--ds-space-2);
-        max-height: var(--kc-canvas-context-max-h);
-        overflow: auto;
-      }
-      .canvas-context-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--ds-space-2);
       }
       .canvas-context .group {
         margin-bottom: 0;
@@ -1473,6 +1410,11 @@
       .stage {
         --overlay-gap: var(--kc-overlay-gap);
         --left-col-w: var(--kc-left-col-w);
+        --right-dock-w: clamp(
+          0px,
+          calc(100% - var(--left-col-w) - (var(--kc-overlay-inset) * 3) - var(--kc-stage-center-min)),
+          max(var(--kc-right-col-w), var(--kc-camera-pad-w))
+        );
       }
       .overlay-left,
       .overlay-right {
@@ -1493,14 +1435,32 @@
         left: var(--kc-overlay-inset);
         top: var(--kc-canvas-meta-top);
         width: var(--left-col-w);
-        grid-template-rows: auto auto auto;
+        grid-template-rows: minmax(0, 1fr) auto;
+        align-content: stretch;
+        z-index: calc(var(--kc-z-overlay) + 1);
+      }
+      .overlay-left-stack {
+        display: grid;
+        gap: var(--overlay-gap);
         align-content: start;
+        min-height: 0;
       }
       .overlay-right {
+        left: auto;
         right: var(--kc-overlay-inset);
-        width: max(var(--kc-right-col-w), var(--kc-camera-pad-w));
+        width: var(--right-dock-w);
         grid-template-rows: auto minmax(0, 1fr) auto;
         justify-items: end;
+        align-content: start;
+        z-index: var(--kc-z-overlay);
+      }
+      .stage-status-slot {
+        position: absolute;
+        left: var(--kc-overlay-inset);
+        bottom: var(--kc-overlay-inset);
+        max-width: var(--kc-canvas-status-max-w);
+        z-index: var(--kc-z-overlay);
+        pointer-events: none;
       }
       .canvas-meta,
       .canvas-context,
@@ -1512,6 +1472,8 @@
       }
       .canvas-meta {
         width: 100%;
+        display: grid;
+        gap: var(--ds-space-3);
       }
       .canvas-meta textarea {
         min-height: var(--kc-canvas-notes-h-alt);
@@ -1520,27 +1482,170 @@
         width: 100%;
         max-height: 100%;
         overflow: auto;
+        display: grid;
+        gap: var(--ds-space-2);
       }
       .canvas-context-title {
         font-size: var(--ds-fs-2);
         font-weight: 600;
       }
-      .canvas-context-body {
+      .workspace-panel {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 90%, transparent);
+        box-shadow: var(--ds-card-shadow);
+        padding: var(--ds-space-2);
+      }
+      .workspace-dock-card {
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius-2);
+        background: color-mix(in oklab, var(--ds-bg-elevated) 88%, transparent);
+        box-shadow: var(--ds-card-shadow);
+      }
+      .workspace-dock-gizmo {
+        display: grid;
+        gap: var(--ds-space-1);
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+      .workspace-dock-stack {
+        left: auto;
+        right: var(--kc-overlay-inset);
+        width: var(--right-dock-w);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        justify-items: end;
+        align-content: start;
+      }
+      .workspace-strip-shell {
+        padding: var(--ds-space-2);
+        display: grid;
+        align-items: start;
+        overflow: visible;
+      }
+      .workspace-strip-list {
+        align-items: start;
+        overflow-y: hidden;
+        grid-auto-rows: max-content;
+      }
+      .workspace-strip-card {
+        align-content: start;
+        min-height: var(--kc-asset-card-min-h);
+      }
+      .workspace-toolrail {
+        position: static !important;
+        left: auto;
+        top: auto;
+        transform: none !important;
+        max-width: none !important;
+        overflow: visible !important;
+        justify-self: stretch;
+        margin: 0;
+      }
+      .workspace-toolrail-btn {
+        min-width: var(--kc-tool-btn-w);
+        width: var(--kc-tool-btn-w);
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+      }
+      .workspace-toolrail-menu-btn {
+        min-width: 0;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0 var(--kc-space-3);
+        gap: var(--kc-space-2);
+      }
+      .workspace-compact-hide {
+        display: inline-flex;
+      }
+      .workspace-compact-more {
+        display: none;
+      }
+      .workspace-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--kc-space-3);
+        cursor: pointer;
+      }
+      .workspace-panel-body {
         display: grid;
         gap: var(--ds-space-3);
         align-content: start;
       }
-      .canvas-context-body .field.is-inline {
-        grid-template-columns: var(--kc-tool-label-col) minmax(0, 1fr);
+      .workspace-panel.is-collapsed {
+        align-content: start;
+      }
+      .workspace-panel.is-collapsed .workspace-panel-body {
+        display: none;
+      }
+      .workspace-panel-section {
+        display: grid;
+        gap: var(--ds-space-3);
+        align-content: start;
+      }
+      .workspace-panel-section + .workspace-panel-section {
+        padding-top: var(--ds-space-3);
+        border-top: 1px solid color-mix(in oklab, var(--ds-border) 82%, transparent);
+      }
+      .workspace-panel-section h3 {
+        margin: 0;
+        font-size: var(--kc-fs-micro);
+        text-transform: uppercase;
+        letter-spacing: var(--ds-tracking-ui-sm);
+        color: var(--ds-text-muted);
+      }
+      .canvas-context-body {
+        gap: var(--ds-space-4);
+      }
+      .canvas-meta-body {
+        gap: var(--ds-space-3);
+      }
+      .workspace-panel .field.is-inline,
+      .canvas-context-body .setting-row,
+      .tool-action-row {
+        grid-template-columns: var(--kc-panel-label-col) minmax(0, 1fr);
+        align-items: center;
+      }
+      .workspace-panel .field.is-inline label,
+      .canvas-context-body .setting-label,
+      .tool-action-row > span {
+        align-self: center;
+      }
+      .canvas-context-body .setting-row {
+        min-height: var(--ds-control-h-sm);
       }
       .canvas-context-body .actions {
         justify-content: flex-start;
       }
+      .canvas-context .group,
+      #context3D,
+      #contextUV {
+        gap: var(--ds-space-3);
+      }
+      #context2D {
+        transition:
+          border-color 120ms ease,
+          box-shadow 120ms ease,
+          background-color 120ms ease,
+          opacity 120ms ease;
+      }
+      #context2D.is-empty {
+        border-style: dashed;
+      }
+      #context2D.is-edit-locked .tool-row,
+      #context2D.is-edit-locked .tool-action-row {
+        opacity: 0.56;
+      }
+      #context2D.is-edit-active {
+        border-color: color-mix(in oklab, var(--ds-accent) 52%, var(--ds-border));
+        box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-accent) 22%, transparent);
+        background: color-mix(in oklab, var(--ds-bg-raised) 84%, var(--ds-accent) 8%);
+      }
       .tool-action-row {
-        display: grid;
-        grid-template-columns: var(--kc-tool-label-col) minmax(0, 1fr);
         gap: var(--ds-space-2);
-        align-items: center;
       }
       .tool-action-row > span {
         font-size: var(--kc-fs-micro);
@@ -1568,9 +1673,13 @@
       .stage.asset-edit-ready #stageCanvas {
         cursor: crosshair;
       }
+      .stage.asset-view-ready #stageCanvas {
+        cursor: grab;
+      }
       .stage.asset-edit-selected #stageCanvas {
         cursor: grab;
       }
+      .stage.asset-view-ready #stageCanvas.drag,
       .stage.asset-edit-selected #stageCanvas.drag {
         cursor: grabbing;
       }
@@ -1580,6 +1689,7 @@
       .hud {
         justify-self: end;
         width: 100%;
+        padding: var(--kc-space-2) var(--kc-space-3);
       }
       .mini-gizmo {
         width: var(--kc-camera-pad-inner-w);
@@ -1592,6 +1702,7 @@
         justify-self: end;
         align-self: end;
         width: var(--kc-camera-pad-w);
+        padding: var(--kc-space-2);
       }
       .camera-pad-grid,
       .camera-pad-zoom {
@@ -1635,30 +1746,12 @@
       #context3D {
         align-content: start;
       }
-      #assetStrip {
-        align-items: start;
-        overflow-y: hidden;
-        grid-auto-rows: max-content;
-      }
-      .asset-card {
-        align-content: start;
-        min-height: var(--kc-asset-card-min-h);
-      }
-      #assetStripShell {
-        overflow: visible;
-      }
       #cartNameOverlay {
         width: 100%;
       }
-      .workspace-header .header-toolstrip {
-        position: static !important;
-        left: auto;
-        top: auto;
-        transform: none !important;
-        max-width: none !important;
-        overflow: visible !important;
-        justify-self: center;
-        margin: 0;
+      .gallery-top .layout-switch,
+      .gallery-top .workspace-header-right {
+        justify-self: end;
       }
       .workspace-header-right {
         justify-self: end;
@@ -1667,8 +1760,10 @@
         gap: var(--kc-space-2);
       }
       .overlay-left.is-collapsed .canvas-meta,
-      .overlay-left.is-collapsed .canvas-context,
-      .overlay-left.is-collapsed .canvas-status {
+      .overlay-left.is-collapsed .canvas-context {
+        display: none !important;
+      }
+      .overlay-left.is-collapsed .overlay-left-stack {
         display: none !important;
       }
       .overlay-left.is-collapsed {
@@ -1695,20 +1790,6 @@
         border-color: var(--ds-accent);
         background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
       }
-      .workspace-header .header-toolstrip .seg-btn {
-        min-width: var(--kc-tool-btn-w);
-        width: var(--kc-tool-btn-w);
-        padding: 0;
-        justify-content: center;
-        gap: 0;
-      }
-      .workspace-header .header-toolstrip .header-more-menu .seg-btn {
-        min-width: 0;
-        width: 100%;
-        justify-content: flex-start;
-        padding: 0 var(--kc-space-3);
-        gap: var(--kc-space-2);
-      }
       @media (max-width: 1120px) {
         :root {
           --panel: min(260px, var(--ds-layout-panel-w));
@@ -1728,11 +1809,28 @@
         :root {
           --kc-edge-btn-offset: 8px;
         }
-        .workspace-header .header-toolstrip .tool-optional {
+        .workspace-compact-hide {
           display: none;
         }
-        .workspace-header .header-toolstrip .header-more {
+        .workspace-compact-more {
           display: inline-flex;
+        }
+        .workspace-header {
+          grid-template-columns: minmax(0, 1fr);
+          grid-auto-rows: auto;
+          padding: var(--kc-space-2) var(--kc-space-4);
+        }
+        .workspace-header-left,
+        .workspace-header-center,
+        .workspace-header-right {
+          justify-self: stretch;
+          flex-wrap: wrap;
+        }
+        .workspace-header-center {
+          order: 3;
+        }
+        .workspace-header-right {
+          justify-content: flex-start;
         }
       }
       @media (max-width: 760px) {
@@ -1741,7 +1839,7 @@
           --kc-toolstrip-max-w: calc(100% - 24px);
           --kc-edge-btn-offset: 0px;
         }
-        .overlay-right {
+        .workspace-dock-stack {
           display: none;
         }
       }
@@ -1779,23 +1877,25 @@
               Open a cart or create a new blank slot.
             </div>
           </div>
-        <div class="layout-switch">
-          <button class="btn active" data-layout="grid" type="button">
-            <i class="iconoir-view-grid"></i>Grid
+          <div class="workspace-header-center">
+            <div class="layout-switch">
+              <button class="btn active" data-layout="grid" type="button">
+                <i class="iconoir-view-grid"></i>Grid
+              </button>
+              <button class="btn" data-layout="tile" type="button">
+                <i class="iconoir-view-columns-2"></i>Tile
+              </button>
+              <button class="btn" data-layout="list" type="button">
+                <i class="iconoir-list"></i>List
+              </button>
+            </div>
+          </div>
+          <div class="workspace-header-right">
+            <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings">
+              <i class="iconoir-settings"></i>Settings
             </button>
-            <button class="btn" data-layout="tile" type="button">
-              <i class="iconoir-view-columns-2"></i>Tile
-            </button>
-          <button class="btn" data-layout="list" type="button">
-            <i class="iconoir-list"></i>List
-          </button>
+          </div>
         </div>
-        <div class="actions">
-          <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings">
-            <i class="iconoir-settings"></i>Settings
-          </button>
-        </div>
-      </div>
         <div id="galleryList" class="layout-grid"></div>
       </div>
     </section>
@@ -1814,41 +1914,43 @@
               <i class="iconoir-sidebar-collapse"></i>Inspector
             </button>
           </div>
-          <div class="canvas-toolstrip header-toolstrip">
-            <div class="seg-pair" aria-label="Render mode">
-              <button id="toolRenderStandardBtn" class="seg-btn" type="button" title="Standard render">
-                <i class="iconoir-3d-select-face"></i>
-              </button>
-              <button id="toolRenderWobbleBtn" class="seg-btn" type="button" title="PS1 wobble render">
-                <i class="iconoir-frame-alt-empty"></i>
-              </button>
-            </div>
-            <button id="toolFaceVizBtn" class="seg-btn" type="button" title="Toggle transparent faces">
-              <i class="iconoir-eye"></i>
-            </button>
-            <button id="toolTemplateLabelsBtn" class="seg-btn tool-optional" type="button" title="Toggle UV labels">
-              <i class="iconoir-text-box"></i>
-            </button>
-            <button id="toolAutoRotateBtn" class="seg-btn tool-optional" type="button" title="Auto rotate">
-              <i class="iconoir-refresh-double"></i>
-            </button>
-            <button id="toolNormalsBtn" class="seg-btn tool-optional" type="button" title="Show normals">
-              <i class="iconoir-axis-3d"></i>
-            </button>
-            <div class="header-more">
-              <button id="toolMoreBtn" class="seg-btn" type="button" title="More view tools" aria-expanded="false" aria-controls="toolMoreMenu">
-                <i class="iconoir-more-horiz-circle"></i>
-              </button>
-              <div id="toolMoreMenu" class="header-more-menu" hidden>
-                <button id="toolTemplateLabelsMenuBtn" class="seg-btn" type="button" title="Toggle UV labels">
-                  <i class="iconoir-text-box"></i><span>Label Map</span>
+          <div class="workspace-header-center">
+            <div class="canvas-toolstrip header-toolstrip workspace-toolrail">
+              <div class="seg-pair" aria-label="Render mode">
+                <button id="toolRenderStandardBtn" class="seg-btn workspace-toolrail-btn" type="button" title="Standard render">
+                  <i class="iconoir-3d-select-face"></i>
                 </button>
-                <button id="toolAutoRotateMenuBtn" class="seg-btn" type="button" title="Auto rotate">
-                  <i class="iconoir-refresh-double"></i><span>Auto Rotate</span>
+                <button id="toolRenderWobbleBtn" class="seg-btn workspace-toolrail-btn" type="button" title="PS1 wobble render">
+                  <i class="iconoir-frame-alt-empty"></i>
                 </button>
-                <button id="toolNormalsMenuBtn" class="seg-btn" type="button" title="Show normals">
-                  <i class="iconoir-axis-3d"></i><span>Normals</span>
+              </div>
+              <button id="toolFaceVizBtn" class="seg-btn workspace-toolrail-btn" type="button" title="Toggle transparent faces">
+                <i class="iconoir-eye"></i>
+              </button>
+              <button id="toolTemplateLabelsBtn" class="seg-btn workspace-toolrail-btn workspace-compact-hide" type="button" title="Toggle UV labels">
+                <i class="iconoir-text-box"></i>
+              </button>
+              <button id="toolAutoRotateBtn" class="seg-btn workspace-toolrail-btn workspace-compact-hide" type="button" title="Auto rotate">
+                <i class="iconoir-refresh-double"></i>
+              </button>
+              <button id="toolNormalsBtn" class="seg-btn workspace-toolrail-btn workspace-compact-hide" type="button" title="Show normals">
+                <i class="iconoir-axis-3d"></i>
+              </button>
+              <div class="header-more workspace-compact-more">
+                <button id="toolMoreBtn" class="seg-btn workspace-toolrail-btn" type="button" title="More view tools" aria-expanded="false" aria-controls="toolMoreMenu">
+                  <i class="iconoir-more-horiz-circle"></i>
                 </button>
+                <div id="toolMoreMenu" class="header-more-menu" hidden>
+                  <button id="toolTemplateLabelsMenuBtn" class="seg-btn workspace-toolrail-menu-btn" type="button" title="Toggle UV labels">
+                    <i class="iconoir-text-box"></i><span>Label Map</span>
+                  </button>
+                  <button id="toolAutoRotateMenuBtn" class="seg-btn workspace-toolrail-menu-btn" type="button" title="Auto rotate">
+                    <i class="iconoir-refresh-double"></i><span>Auto Rotate</span>
+                  </button>
+                  <button id="toolNormalsMenuBtn" class="seg-btn workspace-toolrail-menu-btn" type="button" title="Show normals">
+                    <i class="iconoir-axis-3d"></i><span>Normals</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1871,216 +1973,222 @@
           <canvas id="stageGlCanvas" aria-hidden="true" hidden></canvas>
           <canvas id="stageCanvas"></canvas>
           <div id="overlayLeft" class="overlay-left">
-            <div id="canvasMetaPanel" class="canvas-meta">
-              <div
-                id="toggleMetaPanelBtn"
-                class="canvas-meta-head"
-                role="button"
-                tabindex="0"
-                title="Collapse metadata"
-                aria-expanded="true"
-              >
-                <span><i class="iconoir-notes"></i> Metadata</span>
-                <span class="panel-collapse-icon" aria-hidden="true">
-                  <i class="iconoir-nav-arrow-down"></i>
-                </span>
+            <div class="overlay-left-stack">
+              <div id="canvasMetaPanel" class="canvas-meta workspace-panel">
+                <div
+                  id="toggleMetaPanelBtn"
+                  class="canvas-meta-head workspace-panel-head"
+                  role="button"
+                  tabindex="0"
+                  title="Collapse metadata"
+                  aria-expanded="true"
+                >
+                  <span><i class="iconoir-notes"></i> Metadata</span>
+                  <span class="panel-collapse-icon" aria-hidden="true">
+                    <i class="iconoir-nav-arrow-down"></i>
+                  </span>
+                </div>
+                <div id="canvasMetaBody" class="canvas-meta-body workspace-panel-body">
+                  <div class="field is-inline">
+                    <label for="cartNameOverlay">Name</label
+                    ><input id="cartNameOverlay" value="Cart" />
+                  </div>
+                  <div class="field is-inline">
+                    <label for="metaSku">SKU</label
+                    ><input id="metaSku" placeholder="KATA-0001" />
+                  </div>
+                  <div class="field is-inline">
+                    <label for="metaNotes">Notes</label
+                    ><textarea id="metaNotes"></textarea>
+                  </div>
+                  <div class="field is-inline">
+                    <label for="metaTags">Tags</label
+                    ><input id="metaTags" placeholder="retro, ps2, archive" />
+                  </div>
+                </div>
               </div>
-              <div id="canvasMetaBody" class="canvas-meta-body">
-                <div class="field is-inline">
-                  <label for="cartNameOverlay">Name</label
-                  ><input id="cartNameOverlay" value="Cart" />
+              <div id="canvasContextPanel" class="canvas-context panel workspace-panel">
+                <div
+                  id="toggleContextPanelBtn"
+                  class="canvas-context-title workspace-panel-head"
+                  role="button"
+                  tabindex="0"
+                  title="Collapse face inspector"
+                  aria-expanded="true"
+                >
+                  <span><i class="iconoir-cube-bandage"></i> Face Inspector</span>
+                  <span class="panel-collapse-icon" aria-hidden="true">
+                    <i class="iconoir-nav-arrow-down"></i>
+                  </span>
                 </div>
-                <div class="field is-inline">
-                  <label for="metaSku">SKU</label
-                  ><input id="metaSku" placeholder="KATA-0001" />
-                </div>
-                <div class="field is-inline">
-                  <label for="metaNotes">Notes</label
-                  ><textarea id="metaNotes"></textarea>
-                </div>
-                <div class="field is-inline">
-                  <label for="metaTags">Tags</label
-                  ><input id="metaTags" placeholder="retro, ps2, archive" />
+                <div id="canvasContextBody" class="canvas-context-body workspace-panel-body">
+                  <div class="workspace-panel-section">
+                    <div class="field is-inline">
+                      <label for="faceSelect">Face</label
+                      ><select id="faceSelect"></select>
+                    </div>
+                    <div id="artworkFileRow" class="field is-inline">
+                      <label for="assetSelect">Artwork File</label
+                      ><select id="assetSelect"></select>
+                    </div>
+                  </div>
+                  <div id="context2D" class="group workspace-panel-section" hidden>
+                    <h3><i class="iconoir-media-image"></i> Texture Controls</h3>
+                    <div id="discArtStyleRow" class="setting-row" hidden>
+                      <label class="setting-label" for="discBackStyleAssetSelect">Disc Back</label>
+                      <select id="discBackStyleAssetSelect">
+                        <option value="silver-rainbow">Silver Rainbow</option>
+                        <option value="ps1-black">PS1 Black</option>
+                        <option value="ps2-blue">PS2 Blue</option>
+                      </select>
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-arrows-left-right"></i> X</span
+                      ><input id="txRange" type="range" min="-220" max="220" value="0" /><input id="txOut" class="tool-value" type="number" min="-220" max="220" step="1" value="0" />
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-arrows-up-down"></i> Y</span
+                      ><input id="tyRange" type="range" min="-220" max="220" value="0" /><input id="tyOut" class="tool-value" type="number" min="-220" max="220" step="1" value="0" />
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-scale-frame-enlarge"></i> Scale</span
+                      ><input id="tsRange" type="range" min="20" max="300" value="100" /><input id="tsOut" class="tool-value" type="number" min="0.2" max="3" step="0.01" value="1.00" />
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-refresh-circle"></i> Rotate</span
+                      ><input id="trRange" type="range" min="-180" max="180" value="0" /><input id="trOut" class="tool-value" type="number" min="-180" max="180" step="1" value="0" />
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-grid-minus"></i> Pixelize</span
+                      ><input id="pxRange" type="range" min="1" max="64" value="1" /><input id="pxOut" class="tool-value" type="number" min="1" max="64" step="1" value="1" />
+                    </div>
+                    <div class="tool-action-row">
+                      <span>Mirror</span>
+                      <div class="tool-action-buttons">
+                        <button id="mirrorXBtn" class="btn" type="button">
+                          <i class="iconoir-reflect-horizontal"></i>X
+                        </button>
+                        <button id="mirrorYBtn" class="btn" type="button">
+                          <i class="iconoir-reflect-vertical"></i>Y
+                        </button>
+                      </div>
+                    </div>
+                    <div class="tool-action-row">
+                      <span>Bounds</span>
+                      <div class="tool-action-buttons">
+                        <button id="fitContainBtn" class="btn" type="button">
+                          <i class="iconoir-scale-frame-enlarge"></i>Fit
+                        </button>
+                        <button id="fitFillBtn" class="btn" type="button">
+                          <i class="iconoir-scale-frame-reduce"></i>Fill
+                        </button>
+                        <button id="fitWidthBtn" class="btn" type="button">
+                          <i class="iconoir-arrows-left-right"></i>Width
+                        </button>
+                        <button id="fitHeightBtn" class="btn" type="button">
+                          <i class="iconoir-arrows-up-down"></i>Height
+                        </button>
+                      </div>
+                    </div>
+                    <div class="tool-action-row">
+                      <span>Reset</span>
+                      <div class="tool-action-buttons">
+                        <button id="reset2dBtn" class="btn destructive" type="button">
+                          <i class="iconoir-undo"></i>Reset
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="context3D" class="group workspace-panel-section" hidden>
+                    <h3><i class="iconoir-cube-scan"></i> 3D Model Controls</h3>
+                    <div class="tool-row">
+                      <span><i class="iconoir-arrows-left-right"></i> Move X</span
+                      ><input id="m3dXRange" type="range" min="-1" max="1" step="0.01" value="0" /><input id="m3dXOut" class="tool-value" type="number" min="-1" max="1" step="0.01" value="0.00" />
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-arrows-up-down"></i> Move Y</span
+                      ><input id="m3dYRange" type="range" min="-1" max="1" step="0.01" value="0" /><input id="m3dYOut" class="tool-value" type="number" min="-1" max="1" step="0.01" value="0.00" />
+                    </div>
+                    <div class="tool-row">
+                      <span><i class="iconoir-scale-frame-enlarge"></i> Scale</span
+                      ><input id="m3dSRange" type="range" min="40" max="230" value="100" /><input id="m3dSOut" class="tool-value" type="number" min="0.4" max="2.3" step="0.01" value="1.00" />
+                    </div>
+                    <div class="actions">
+                      <button id="reset3dBtn" class="btn destructive" type="button">
+                        <i class="iconoir-undo"></i>Reset
+                      </button>
+                      <button id="rotX90Btn" class="btn" type="button">
+                        <i class="iconoir-refresh-circle"></i>Rot X
+                      </button>
+                      <button id="rotY90Btn" class="btn" type="button">
+                        <i class="iconoir-refresh-circle"></i>Rot Y
+                      </button>
+                      <button id="mirror3dXBtn" class="btn" type="button">
+                        <i class="iconoir-reflect-horizontal"></i>Mirror X
+                      </button>
+                    </div>
+                    <div class="section-divider" aria-hidden="true"></div>
+                    <h3><i class="iconoir-palette"></i> Render Look</h3>
+                    <div class="setting-row">
+                      <label class="setting-label" for="poseSelect">Model Pose</label>
+                      <select id="poseSelect">
+                        <option value="default">Default</option>
+                        <option value="hero">Hero Tilt</option>
+                        <option value="showcase-left">Showcase Left</option>
+                        <option value="showcase-right">Showcase Right</option>
+                        <option value="flat">Lay Flat</option>
+                        <option value="edge">Edge Stand</option>
+                        <option value="disc-open">Open Case (Disc)</option>
+                        <option value="disc-split">Case + Disc Split</option>
+                      </select>
+                    </div>
+                    <div class="setting-row">
+                      <label class="setting-label" for="faceTintInput">Face Tint</label>
+                      <input id="faceTintInput" type="color" value="#8c94a0" />
+                    </div>
+                    <div class="setting-row">
+                      <label class="setting-label" for="bgTextureSelect">Background Texture</label>
+                      <select id="bgTextureSelect">
+                        <option value="none">None</option>
+                        <option value="scanline">Scanline</option>
+                        <option value="grid">Grid</option>
+                        <option value="grain">Film Grain</option>
+                      </select>
+                    </div>
+                    <label class="setting-row" for="wireframeCheckbox"
+                      ><span class="setting-label">Wireframe</span
+                      ><input class="toggle-switch" id="wireframeCheckbox" type="checkbox" checked
+                    /></label>
+                    <label class="setting-row" for="verticesCheckbox"
+                      ><span class="setting-label">Vertices</span
+                      ><input class="toggle-switch" id="verticesCheckbox" type="checkbox"
+                    /></label>
+                    <label class="setting-row" for="uvAxisDebugCheckbox"
+                      ><span class="setting-label">UV Axis Debug</span
+                      ><input class="toggle-switch" id="uvAxisDebugCheckbox" type="checkbox"
+                    /></label>
+                  </div>
+                  <div id="contextUV" class="group workspace-panel-section" hidden>
+                    <h3>UV Unwrap Context</h3>
+                    <div class="muted">Flattened UV projection preview for mapping checks.</div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div id="canvasContextPanel" class="canvas-context panel">
-              <div
-                id="toggleContextPanelBtn"
-                class="canvas-context-title"
-                role="button"
-                tabindex="0"
-                title="Collapse face inspector"
-                aria-expanded="true"
-              >
-                <span><i class="iconoir-cube-bandage"></i> Face Inspector</span>
-                <span class="panel-collapse-icon" aria-hidden="true">
-                  <i class="iconoir-nav-arrow-down"></i>
-                </span>
-              </div>
-              <div id="canvasContextBody" class="canvas-context-body">
-              <div class="field is-inline">
-                <label for="faceSelect">Face</label
-                ><select id="faceSelect"></select>
-              </div>
-              <div class="field is-inline">
-                <label for="assetSelect">Asset</label
-                ><select id="assetSelect"></select>
-              </div>
-              <div id="context2D" class="group" hidden>
-                <h3><i class="iconoir-media-image"></i> Texture Controls</h3>
-                <div id="discArtStyleRow" class="setting-row" hidden>
-                  <label class="setting-label" for="discBackStyleAssetSelect">Disc Back</label>
-                  <select id="discBackStyleAssetSelect">
-                    <option value="silver-rainbow">Silver Rainbow</option>
-                    <option value="ps1-black">PS1 Black</option>
-                    <option value="ps2-blue">PS2 Blue</option>
-                  </select>
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-arrows-left-right"></i> X</span
-                  ><input id="txRange" type="range" min="-220" max="220" value="0" /><input id="txOut" class="tool-value" type="number" min="-220" max="220" step="1" value="0" />
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-arrows-up-down"></i> Y</span
-                  ><input id="tyRange" type="range" min="-220" max="220" value="0" /><input id="tyOut" class="tool-value" type="number" min="-220" max="220" step="1" value="0" />
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-scale-frame-enlarge"></i> Scale</span
-                  ><input id="tsRange" type="range" min="20" max="300" value="100" /><input id="tsOut" class="tool-value" type="number" min="0.2" max="3" step="0.01" value="1.00" />
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-refresh-circle"></i> Rotate</span
-                  ><input id="trRange" type="range" min="-180" max="180" value="0" /><input id="trOut" class="tool-value" type="number" min="-180" max="180" step="1" value="0" />
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-grid-minus"></i> Pixelize</span
-                  ><input id="pxRange" type="range" min="1" max="64" value="1" /><input id="pxOut" class="tool-value" type="number" min="1" max="64" step="1" value="1" />
-                </div>
-                <div class="tool-action-row">
-                  <span>Mirror</span>
-                  <div class="tool-action-buttons">
-                    <button id="mirrorXBtn" class="btn" type="button">
-                      <i class="iconoir-reflect-horizontal"></i>X
-                    </button>
-                    <button id="mirrorYBtn" class="btn" type="button">
-                      <i class="iconoir-reflect-vertical"></i>Y
-                    </button>
-                  </div>
-                </div>
-                <div class="tool-action-row">
-                  <span>Bounds</span>
-                  <div class="tool-action-buttons">
-                    <button id="fitContainBtn" class="btn" type="button">
-                      <i class="iconoir-scale-frame-enlarge"></i>Fit
-                    </button>
-                    <button id="fitFillBtn" class="btn" type="button">
-                      <i class="iconoir-scale-frame-reduce"></i>Fill
-                    </button>
-                    <button id="fitWidthBtn" class="btn" type="button">
-                      <i class="iconoir-arrows-left-right"></i>Width
-                    </button>
-                    <button id="fitHeightBtn" class="btn" type="button">
-                      <i class="iconoir-arrows-up-down"></i>Height
-                    </button>
-                  </div>
-                </div>
-                <div class="tool-action-row">
-                  <span>Reset</span>
-                  <div class="tool-action-buttons">
-                    <button id="reset2dBtn" class="btn destructive" type="button">
-                      <i class="iconoir-undo"></i>Reset
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div id="context3D" class="group" hidden>
-                <h3><i class="iconoir-cube-scan"></i> 3D Asset Controls</h3>
-                <div class="tool-row">
-                  <span><i class="iconoir-arrows-left-right"></i> Move X</span
-                  ><input id="m3dXRange" type="range" min="-1" max="1" step="0.01" value="0" /><input id="m3dXOut" class="tool-value" type="number" min="-1" max="1" step="0.01" value="0.00" />
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-arrows-up-down"></i> Move Y</span
-                  ><input id="m3dYRange" type="range" min="-1" max="1" step="0.01" value="0" /><input id="m3dYOut" class="tool-value" type="number" min="-1" max="1" step="0.01" value="0.00" />
-                </div>
-                <div class="tool-row">
-                  <span><i class="iconoir-scale-frame-enlarge"></i> Scale</span
-                  ><input id="m3dSRange" type="range" min="40" max="230" value="100" /><input id="m3dSOut" class="tool-value" type="number" min="0.4" max="2.3" step="0.01" value="1.00" />
-                </div>
-                <div class="actions">
-                  <button id="reset3dBtn" class="btn destructive" type="button">
-                    <i class="iconoir-undo"></i>Reset
-                  </button>
-                  <button id="rotX90Btn" class="btn" type="button">
-                    <i class="iconoir-refresh-circle"></i>Rot X
-                  </button>
-                  <button id="rotY90Btn" class="btn" type="button">
-                    <i class="iconoir-refresh-circle"></i>Rot Y
-                  </button>
-                  <button id="mirror3dXBtn" class="btn" type="button">
-                    <i class="iconoir-reflect-horizontal"></i>Mirror X
-                  </button>
-                </div>
-                <div class="section-divider" aria-hidden="true"></div>
-                <h3><i class="iconoir-palette"></i> Render Look</h3>
-                <div class="setting-row">
-                  <label class="setting-label" for="poseSelect">Model Pose</label>
-                  <select id="poseSelect">
-                    <option value="default">Default</option>
-                    <option value="hero">Hero Tilt</option>
-                    <option value="showcase-left">Showcase Left</option>
-                    <option value="showcase-right">Showcase Right</option>
-                    <option value="flat">Lay Flat</option>
-                    <option value="edge">Edge Stand</option>
-                    <option value="disc-open">Open Case (Disc)</option>
-                    <option value="disc-split">Case + Disc Split</option>
-                  </select>
-                </div>
-                <div class="setting-row">
-                  <label class="setting-label" for="faceTintInput">Face Tint</label>
-                  <input id="faceTintInput" type="color" value="#8c94a0" />
-                </div>
-                <div class="setting-row">
-                  <label class="setting-label" for="bgTextureSelect">Background Texture</label>
-                  <select id="bgTextureSelect">
-                    <option value="none">None</option>
-                    <option value="scanline">Scanline</option>
-                    <option value="grid">Grid</option>
-                    <option value="grain">Film Grain</option>
-                  </select>
-                </div>
-                <label class="setting-row" for="wireframeCheckbox"
-                  ><span class="setting-label">Wireframe</span
-                  ><input class="toggle-switch" id="wireframeCheckbox" type="checkbox" checked
-                /></label>
-                <label class="setting-row" for="verticesCheckbox"
-                  ><span class="setting-label">Vertices</span
-                  ><input class="toggle-switch" id="verticesCheckbox" type="checkbox"
-                /></label>
-                <label class="setting-row" for="uvAxisDebugCheckbox"
-                  ><span class="setting-label">UV Axis Debug</span
-                  ><input class="toggle-switch" id="uvAxisDebugCheckbox" type="checkbox"
-                /></label>
-              </div>
-              <div id="contextUV" class="group" hidden>
-                <h3>UV Unwrap Context</h3>
-                <div class="muted">Flattened UV projection preview for mapping checks.</div>
-              </div>
-              </div>
-            </div>
+          </div>
+          <div class="stage-status-slot">
             <div id="statusText" class="canvas-status">Ready.</div>
           </div>
-          <div id="overlayRight" class="overlay-right">
-            <div class="hud">
-            <div id="hudAsset">Face: -</div>
+          <div id="overlayRight" class="overlay-right workspace-dock-stack">
+            <div class="hud workspace-dock-card">
+              <div id="hudAsset">Face: -</div>
               <div id="hudTemplate" class="muted">Template: -</div>
               <div id="hudCamera" class="muted">Rot 0,0 | Zoom 1.00</div>
             </div>
-            <div id="miniGizmo" class="mini-gizmo">
+            <div id="miniGizmo" class="mini-gizmo workspace-dock-gizmo">
               <canvas id="miniCanvas"></canvas>
             </div>
-            <div class="camera-pad" aria-label="Camera pad">
+            <div class="camera-pad workspace-dock-card" aria-label="Camera pad">
               <div class="gizmo-size">
                 <input id="gizmoSizeRange" type="range" min="80" max="360" value="150" />
               </div>
@@ -2132,8 +2240,8 @@
         </section>
       </div>
 
-      <footer id="assetStripShell" class="panel">
-        <div id="assetStrip"></div>
+      <footer id="assetStripShell" class="panel workspace-panel workspace-strip-shell">
+        <div id="assetStrip" class="workspace-strip-list"></div>
       </footer>
     </section>
 
@@ -2227,7 +2335,7 @@
 
           <section id="exportPanelTemplate" class="export-card export-panel" hidden>
             <h3 class="u-m0">Template Export</h3>
-            <div class="export-note">Select one or more template families and download all included 2D template assets.</div>
+            <div class="export-note">Select one or more template families and download all included 2D face templates.</div>
             <label class="setting-row" for="exportTemplateSelectAll">
               <span class="setting-label">Select All</span>
               <input id="exportTemplateSelectAll" class="toggle-switch" type="checkbox" />
@@ -2238,7 +2346,7 @@
                   <tr>
                     <th class="template-export-col-use">Use</th>
                     <th>Template</th>
-                    <th class="template-export-col-assets">2D Assets</th>
+                    <th class="template-export-col-assets">2D Face Templates</th>
                   </tr>
                 </thead>
                 <tbody id="exportTemplateTableBody"></tbody>
@@ -2257,7 +2365,7 @@
           <section id="exportPanelImage" class="export-card export-panel" hidden>
             <h3 class="u-m0">Image Export</h3>
             <div class="setting-row">
-              <label class="setting-label" for="exportImageAsset">Asset</label>
+              <label class="setting-label" for="exportImageAsset">Face</label>
               <select id="exportImageAsset"></select>
             </div>
             <div class="setting-row">
@@ -2477,8 +2585,13 @@
           yaw: 0,
           pitch: 0,
           zoom: 1.12,
+          stage2dPanX: 0,
+          stage2dPanY: 0,
+          stage2dZoom: 1,
           drag: false,
           dragMoved: false,
+          dragMode: "",
+          stageClickSelectCandidate: false,
           dragOver: false,
           assetEditSelected: false,
           assetFrameRect: null,
@@ -2586,6 +2699,7 @@
         assetStripShell: document.getElementById("assetStripShell"),
         assetStrip: document.getElementById("assetStrip"),
         faceSelect: document.getElementById("faceSelect"),
+        artworkFileRow: document.getElementById("artworkFileRow"),
         assetSelect: document.getElementById("assetSelect"),
         txRange: document.getElementById("txRange"),
         tyRange: document.getElementById("tyRange"),
@@ -2686,6 +2800,8 @@
       const WORKSPACE_PREFS_KEY = "katacart-workspace-ui-v1";
       const ZOOM_MIN = 0.01;
       const ZOOM_MAX = 100;
+      const STAGE_2D_ZOOM_MIN = 0.35;
+      const STAGE_2D_ZOOM_MAX = 4;
       let last = performance.now();
       let lastPt = null;
       const WEBGL_FACE_UV_ORDER = {
@@ -3386,6 +3502,33 @@
       function set2DAssetEditSelected(selected) {
         S.view.assetEditSelected = !!selected;
         if (!selected) S.view.dragMoved = false;
+        const currentAsset = asset();
+        if (currentAsset?.type === "2d") {
+          sync2DInspectorState(currentAsset);
+          syncViewToggleUI();
+        }
+      }
+      function reset2DWorkspaceView() {
+        S.view.stage2dPanX = 0;
+        S.view.stage2dPanY = 0;
+        S.view.stage2dZoom = 1;
+      }
+      function zoom2DWorkspaceAt(nextZoom, anchorX, anchorY, baseFrame, canvasW, canvasH) {
+        const prevZoom = clampNumber(S.view.stage2dZoom || 1, STAGE_2D_ZOOM_MIN, STAGE_2D_ZOOM_MAX);
+        const clampedZoom = clampNumber(nextZoom, STAGE_2D_ZOOM_MIN, STAGE_2D_ZOOM_MAX);
+        if (!baseFrame || !canvasW || !canvasH || clampedZoom === prevZoom) {
+          S.view.stage2dZoom = clampedZoom;
+          return;
+        }
+        const prevFx = (canvasW - baseFrame.fw * prevZoom) / 2 + S.view.stage2dPanX;
+        const prevFy = (canvasH - baseFrame.fh * prevZoom) / 2 + S.view.stage2dPanY;
+        const localX = (anchorX - prevFx) / Math.max(1, baseFrame.fw * prevZoom);
+        const localY = (anchorY - prevFy) / Math.max(1, baseFrame.fh * prevZoom);
+        const nextFx = anchorX - localX * (baseFrame.fw * clampedZoom);
+        const nextFy = anchorY - localY * (baseFrame.fh * clampedZoom);
+        S.view.stage2dZoom = clampedZoom;
+        S.view.stage2dPanX = nextFx - (canvasW - baseFrame.fw * clampedZoom) / 2;
+        S.view.stage2dPanY = nextFy - (canvasH - baseFrame.fh * clampedZoom) / 2;
       }
       function pointInRect(x, y, rect) {
         return !!(
@@ -3607,13 +3750,19 @@
         const assetStripCollapsed = preview || !!S.chrome.assetStripCollapsed;
         U.workspaceMain?.classList.toggle("is-preview", preview);
         const currentAsset = asset();
+        const is2d = currentAsset?.type === "2d";
+        const hasArtwork = !!currentAsset?.image;
         U.stage?.classList.toggle(
           "asset-edit-ready",
-          !preview && currentAsset?.type === "2d" && !S.view.assetEditSelected,
+          !preview && is2d && !hasArtwork,
+        );
+        U.stage?.classList.toggle(
+          "asset-view-ready",
+          !preview && is2d && hasArtwork && !S.view.assetEditSelected,
         );
         U.stage?.classList.toggle(
           "asset-edit-selected",
-          !preview && currentAsset?.type === "2d" && S.view.assetEditSelected,
+          !preview && is2d && hasArtwork && S.view.assetEditSelected,
         );
         U.overlayLeft?.classList.toggle("is-collapsed", inspectorCollapsed);
         U.overlayRight?.classList.toggle("is-preview", preview);
@@ -3757,8 +3906,18 @@
           if (!btn) return;
           btn.disabled = !is3d;
         });
-        if (U.viewHomeBtn) U.viewHomeBtn.title = is2d ? "Center artwork" : "Home view";
-        if (U.viewFitBtn) U.viewFitBtn.title = is2d ? "Fit artwork" : "Fit/reset view";
+        if (U.viewHomeBtn)
+          U.viewHomeBtn.title = is2d
+            ? S.view.assetEditSelected
+              ? "Center artwork"
+              : "Reset canvas view"
+            : "Home view";
+        if (U.viewFitBtn)
+          U.viewFitBtn.title = is2d
+            ? S.view.assetEditSelected
+              ? "Fit artwork"
+              : "Fit canvas view"
+            : "Fit/reset view";
         const showMoreTools = is3d || isCompactHeaderMode();
         U.toolMoreBtn.hidden = !showMoreTools;
         if (!showMoreTools) setHeaderMoreOpen(false);
@@ -3875,6 +4034,7 @@
         if (S.createOpen) closeCreatePanel();
         S.cartId = cartId;
         set2DAssetEditSelected(false);
+        reset2DWorkspaceView();
         S.view.assetFrameRect = null;
         ensureAsset();
         const c = cart();
@@ -4117,7 +4277,6 @@
         const c = cart();
         if (!c) return;
         U.assetStrip.innerHTML = "";
-        const hasMapped2D = c.assets.some((x) => x.type === "2d" && !!x.image?.src);
         const previewSrc =
           galleryThumb(c)?.src ||
           c.assets.find((x) => x.type === "2d" && !!x.image?.src)?.image?.src ||
@@ -4125,23 +4284,37 @@
         const t = tById(c.templateId);
         c.assets.forEach((a) => {
           const item = document.createElement("article");
-          item.className = `asset-card${a.id === S.assetId ? " active" : ""}`;
+          item.className = `asset-card workspace-strip-card${a.id === S.assetId ? " active" : ""}`;
           const mm = a.type === "2d" ? assetPhysicalDimsMm(a.id, t) : null;
-          const dims =
+          const faceMeta =
             a.type === "2d"
               ? `${a.w}x${a.h}px${mm ? ` | ${mm.w}x${mm.h}mm` : ""}`
               : a.type === "3d"
-                ? "3D Viewer"
-                : "UV Viewer";
+                ? "Model view"
+                : "UV unwrap";
+          const stateLabel =
+            a.type === "2d"
+              ? a.image?.src
+                ? "Artwork assigned"
+                : "No artwork"
+              : a.type === "3d"
+                ? "View only"
+                : "Reference";
+          const stateClass =
+            a.type === "2d"
+              ? a.image?.src
+                ? "is-ready"
+                : "is-empty"
+              : "is-view";
           const emptyLabel =
             a.type === "2d"
               ? a.image?.src
                 ? ""
-                : "Upload Art"
+                : "No artwork"
               : a.type === "3d"
-                ? "3D Live"
-                : "UV Map";
-          item.innerHTML = `<div class="asset-box"><div class="asset-empty"><strong>${emptyLabel}</strong><span>${dims}</span></div></div><div><strong>${a.label}</strong></div>`;
+                ? "3D View"
+                : "UV";
+          item.innerHTML = `<div class="asset-box"><div class="asset-empty"><strong>${emptyLabel}</strong><span>${faceMeta}</span></div></div><div class="asset-card-copy"><strong>${a.label}</strong><div class="asset-card-meta"><span class="asset-card-state ${stateClass}">${stateLabel}</span><span>${faceMeta}</span></div></div>`;
           const box = item.querySelector(".asset-box");
           const empty = item.querySelector(".asset-empty");
           if (a.type === "3d") box.classList.add("is-3d");
@@ -4161,7 +4334,7 @@
             setActiveAsset(a.id);
             const menu = [
               {
-                label: "Select Asset",
+                label: "Select Face",
                 icon: "iconoir-check-circle",
                 action: () => setActiveAsset(a.id),
               },
@@ -4169,7 +4342,7 @@
             if (a.type === "2d") {
               menu.push(
                 {
-                  label: "Upload Texture",
+                  label: "Upload Artwork",
                   icon: "iconoir-upload",
                   action: () => {
                     setActiveAsset(a.id);
@@ -4177,7 +4350,7 @@
                   },
                 },
                 {
-                  label: "Download Template",
+                  label: "Download Face Template",
                   icon: "iconoir-download",
                   action: () => {
                     setActiveAsset(a.id, false);
@@ -4185,7 +4358,7 @@
                   },
                 },
                 {
-                  label: "Export Image",
+                  label: "Export Face Image",
                   icon: "iconoir-media-image",
                   action: () => {
                     U.exportImageAsset.value = a.id;
@@ -4194,7 +4367,7 @@
                   },
                 },
                 {
-                  label: "Reset Texture Transform",
+                  label: "Reset Artwork Transform",
                   icon: "iconoir-undo",
                   action: reset2DTransform,
                 },
@@ -4218,7 +4391,7 @@
               );
             } else if (a.type === "uv") {
               menu.push({
-                label: "Open UV Export",
+                label: "Export UV View",
                 icon: "iconoir-download",
                 action: () => openExportModalToTab("image"),
               });
@@ -4264,17 +4437,17 @@
           U.assetSelect.innerHTML = "";
           const currentAssetOption = document.createElement("option");
           currentAssetOption.value = "__current__";
-          currentAssetOption.textContent = a.image?.filename || "No asset assigned";
+          currentAssetOption.textContent = a.image?.filename || "No artwork assigned";
           currentAssetOption.selected = true;
           U.assetSelect.append(currentAssetOption);
           if (a.type === "2d") {
             const uploadOption = document.createElement("option");
             uploadOption.value = "__upload__";
-            uploadOption.textContent = "Upload Asset...";
+            uploadOption.textContent = "Upload Artwork...";
             U.assetSelect.append(uploadOption);
           }
-          U.assetSelect.disabled = a.type !== "2d";
         }
+        if (U.artworkFileRow) U.artworkFileRow.hidden = !is2d;
         U.context2D.hidden = !is2d;
         U.context3D.hidden = !is3d;
         U.contextUV.hidden = !isUV;
@@ -4303,6 +4476,7 @@
         if (is2d) {
           ensure2DTransform(a);
           sync2DTransformFields(a);
+          sync2DInspectorState(a);
         } else if (is3d) {
           ensureModelTransform(c);
           sync3DTransformFields(c);
@@ -5618,14 +5792,18 @@
           fh = h - m * 2;
           fw = fh * r;
         }
-        const fx = (w - fw) / 2,
-          fy = (h - fh) / 2;
+        const stageZoom = clampNumber(S.view.stage2dZoom || 1, STAGE_2D_ZOOM_MIN, STAGE_2D_ZOOM_MAX);
+        const fx = (w - fw * stageZoom) / 2 + (S.view.stage2dPanX || 0),
+          fy = (h - fh * stageZoom) / 2 + (S.view.stage2dPanY || 0);
+        fw *= stageZoom;
+        fh *= stageZoom;
         X.fillStyle =
           getComputedStyle(document.documentElement)
             .getPropertyValue("--ds-text-muted")
             .trim() || "#999";
         X.font = canvasFont(CANVAS_FS_1);
         X.fillText(`${a.label} template ${a.w}x${a.h}`, fx, fy - 10);
+        S.view.assetFrameRect = { x: fx, y: fy, w: fw, h: fh };
         if (!a.image) {
           const cb =
             getComputedStyle(document.documentElement)
@@ -5639,7 +5817,7 @@
           X.restore();
           X.font = canvasFont(CANVAS_FS_2);
           X.fillText(
-            "Drop image here or use Upload Image",
+            "Drop artwork here or use Upload Artwork",
             fx + 14,
             fy + 26,
           );
@@ -5649,7 +5827,6 @@
           return;
         }
         const mapped = getMappedTemplateImage(a);
-        S.view.assetFrameRect = { x: fx, y: fy, w: fw, h: fh };
         if (mapped && !(S.view.assetEditSelected && a.image)) X.drawImage(mapped, fx, fy, fw, fh);
         if (S.view.assetEditSelected && a.image?.img) {
           const src = getPixelizedSourceImage(a);
@@ -5739,7 +5916,7 @@
           clearWebGL();
           if (U.debugOutput) {
             U.debugOutput.textContent = S.debug.mapping
-              ? "Select the 3D Model asset to inspect mapping diagnostics."
+              ? "Select Model View to inspect mapping diagnostics."
               : "Mapping debug disabled.";
           }
           if (a.type === "uv") drawUVUnwrap(c, t, w, h, ca);
@@ -5749,7 +5926,9 @@
         const currentAsset = asset();
         if (currentAsset?.type === "2d") {
           ensure2DTransform(currentAsset);
-          U.hudCamera.textContent = `Pan ${Math.round(currentAsset.tr.x)}, ${Math.round(currentAsset.tr.y)} | Scale ${currentAsset.tr.s.toFixed(2)}`;
+          U.hudCamera.textContent = S.view.assetEditSelected
+            ? `Artwork ${Math.round(currentAsset.tr.x)}, ${Math.round(currentAsset.tr.y)} | Scale ${currentAsset.tr.s.toFixed(2)}`
+            : `View ${Math.round(S.view.stage2dPanX || 0)}, ${Math.round(S.view.stage2dPanY || 0)} | Zoom ${(S.view.stage2dZoom || 1).toFixed(2)}`;
         } else {
           U.hudCamera.textContent = `Rot ${S.view.yaw.toFixed(2)}, ${S.view.pitch.toFixed(2)} | Zoom ${S.view.zoom.toFixed(2)}`;
         }
@@ -5777,6 +5956,40 @@
         U.tsOut.value = a.tr.s.toFixed(2);
         U.trOut.value = String(Math.round(a.tr.r));
         U.pxOut.value = String(Math.round(a.tr.px || 1));
+      }
+      function sync2DInspectorState(a) {
+        const is2d = a?.type === "2d";
+        const hasArtwork = !!a?.image;
+        const controlReady = is2d && hasArtwork;
+        const controls = [
+          U.txRange,
+          U.tyRange,
+          U.tsRange,
+          U.trRange,
+          U.pxRange,
+          U.txOut,
+          U.tyOut,
+          U.tsOut,
+          U.trOut,
+          U.pxOut,
+          U.mirrorXBtn,
+          U.mirrorYBtn,
+          U.fitContainBtn,
+          U.fitFillBtn,
+          U.fitWidthBtn,
+          U.fitHeightBtn,
+          U.reset2dBtn,
+        ];
+        controls.forEach((control) => {
+          if (control) control.disabled = !controlReady;
+        });
+        if (!U.context2D) return;
+        U.context2D.classList.toggle("is-edit-locked", is2d && !controlReady);
+        U.context2D.classList.toggle(
+          "is-edit-active",
+          is2d && controlReady && !!S.view.assetEditSelected,
+        );
+        U.context2D.classList.toggle("is-empty", is2d && !hasArtwork);
       }
       function sync3DTransformFields(c) {
         U.m3dXRange.value = String(c.modelTr.tx);
@@ -5925,16 +6138,16 @@
       function downloadTemplate() {
         const a = asset();
         if (!a || a.type !== "2d") {
-          setStatus("Select a 2D asset card first.");
+          setStatus("Select a 2D face first.");
           return;
         }
         downloadTemplateAsset(a);
-        setStatus(`Downloaded template for ${a.label}.`);
+        setStatus(`Downloaded face template for ${a.label}.`);
       }
       function uploadImage(file) {
         const a = asset();
         if (!a || a.type !== "2d") {
-          setStatus("Select a 2D asset card before upload.");
+          setStatus("Select a 2D face before upload.");
           return;
         }
         if (!file) return;
@@ -5946,7 +6159,7 @@
           const mismatch = im.width !== a.w || im.height !== a.h;
           setStatus(
             mismatch
-              ? `Uploaded ${file.name}. Source ${im.width}x${im.height} differs from template ${a.w}x${a.h}. Use translate/scale tools.`
+              ? `Uploaded ${file.name}. Source ${im.width}x${im.height} differs from face ${a.w}x${a.h}. Use translate/scale tools.`
               : `Uploaded ${file.name}.`,
           );
           syncContextFromAsset();
@@ -7243,12 +7456,12 @@
         const current = U.exportImageAsset.value;
         const currentAsset = asset();
         const options = [];
-        options.push({ value: "__model__", label: "3D Model View" });
+        options.push({ value: "__model__", label: "Model View" });
         c.assets.forEach((a) => {
           if (a.type !== "2d") return;
           options.push({
             value: a.id,
-            label: `${a.label} (${a.w}x${a.h})`,
+            label: `Face: ${a.label} (${a.w}x${a.h})`,
           });
         });
         U.exportImageAsset.innerHTML = options
@@ -7446,7 +7659,7 @@
         if (mode === "gltf") {
           dl(`${baseName}.gltf`, JSON.stringify(gltf, null, 2), "model/gltf+json");
           textures.forEach((t) => dlUrl(t.filename, t.dataUri));
-          setStatus(`Exported glTF + ${textures.length} texture${textures.length === 1 ? "" : "s"}.`);
+          setStatus(`Exported glTF + ${textures.length} face texture${textures.length === 1 ? "" : "s"}.`);
           return;
         }
         dl(`${baseName}.manifest.json`, JSON.stringify(manifest, null, 2), "application/json");
@@ -7455,7 +7668,7 @@
         dlBlob(`${baseName}.glb`, makeGlbBlob(gltf));
         textures.forEach((t) => dlUrl(t.filename, t.dataUri));
         setStatus(
-          `Exported package: ${baseName} (manifest + state + glTF + GLB + ${textures.length} texture${textures.length === 1 ? "" : "s"}).`,
+          `Exported package: ${baseName} (manifest + state + glTF + GLB + ${textures.length} face texture${textures.length === 1 ? "" : "s"}).`,
         );
       }
       function runImageExport() {
@@ -7472,16 +7685,16 @@
           const u = exportCanvasDataUrl(snap, fmt, quality, transparent);
           if (!u) return;
           dlUrl(`${baseName}.model-view.${fmt}`, u);
-          setStatus("Exported 3D model view image.");
+          setStatus("Exported model view image.");
           return;
         }
         const a = c.assets.find((x) => x.id === target);
         if (!a || a.type !== "2d") {
-          setStatus("Choose a valid 2D texture asset to export.");
+          setStatus("Choose a valid 2D face to export.");
           return;
         }
         const ok = exportMappedAssetImage(a, baseName, fmt, quality, transparent);
-        setStatus(ok ? `Exported ${a.label} image.` : "Current asset has no mapped image to export.");
+        setStatus(ok ? `Exported face image: ${a.label}.` : "Selected face has no mapped image to export.");
       }
 
       U.cancelCreateBtn.addEventListener("click", closeCreatePanel);
@@ -7778,12 +7991,15 @@
       });
       U.viewHomeBtn.addEventListener("click", () => {
         if (asset()?.type === "2d") {
-          if (!S.view.assetEditSelected) {
-            setStatus("Select artwork in the workspace before adjusting it.");
+          const a = asset();
+          if (!a?.image) {
+            reset2DWorkspaceView();
             return;
           }
-          const a = asset();
-          if (!a) return;
+          if (!S.view.assetEditSelected) {
+            reset2DWorkspaceView();
+            return;
+          }
           ensure2DTransform(a);
           a.tr.x = 0;
           a.tr.y = 0;
@@ -7797,8 +8013,8 @@
       });
       U.viewFitBtn.addEventListener("click", () => {
         if (asset()?.type === "2d") {
-          if (!S.view.assetEditSelected) {
-            setStatus("Select artwork in the workspace before adjusting it.");
+          if (!asset()?.image || !S.view.assetEditSelected) {
+            reset2DWorkspaceView();
             return;
           }
           fitAsset("contain");
@@ -7809,8 +8025,12 @@
       U.zoomInBtn.addEventListener("click", () => {
         const a = asset();
         if (a?.type === "2d") {
-          if (!S.view.assetEditSelected) {
-            setStatus("Select artwork in the workspace before adjusting it.");
+          if (!a.image || !S.view.assetEditSelected) {
+            S.view.stage2dZoom = clampNumber(
+              (S.view.stage2dZoom || 1) + 0.12,
+              STAGE_2D_ZOOM_MIN,
+              STAGE_2D_ZOOM_MAX,
+            );
             return;
           }
           ensure2DTransform(a);
@@ -7823,8 +8043,12 @@
       U.zoomOutBtn.addEventListener("click", () => {
         const a = asset();
         if (a?.type === "2d") {
-          if (!S.view.assetEditSelected) {
-            setStatus("Select artwork in the workspace before adjusting it.");
+          if (!a.image || !S.view.assetEditSelected) {
+            S.view.stage2dZoom = clampNumber(
+              (S.view.stage2dZoom || 1) - 0.12,
+              STAGE_2D_ZOOM_MIN,
+              STAGE_2D_ZOOM_MAX,
+            );
             return;
           }
           ensure2DTransform(a);
@@ -7836,8 +8060,8 @@
       });
       U.zoomResetBtn.addEventListener("click", () => {
         if (asset()?.type === "2d") {
-          if (!S.view.assetEditSelected) {
-            setStatus("Select artwork in the workspace before adjusting it.");
+          if (!asset()?.image || !S.view.assetEditSelected) {
+            reset2DWorkspaceView();
             return;
           }
           reset2DTransform();
@@ -7970,25 +8194,20 @@
         if (!currentAsset || (currentAsset.type !== "3d" && currentAsset.type !== "2d"))
           return;
         if (currentAsset.type === "2d") {
-          if (!currentAsset.image) return;
           const rect = U.stageCanvas.getBoundingClientRect();
           const px = (e.clientX - rect.left) * (U.stageCanvas.width / Math.max(1, rect.width));
           const py = (e.clientY - rect.top) * (U.stageCanvas.height / Math.max(1, rect.height));
           const insideFrame = pointInRect(px, py, S.view.assetFrameRect);
-          if (!S.view.assetEditSelected) {
-            if (insideFrame) {
-              set2DAssetEditSelected(true);
-              syncWorkspaceChrome();
-              setStatus("Artwork selected. Drag to pan, scroll to zoom, click outside to exit.");
-            }
-            return;
-          }
-          if (!insideFrame) {
+          S.view.stageClickSelectCandidate = !!currentAsset.image && insideFrame;
+          if (S.view.assetEditSelected && !insideFrame) {
             set2DAssetEditSelected(false);
             syncWorkspaceChrome();
-            setStatus("Artwork selection cleared.");
-            return;
+            setStatus("Artwork deselected.");
           }
+          S.view.dragMode =
+            currentAsset.image && S.view.assetEditSelected && insideFrame ? "asset" : "viewport";
+        } else {
+          S.view.dragMode = "orbit";
         }
         S.view.drag = true;
         S.view.dragMoved = false;
@@ -8009,27 +8228,48 @@
           return;
         }
         if (currentAsset?.type === "2d") {
-          if (!S.view.assetEditSelected) return;
-          ensure2DTransform(currentAsset);
-          S.view.dragMoved = true;
-          const rect = U.stageCanvas.getBoundingClientRect();
-          const frame = S.view.assetFrameRect || { w: rect.width, h: rect.height };
-          currentAsset.tr.x = clampNumber(
-            currentAsset.tr.x + dx * (220 / Math.max(1, frame.w * 0.45)),
-            -220,
-            220,
-          );
-          currentAsset.tr.y = clampNumber(
-            currentAsset.tr.y + dy * (220 / Math.max(1, frame.h * 0.45)),
-            -220,
-            220,
-          );
-          sync2DTransformFields(currentAsset);
+          if (S.view.dragMode === "asset") {
+            ensure2DTransform(currentAsset);
+            S.view.dragMoved = true;
+            const rect = U.stageCanvas.getBoundingClientRect();
+            const frame = S.view.assetFrameRect || { w: rect.width, h: rect.height };
+            currentAsset.tr.x = clampNumber(
+              currentAsset.tr.x + dx * (220 / Math.max(1, frame.w * 0.45)),
+              -220,
+              220,
+            );
+            currentAsset.tr.y = clampNumber(
+              currentAsset.tr.y + dy * (220 / Math.max(1, frame.h * 0.45)),
+              -220,
+              220,
+            );
+            sync2DTransformFields(currentAsset);
+            return;
+          }
+          if (S.view.dragMode === "viewport") {
+            S.view.dragMoved = true;
+            const rect = U.stageCanvas.getBoundingClientRect();
+            S.view.stage2dPanX += dx * (U.stageCanvas.width / Math.max(1, rect.width));
+            S.view.stage2dPanY += dy * (U.stageCanvas.height / Math.max(1, rect.height));
+          }
         }
       });
       U.stageCanvas.addEventListener("pointerup", (e) => {
+        if (
+          !S.view.dragMoved &&
+          S.view.dragMode === "viewport" &&
+          S.view.stageClickSelectCandidate &&
+          asset()?.type === "2d" &&
+          asset()?.image
+        ) {
+          set2DAssetEditSelected(true);
+          syncWorkspaceChrome();
+          setStatus("Artwork selected.");
+        }
         S.view.drag = false;
         S.view.dragMoved = false;
+        S.view.dragMode = "";
+        S.view.stageClickSelectCandidate = false;
         U.stageCanvas.classList.remove("drag");
         lastPt = null;
         if (U.stageCanvas.hasPointerCapture(e.pointerId))
@@ -8038,6 +8278,8 @@
       U.stageCanvas.addEventListener("pointercancel", (e) => {
         S.view.drag = false;
         S.view.dragMoved = false;
+        S.view.dragMode = "";
+        S.view.stageClickSelectCandidate = false;
         U.stageCanvas.classList.remove("drag");
         lastPt = null;
         if (U.stageCanvas.hasPointerCapture(e.pointerId))
@@ -8049,14 +8291,35 @@
           e.preventDefault();
           const currentAsset = asset();
           if (currentAsset?.type === "2d") {
-            if (!S.view.assetEditSelected) return;
-            ensure2DTransform(currentAsset);
-            currentAsset.tr.s = clampNumber(
-              currentAsset.tr.s + (e.deltaY < 0 ? 0.08 : -0.08),
-              0.2,
-              3,
+            const rect = U.stageCanvas.getBoundingClientRect();
+            const px = (e.clientX - rect.left) * (U.stageCanvas.width / Math.max(1, rect.width));
+            const py = (e.clientY - rect.top) * (U.stageCanvas.height / Math.max(1, rect.height));
+            if (S.view.assetEditSelected) {
+              ensure2DTransform(currentAsset);
+              currentAsset.tr.s = clampNumber(
+                currentAsset.tr.s + (e.deltaY < 0 ? 0.08 : -0.08),
+                0.2,
+                3,
+              );
+              sync2DTransformFields(currentAsset);
+              return;
+            }
+            const frame = S.view.assetFrameRect;
+            const baseFrame =
+              frame && S.view.stage2dZoom
+                ? {
+                    fw: frame.w / Math.max(S.view.stage2dZoom, 0.001),
+                    fh: frame.h / Math.max(S.view.stage2dZoom, 0.001),
+                  }
+                : null;
+            zoom2DWorkspaceAt(
+              (S.view.stage2dZoom || 1) + (e.deltaY < 0 ? 0.12 : -0.12),
+              px,
+              py,
+              baseFrame,
+              U.stageCanvas.width,
+              U.stageCanvas.height,
             );
-            sync2DTransformFields(currentAsset);
             return;
           }
           S.view.zoom = Math.max(ZOOM_MIN, S.view.zoom + (e.deltaY < 0 ? 0.12 : -0.12));
@@ -8099,7 +8362,8 @@
             icon: "iconoir-frame-select",
             action: () => {
               if (asset()?.type === "2d") {
-                fitAsset("contain");
+                if (asset()?.image && S.view.assetEditSelected) fitAsset("contain");
+                else reset2DWorkspaceView();
                 return;
               }
               applyCameraPreset("fit");
