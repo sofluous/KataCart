@@ -75,6 +75,55 @@
   const CASE_FACE_RENDER_ORDER = ["front", "back", "bottom", "right", "top", "spine"];
   const WEBGL_BASE_MODEL_YAW = Math.PI;
 
+  function discDiameterMmForTemplate(template) {
+    if (!template) return 120;
+    return Number(template.discDiameterMm || template.spec?.discDiameterMm || 120);
+  }
+
+  function assetPhysicalDimsMm(assetId, template) {
+    if (!template || !assetId) return null;
+    if (assetId === "cover_front" || assetId === "cover_back") {
+      return { w: Math.round(template.d.w), h: Math.round(template.d.h) };
+    }
+    if (assetId === "spine") {
+      return { w: Number(template.d.z.toFixed(1)), h: Math.round(template.d.h) };
+    }
+    if (assetId === "disc_art") {
+      const dia = Math.round(discDiameterMmForTemplate(template));
+      return { w: dia, h: dia };
+    }
+    if (assetId === "label_front") {
+      return { w: Math.round(template.d.w), h: Math.round(template.d.h) };
+    }
+    return null;
+  }
+
+  function applyPosePresetToModel(modelTr, pose) {
+    if (!modelTr) return;
+    if (pose === "hero") {
+      modelTr.ry += -28;
+      modelTr.rx += 8;
+      return;
+    }
+    if (pose === "showcase-left") {
+      modelTr.ry += -42;
+      modelTr.rx += 10;
+      return;
+    }
+    if (pose === "showcase-right") {
+      modelTr.ry += 42;
+      modelTr.rx += 10;
+      return;
+    }
+    if (pose === "flat") {
+      modelTr.rx += 90;
+      return;
+    }
+    if (pose === "edge") {
+      modelTr.ry += 90;
+    }
+  }
+
   function caseFaceDefs(bind = {}) {
     return CASE_FACE_RENDER_ORDER.map((id) => ({
       id,
@@ -92,6 +141,9 @@
     WEBGL_FACE_UV_ARRAY,
     CASE_FACE_RENDER_ORDER,
     WEBGL_BASE_MODEL_YAW,
+    discDiameterMmForTemplate,
+    assetPhysicalDimsMm,
+    applyPosePresetToModel,
     caseFaceDefs,
   };
 })();

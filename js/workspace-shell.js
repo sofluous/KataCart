@@ -11,11 +11,23 @@
       setHeaderMoreOpen,
     } = deps;
 
+    function setPressed(button, pressed) {
+      if (!button) return;
+      button.setAttribute("aria-pressed", pressed ? "true" : "false");
+    }
+
+    function setHidden(node, hidden) {
+      if (!node) return;
+      node.hidden = !!hidden;
+    }
+
     function syncInspectorPanels() {
       const metaCollapsed = !!S.chrome.metaCollapsed;
       const contextCollapsed = !!S.chrome.contextCollapsed;
+      const renderCollapsed = !!S.chrome.renderCollapsed;
       U.canvasMetaPanel?.classList.toggle("is-collapsed", metaCollapsed);
       U.canvasContextPanel?.classList.toggle("is-collapsed", contextCollapsed);
+      U.canvasRenderPanel?.classList.toggle("is-collapsed", renderCollapsed);
       if (U.toggleMetaPanelBtn) {
         U.toggleMetaPanelBtn.setAttribute("aria-expanded", metaCollapsed ? "false" : "true");
         U.toggleMetaPanelBtn.title = metaCollapsed ? "Expand metadata" : "Collapse metadata";
@@ -28,6 +40,12 @@
         U.toggleContextPanelBtn.title = contextCollapsed
           ? "Expand face inspector"
           : "Collapse face inspector";
+      }
+      if (U.toggleRenderPanelBtn) {
+        U.toggleRenderPanelBtn.setAttribute("aria-expanded", renderCollapsed ? "false" : "true");
+        U.toggleRenderPanelBtn.title = renderCollapsed
+          ? "Expand render properties"
+          : "Collapse render properties";
       }
     }
 
@@ -47,10 +65,20 @@
       );
     }
 
+    function toggleRenderPanel() {
+      S.chrome.renderCollapsed = !S.chrome.renderCollapsed;
+      syncInspectorPanels();
+      saveWorkspacePrefs();
+      setStatus(
+        S.chrome.renderCollapsed ? "Render properties collapsed." : "Render properties expanded.",
+      );
+    }
+
     function syncFocusButton() {
       if (!U.focusWorkspaceBtn) return;
       const active = !!document.fullscreenElement;
       U.focusWorkspaceBtn.classList.toggle("is-active", active);
+      setPressed(U.focusWorkspaceBtn, active);
       U.focusWorkspaceBtn.title = active ? "Exit full screen" : "Enter full screen";
       U.focusWorkspaceBtn.innerHTML = active
         ? '<i class="iconoir-minimize"></i>Full Screen'
@@ -84,6 +112,9 @@
         "is-active",
         !preview && !S.chrome.assetStripCollapsed,
       );
+      setPressed(U.togglePreviewBtn, preview);
+      setPressed(U.toggleInspectorBtn, !preview && !S.chrome.inspectorCollapsed);
+      setPressed(U.toggleAssetStripBtn, !preview && !S.chrome.assetStripCollapsed);
       if (U.togglePreviewBtn) {
         U.togglePreviewBtn.title = preview ? "Exit preview mode" : "Enter preview mode";
         U.togglePreviewBtn.innerHTML = preview
@@ -160,29 +191,50 @@
       const currentAsset = asset();
       const is3d = currentAsset?.type === "3d";
       const is2d = currentAsset?.type === "2d";
+      const isUv = currentAsset?.type === "uv";
+      const showTemplateLabels = is2d || is3d || isUv;
+      setHidden(U.canvasRenderPanel, !is3d);
       if (U.spinCheckbox) U.spinCheckbox.checked = S.view.spin;
       if (U.gridCheckbox) U.gridCheckbox.checked = S.view.grid;
+      setHidden(U.toolRenderStandardBtn, !is3d);
+      setHidden(U.toolRenderWobbleBtn, !is3d);
+      setHidden(U.toolFaceVizBtn, !is3d);
+      setHidden(U.toolAutoRotateBtn, !is3d);
+      setHidden(U.toolNormalsBtn, !is3d);
+      setHidden(U.toolAutoRotateMenuBtn, !is3d);
+      setHidden(U.toolNormalsMenuBtn, !is3d);
+      setHidden(U.toolTemplateLabelsBtn, !showTemplateLabels);
+      setHidden(U.toolTemplateLabelsMenuBtn, !showTemplateLabels);
       U.toolAutoRotateBtn.classList.toggle("active", is3d && S.view.spin);
+      setPressed(U.toolAutoRotateBtn, is3d && S.view.spin);
       if (U.toolAutoRotateMenuBtn)
         U.toolAutoRotateMenuBtn.classList.toggle("active", is3d && S.view.spin);
+      setPressed(U.toolAutoRotateMenuBtn, is3d && S.view.spin);
       U.toolNormalsBtn.classList.toggle("active", is3d && S.view.normals);
+      setPressed(U.toolNormalsBtn, is3d && S.view.normals);
       if (U.toolNormalsMenuBtn)
         U.toolNormalsMenuBtn.classList.toggle("active", is3d && S.view.normals);
+      setPressed(U.toolNormalsMenuBtn, is3d && S.view.normals);
       U.toolRenderStandardBtn.classList.toggle(
         "active",
         is3d && S.view.renderMode === "standard",
       );
+      setPressed(U.toolRenderStandardBtn, is3d && S.view.renderMode === "standard");
       U.toolRenderWobbleBtn.classList.toggle("active", is3d && S.view.renderMode === "wobble");
+      setPressed(U.toolRenderWobbleBtn, is3d && S.view.renderMode === "wobble");
       if (U.toolFaceVizBtn) {
         const isTransparent = is3d && S.view.faceViz === "transparent";
         U.toolFaceVizBtn.classList.toggle("active", isTransparent);
+        setPressed(U.toolFaceVizBtn, isTransparent);
         U.toolFaceVizBtn.title = isTransparent ? "Transparent faces on" : "Transparent faces off";
         const ic = U.toolFaceVizBtn.querySelector("i");
         if (ic) ic.className = isTransparent ? "iconoir-eye-closed" : "iconoir-eye";
       }
       U.toolTemplateLabelsBtn.classList.toggle("active", S.view.templateLabels);
+      setPressed(U.toolTemplateLabelsBtn, !!S.view.templateLabels);
       if (U.toolTemplateLabelsMenuBtn)
         U.toolTemplateLabelsMenuBtn.classList.toggle("active", S.view.templateLabels);
+      setPressed(U.toolTemplateLabelsMenuBtn, !!S.view.templateLabels);
       [
         U.toolRenderStandardBtn,
         U.toolRenderWobbleBtn,
@@ -207,6 +259,16 @@
         if (!btn) return;
         btn.disabled = !is3d;
       });
+      [
+        U.viewFrontBtn,
+        U.viewBackBtn,
+        U.viewLeftBtn,
+        U.viewRightBtn,
+        U.viewTopBtn,
+        U.viewBottomBtn,
+        U.viewIsoBtn,
+      ].forEach((btn) => setHidden(btn, !is3d));
+      setHidden(U.gizmoSizeRange?.closest(".gizmo-size"), !is3d);
       if (U.viewHomeBtn)
         U.viewHomeBtn.title = is2d
           ? S.view.assetEditSelected
@@ -219,7 +281,11 @@
             ? "Fit artwork"
             : "Fit canvas view"
           : "Fit/reset view";
-      const showMoreTools = is3d || isCompactHeaderMode();
+      const showMoreTools =
+        isCompactHeaderMode() &&
+        !![U.toolTemplateLabelsMenuBtn, U.toolAutoRotateMenuBtn, U.toolNormalsMenuBtn].find(
+          (btn) => btn && !btn.hidden,
+        );
       U.toolMoreBtn.hidden = !showMoreTools;
       if (!showMoreTools) setHeaderMoreOpen(false);
       U.poseSelect.disabled = !is3d;
@@ -236,6 +302,7 @@
       syncInspectorPanels,
       toggleMetaPanel,
       toggleContextPanel,
+      toggleRenderPanel,
       syncWorkspaceChrome,
       syncFocusButton,
       openExportModalToTab,
