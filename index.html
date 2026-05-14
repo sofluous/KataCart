@@ -13,6 +13,12 @@
     <link rel="stylesheet" href="./design-system/theme.css" />
     <script src="./design-system/js/theme-registry.js"></script>
     <script src="./design-system/js/theme-selector.js"></script>
+    <script src="./js/face-inspector.js"></script>
+    <script src="./js/render-config.js"></script>
+    <script src="./js/render-2d.js"></script>
+    <script src="./js/render-3d.js"></script>
+    <script src="./js/render-3d-webgl.js"></script>
+    <script src="./js/workspace-shell.js"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/iconoir@7.10.1/css/iconoir.css"
@@ -2804,688 +2810,15 @@
       const STAGE_2D_ZOOM_MAX = 4;
       let last = performance.now();
       let lastPt = null;
-      const WEBGL_FACE_UV_ORDER = {
-        // TL, TR, BR, BL mapped to model vertex indices.
-        // Keep parity with canvas textureQuadForFace mapping.
-        front: [2, 3, 0, 1],
-        back: [7, 6, 5, 4],
-        spine: [2, 6, 5, 1],
-        right: [3, 7, 4, 0],
-        top: [3, 2, 6, 7],
-        bottom: [0, 4, 5, 1],
-      };
-      const WEBGL_FACE_POLY = {
-        front: [0, 3, 2, 1],
-        back: [4, 5, 6, 7],
-        bottom: [0, 1, 5, 4],
-        right: [3, 0, 4, 7],
-        top: [3, 7, 6, 2],
-        spine: [1, 2, 6, 5],
-      };
-      // Deterministic WebGL UV basis per face (TL,TR,BR,BL) after final parity tuning.
-      // Keeping this explicit avoids stacked transform ambiguity (flip/rotate chains).
-      const WEBGL_FACE_UV_COORDS = {
-        front: [
-          { u: 0, v: 1 },
-          { u: 1, v: 1 },
-          { u: 1, v: 0 },
-          { u: 0, v: 0 },
-        ],
-        back: [
-          { u: 0, v: 1 },
-          { u: 1, v: 1 },
-          { u: 1, v: 0 },
-          { u: 0, v: 0 },
-        ],
-        spine: [
-          { u: 1, v: 1 },
-          { u: 0, v: 1 },
-          { u: 0, v: 0 },
-          { u: 1, v: 0 },
-        ],
-        right: [
-          { u: 1, v: 1 },
-          { u: 1, v: 0 },
-          { u: 0, v: 0 },
-          { u: 0, v: 1 },
-        ],
-        top: [
-          { u: 1, v: 1 },
-          { u: 0, v: 1 },
-          { u: 0, v: 0 },
-          { u: 1, v: 0 },
-        ],
-        bottom: [
-          { u: 0, v: 0 },
-          { u: 1, v: 0 },
-          { u: 1, v: 1 },
-          { u: 0, v: 1 },
-        ],
-      };
-      const CANONICAL_EXPORT_MAPPING_PROFILE = {
-        id: "blender",
-        label: "Blender Parity",
-        uvOps: ["rot180", "flipU"],
-        spineTargetFace: "right",
-      };
-      const WEBGL_FACE_UV_ARRAY = {
-        front: [0, 1, 1, 1, 1, 0, 0, 0],
-        back: [0, 1, 1, 1, 1, 0, 0, 0],
-        spine: [1, 1, 0, 1, 0, 0, 1, 0],
-        right: [1, 1, 1, 0, 0, 0, 0, 1],
-        top: [1, 1, 0, 1, 0, 0, 1, 0],
-        bottom: [0, 0, 1, 0, 1, 1, 0, 1],
-      };
-      const CASE_FACE_RENDER_ORDER = ["front", "back", "bottom", "right", "top", "spine"];
-      function caseFaceDefs(bind = {}) {
-        return CASE_FACE_RENDER_ORDER.map((id) => ({
-          id,
-          poly: WEBGL_FACE_POLY[id],
-          uvCorners: WEBGL_FACE_UV_ORDER[id],
-          tex: bind[id] || null,
-        }));
-      }
-      const WEBGL_BASE_MODEL_YAW = Math.PI;
-      const GLR = {
-        gl: null,
-        ready: false,
-        program: null,
-        bufPos: null,
-        bufUv: null,
-        bufIdx: null,
-        loc: {},
-        texCache: new Map(),
-        discCompositeCache: new Map(),
-        whiteTex: null,
-      };
-
-      function mat4Identity() {
-        return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-      }
-      function mat4Multiply(a, b) {
-        const o = new Array(16).fill(0);
-        for (let r = 0; r < 4; r++) {
-          for (let c = 0; c < 4; c++) {
-            o[c * 4 + r] =
-              a[0 * 4 + r] * b[c * 4 + 0] +
-              a[1 * 4 + r] * b[c * 4 + 1] +
-              a[2 * 4 + r] * b[c * 4 + 2] +
-              a[3 * 4 + r] * b[c * 4 + 3];
-          }
-        }
-        return o;
-      }
-      function mat4Translate(x, y, z) {
-        return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
-      }
-      function mat4Scale(x, y, z) {
-        return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
-      }
-      function mat4RotateX(rad) {
-        const c = Math.cos(rad);
-        const s = Math.sin(rad);
-        return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1];
-      }
-      function mat4RotateY(rad) {
-        const c = Math.cos(rad);
-        const s = Math.sin(rad);
-        return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1];
-      }
-      function mat4RotateZ(rad) {
-        const c = Math.cos(rad);
-        const s = Math.sin(rad);
-        return [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-      }
-      function mat4Perspective(fovRad, aspect, near, far) {
-        const f = 1 / Math.tan(fovRad / 2);
-        const nf = 1 / (near - far);
-        return [
-          f / aspect,
-          0,
-          0,
-          0,
-          0,
-          f,
-          0,
-          0,
-          0,
-          0,
-          (far + near) * nf,
-          -1,
-          0,
-          0,
-          (2 * far * near) * nf,
-          0,
-        ];
-      }
-      function mat4TransformPoint(m, p, w = 1) {
-        return {
-          x: m[0] * p.x + m[4] * p.y + m[8] * p.z + m[12] * w,
-          y: m[1] * p.x + m[5] * p.y + m[9] * p.z + m[13] * w,
-          z: m[2] * p.x + m[6] * p.y + m[10] * p.z + m[14] * w,
-          w: m[3] * p.x + m[7] * p.y + m[11] * p.z + m[15] * w,
-        };
-      }
-      function quadSignedArea(quad) {
-        let area = 0;
-        for (let i = 0; i < quad.length; i += 1) {
-          const a = quad[i];
-          const b = quad[(i + 1) % quad.length];
-          area += a.x * b.y - b.x * a.y;
-        }
-        return area * 0.5;
-      }
-      function hexToRgb01(hex, fallback = [0.55, 0.58, 0.63]) {
-        const h = String(hex || "").trim().replace("#", "");
-        if (!/^[0-9a-fA-F]{6}$/.test(h)) return fallback;
-        const n = Number.parseInt(h, 16);
-        return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-      }
-      function glCompile(gl, type, src) {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-          const msg = gl.getShaderInfoLog(s) || "shader compile failed";
-          gl.deleteShader(s);
-          throw new Error(msg);
-        }
-        return s;
-      }
-      function glProgram(gl, vs, fs) {
-        const p = gl.createProgram();
-        gl.attachShader(p, glCompile(gl, gl.VERTEX_SHADER, vs));
-        gl.attachShader(p, glCompile(gl, gl.FRAGMENT_SHADER, fs));
-        gl.linkProgram(p);
-        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-          const msg = gl.getProgramInfoLog(p) || "program link failed";
-          gl.deleteProgram(p);
-          throw new Error(msg);
-        }
-        return p;
-      }
-      function initWebGL() {
-        if (GLR.ready) return true;
-        if (!U.stageGlCanvas) return false;
-        const gl =
-          U.stageGlCanvas.getContext("webgl", {
-            alpha: true,
-            antialias: true,
-            premultipliedAlpha: true,
-            preserveDrawingBuffer: false,
-          }) || U.stageGlCanvas.getContext("experimental-webgl");
-        if (!gl) return false;
-        try {
-          const vs = `
-            attribute vec3 a_pos;
-            attribute vec2 a_uv;
-            uniform mat4 u_mvp;
-            uniform float u_wobble;
-            uniform float u_time;
-            varying vec2 v_uv;
-            void main() {
-              vec4 clip = u_mvp * vec4(a_pos, 1.0);
-              if (u_wobble > 0.5) {
-                vec2 ndc = clip.xy / max(clip.w, 0.0001);
-                float depth = max(0.65, 1.25 / max(0.2, clip.w));
-                vec2 drift = vec2(
-                  sin(u_time * 0.55 + a_pos.y * 7.0),
-                  cos(u_time * 0.47 + a_pos.x * 6.0)
-                ) * (0.0038 * depth);
-                ndc += drift;
-                vec2 grid = vec2(208.0, 156.0);
-                ndc = floor(ndc * grid + 0.5) / grid;
-                clip.xy = ndc * clip.w;
-              }
-              gl_Position = clip;
-              v_uv = a_uv;
-            }
-          `;
-          const fs = `
-            precision mediump float;
-            varying vec2 v_uv;
-            uniform sampler2D u_tex;
-            uniform vec4 u_color;
-            uniform float u_use_tex;
-            uniform float u_disc_mask;
-            uniform float u_alpha;
-            void main() {
-              vec4 tex = texture2D(u_tex, v_uv);
-              vec4 outc = mix(u_color, vec4(tex.rgb, tex.a * u_alpha), u_use_tex);
-              if (u_disc_mask > 0.5) {
-                float d = distance(v_uv, vec2(0.5));
-                if (d > 0.33 || d < 0.055) discard;
-              }
-              if (outc.a <= 0.001) discard;
-              gl_FragColor = outc;
-            }
-          `;
-          GLR.program = glProgram(gl, vs, fs);
-          GLR.loc = {
-            aPos: gl.getAttribLocation(GLR.program, "a_pos"),
-            aUv: gl.getAttribLocation(GLR.program, "a_uv"),
-            uMvp: gl.getUniformLocation(GLR.program, "u_mvp"),
-            uTex: gl.getUniformLocation(GLR.program, "u_tex"),
-            uColor: gl.getUniformLocation(GLR.program, "u_color"),
-            uUseTex: gl.getUniformLocation(GLR.program, "u_use_tex"),
-            uDiscMask: gl.getUniformLocation(GLR.program, "u_disc_mask"),
-            uAlpha: gl.getUniformLocation(GLR.program, "u_alpha"),
-            uWobble: gl.getUniformLocation(GLR.program, "u_wobble"),
-            uTime: gl.getUniformLocation(GLR.program, "u_time"),
-          };
-          GLR.bufPos = gl.createBuffer();
-          GLR.bufUv = gl.createBuffer();
-          GLR.bufIdx = gl.createBuffer();
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, GLR.bufIdx);
-          gl.bufferData(
-            gl.ELEMENT_ARRAY_BUFFER,
-            new Uint16Array([0, 1, 2, 0, 2, 3]),
-            gl.STATIC_DRAW,
-          );
-          GLR.whiteTex = gl.createTexture();
-          gl.bindTexture(gl.TEXTURE_2D, GLR.whiteTex);
-          gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            1,
-            1,
-            0,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            new Uint8Array([255, 255, 255, 255]),
-          );
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-          GLR.gl = gl;
-          GLR.ready = true;
-          return true;
-        } catch (_) {
-          GLR.ready = false;
-          return false;
-        }
-      }
-      function clearWebGL() {
-        if (!GLR.ready || !GLR.gl) return;
-        const gl = GLR.gl;
-        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      }
-      function glTextureFor(canvasOrImg, key) {
-        if (!GLR.ready || !GLR.gl) return null;
-        const gl = GLR.gl;
-        if (!canvasOrImg) return GLR.whiteTex;
-        const k = key || String(Math.random());
-        let rec = GLR.texCache.get(k);
-        if (!rec) {
-          const tex = gl.createTexture();
-          rec = { tex };
-          GLR.texCache.set(k, rec);
-        }
-        gl.bindTexture(gl.TEXTURE_2D, rec.tex);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvasOrImg);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        return rec.tex;
-      }
-      function mappedFaceSources(c) {
-        const byId = (id) => c.assets.find((a) => a.id === id);
-        const mapped = (id) => {
-          const a = byId(id);
-          if (!a || a.type !== "2d" || !a.image) return null;
-          const can = getMappedTemplateImage(a);
-          const k = `${id}|${a.image.mappedKey || a.image.src || Date.now()}`;
-          return { canvas: can, key: k };
-        };
-        return {
-          front: mapped("cover_front") || mapped("label_front"),
-          back: mapped("cover_back"),
-          spine: mapped("spine"),
-          disc: mapped("disc_art"),
-        };
-      }
-      function drawDiscBackStyleCanvas(ctx, cx, cy, r, style) {
-        if (style === "ps1-black") {
-          const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.4, r * 0.15, cx, cy, r);
-          g.addColorStop(0, "rgba(88,88,92,0.95)");
-          g.addColorStop(0.58, "rgba(28,30,34,0.96)");
-          g.addColorStop(1, "rgba(10,12,16,0.98)");
-          ctx.fillStyle = g;
-          ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-          return;
-        }
-        if (style === "ps2-blue") {
-          const g = ctx.createRadialGradient(cx, cy, r * 0.15, cx, cy, r);
-          g.addColorStop(0, "rgba(126,185,255,0.9)");
-          g.addColorStop(0.55, "rgba(45,96,190,0.92)");
-          g.addColorStop(1, "rgba(14,36,96,0.95)");
-          ctx.fillStyle = g;
-          ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-          return;
-        }
-        const g = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-        g.addColorStop(0, "rgba(216,222,230,0.96)");
-        g.addColorStop(0.18, "rgba(126,170,255,0.46)");
-        g.addColorStop(0.35, "rgba(255,132,206,0.46)");
-        g.addColorStop(0.52, "rgba(117,255,209,0.42)");
-        g.addColorStop(0.7, "rgba(255,238,156,0.42)");
-        g.addColorStop(1, "rgba(176,182,194,0.96)");
-        ctx.fillStyle = g;
-        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-      }
-      function composedDiscSource(discEntry, style) {
-        const safeStyle = style || "silver-rainbow";
-        const art = discEntry?.canvas || null;
-        const artKey = discEntry?.key || "none";
-        const key = `${safeStyle}|${artKey}`;
-        if (GLR.discCompositeCache.has(key)) return { canvas: GLR.discCompositeCache.get(key), key };
-        const size = Math.max(512, art ? Math.max(art.width || 0, art.height || 0) : 1024);
-        const c = document.createElement("canvas");
-        c.width = size;
-        c.height = size;
-        const x = c.getContext("2d");
-        const cx = size * 0.5;
-        const cy = size * 0.5;
-        const r = size * 0.5;
-        drawDiscBackStyleCanvas(x, cx, cy, r, safeStyle);
-        if (art) x.drawImage(art, 0, 0, size, size);
-        if (safeStyle !== "silver-rainbow") {
-          x.globalAlpha = 0.16;
-          drawDiscBackStyleCanvas(x, cx, cy, r, safeStyle);
-          x.globalAlpha = 1;
-        }
-        GLR.discCompositeCache.set(key, c);
-        return { canvas: c, key };
-      }
-      function drawQuadWebGL(gl, data, tex, color, alpha = 1, discMask = 0) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, GLR.bufPos);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.pos), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(GLR.loc.aPos, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(GLR.loc.aPos);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, GLR.bufUv);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.uv), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(GLR.loc.aUv, 2, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(GLR.loc.aUv);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, GLR.bufIdx);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, tex || GLR.whiteTex);
-        gl.uniform1i(GLR.loc.uTex, 0);
-        gl.uniform4f(GLR.loc.uColor, color[0], color[1], color[2], alpha);
-        gl.uniform1f(GLR.loc.uUseTex, tex ? 1 : 0);
-        gl.uniform1f(GLR.loc.uDiscMask, discMask);
-        gl.uniform1f(GLR.loc.uAlpha, alpha);
-        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-      }
-      function draw3DWebGL(c, template, w, h) {
-        if (!initWebGL()) return false;
-        const gl = GLR.gl;
-        const gw = Math.max(1, Math.floor(w));
-        const gh = Math.max(1, Math.floor(h));
-        if (U.stageGlCanvas.width !== gw || U.stageGlCanvas.height !== gh) {
-          U.stageGlCanvas.width = gw;
-          U.stageGlCanvas.height = gh;
-        }
-        gl.viewport(0, 0, gw, gh);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
-        gl.depthMask(true);
-        gl.useProgram(GLR.program);
-        gl.uniform1f(GLR.loc.uWobble, S.view.renderMode === "wobble" ? 1 : 0);
-        if (GLR.loc.uTime) gl.uniform1f(GLR.loc.uTime, performance.now() * 0.001);
-
-        ensureModelTransform(c);
-        const d = template.d;
-        const pose = S.view.pose || "default";
-        const isDisc = !!templateSpec(template).capabilities?.discAsset;
-        const showDisc = isDisc && (pose === "disc-open" || pose === "disc-split");
-        const n = 1 / Math.max(d.w, d.h, d.z || 1);
-        const sx = d.w * n;
-        const sy = d.h * n;
-        const sz = Math.max(0.04, d.z * n);
-        const verts = [
-          [-sx, -sy, -sz],
-          [sx, -sy, -sz],
-          [sx, sy, -sz],
-          [-sx, sy, -sz],
-          [-sx, -sy, sz],
-          [sx, -sy, sz],
-          [sx, sy, sz],
-          [-sx, sy, sz],
-        ];
-        const faceDefs = caseFaceDefs();
-        const texSrc = mappedFaceSources(c);
-        const discStyled = composedDiscSource(texSrc.disc, S.view.discBackStyle || "silver-rainbow");
-        const texByFace = {
-          front: texSrc.front ? glTextureFor(texSrc.front.canvas, texSrc.front.key) : null,
-          back: texSrc.back ? glTextureFor(texSrc.back.canvas, texSrc.back.key) : null,
-          spine: texSrc.spine ? glTextureFor(texSrc.spine.canvas, texSrc.spine.key) : null,
-          disc: discStyled ? glTextureFor(discStyled.canvas, discStyled.key) : null,
-        };
-        const tint = hexToRgb01(S.view.faceTint);
-        const alpha = S.view.faceViz === "transparent" ? 0.34 : 1;
-        const backTint = [0.96, 0.96, 0.98];
-
-        const aspect = gw / Math.max(1, gh);
-        const proj = mat4Perspective(Math.PI / 3.2, aspect, 0.05, 40);
-        const camDist = 2.65;
-        let model = mat4Identity();
-        const poseModel = { ...c.modelTr };
-        applyPosePresetToModel(poseModel, pose);
-        const baseScale = 0.9 * S.view.zoom * poseModel.s;
-        model = mat4Multiply(model, mat4Scale(baseScale * (poseModel.mx ? -1 : 1), baseScale, baseScale));
-        // Align WebGL camera convention to existing Canvas renderer:
-        // yaw=0 should look at cartridge front, not back.
-        model = mat4Multiply(model, mat4RotateY(WEBGL_BASE_MODEL_YAW));
-        model = mat4Multiply(model, mat4RotateX((poseModel.rx * Math.PI) / 180));
-        model = mat4Multiply(model, mat4RotateY((poseModel.ry * Math.PI) / 180));
-        model = mat4Multiply(model, mat4RotateZ((poseModel.rz * Math.PI) / 180));
-        model = mat4Multiply(model, mat4Translate(poseModel.tx * 0.7, -poseModel.ty * 0.7, poseModel.tz * 0.7));
-        model = mat4Multiply(model, mat4RotateY(S.view.yaw));
-        model = mat4Multiply(model, mat4RotateX(S.view.pitch));
-        const view = mat4Translate(0, 0, -camDist);
-        const mv = mat4Multiply(view, model);
-        const mvp = mat4Multiply(proj, mv);
-        gl.uniformMatrix4fv(GLR.loc.uMvp, false, new Float32Array(mvp));
-        const vertsObj = verts.map((v) => ({ x: v[0], y: v[1], z: v[2] }));
-        const camVerts = vertsObj.map((p) => mat4TransformPoint(mv, p, 1));
-        const pts = vertsObj.map((p) => {
-          const clip = mat4TransformPoint(mvp, p, 1);
-          const iw = 1 / Math.max(1e-6, clip.w);
-          const ndcX = clip.x * iw;
-          const ndcY = clip.y * iw;
-          return {
-            x: (ndcX * 0.5 + 0.5) * gw,
-            y: (1 - (ndcY * 0.5 + 0.5)) * gh,
-            z: clip.z * iw,
-          };
-        });
-        const overlayFaces = [];
-        const visibleVerts = new Set();
-
-        faceDefs.forEach((f) => {
-          const pos = [];
-          // Geometry follows UV corner order (TL,TR,BR,BL) to match Canvas mapping exactly.
-          f.uvCorners.forEach((vi) => {
-            const p = verts[vi];
-            pos.push(p[0], p[1], p[2]);
-          });
-          const uv = WEBGL_FACE_UV_ARRAY[f.id] || [0, 0, 1, 0, 1, 1, 0, 1];
-          const texture = texByFace[f.id] || null;
-          const color = texture ? [1, 1, 1] : (f.id === "back" ? backTint : tint);
-          drawQuadWebGL(gl, { pos, uv }, texture, color, alpha, 0);
-
-          const quadPoly = f.poly.map((i) => pts[i]);
-          const quadUv = f.uvCorners.map((i) => pts[i]);
-          const area = quadSignedArea(quadPoly);
-          // Screen-space Y grows downward; visible front-facing quads resolve
-          // with negative signed area in this 2D debug projection.
-          const visible = area < 0;
-          if (visible) f.poly.forEach((i) => visibleVerts.add(i));
-          const p0 = camVerts[f.poly[0]];
-          const p1 = camVerts[f.poly[1]];
-          const p3 = camVerts[f.poly[3]];
-          const nrm = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
-          const rawHandedFlipX = S.debug.mapping
-            ? quadSignedArea(f.uvCorners.map((i) => pts[i])) < 0
-            : false;
-          overlayFaces.push({
-            id: f.id,
-            quadPoly,
-            quadUv,
-            uvApplied: (WEBGL_FACE_UV_COORDS[f.id] || []).map((p) => ({ u: p.u, v: p.v })),
-            handedFlipX: false,
-            rawHandedFlipX,
-            area,
-            visible,
-            normal: nrm,
-            poly: [...f.poly],
-            uvCorners: [...f.uvCorners],
-          });
-        });
-
-        if (showDisc && texByFace.disc) {
-          const discDia = discDiameterMmForTemplate(template);
-          const discR = Math.max(0.08, (discDia * n) * 0.94);
-          const splitX = -(sx + discR * 0.68);
-          const discOffset = pose === "disc-split" ? [splitX, 0, 0.03] : [0, 0, 0.02];
-          const disc = [
-            [-discR + discOffset[0], -discR + discOffset[1], sz + discOffset[2]],
-            [discR + discOffset[0], -discR + discOffset[1], sz + discOffset[2]],
-            [discR + discOffset[0], discR + discOffset[1], sz + discOffset[2]],
-            [-discR + discOffset[0], discR + discOffset[1], sz + discOffset[2]],
-          ];
-          const pos = disc.flatMap((p) => [p[0], p[1], p[2]]);
-          drawQuadWebGL(
-            gl,
-            { pos, uv: [0, 0, 1, 0, 1, 1, 0, 1] },
-            texByFace.disc,
-            [1, 1, 1],
-            0.96,
-            1,
-          );
-        }
-        let debugText = "";
-        if (S.debug.mapping) {
-          const lines = [];
-          lines.push(`pose=${pose} render=${S.view.renderMode} faceViz=${S.view.faceViz}`);
-          lines.push(
-            `camera yaw=${S.view.yaw.toFixed(3)} pitch=${S.view.pitch.toFixed(3)} zoom=${S.view.zoom.toFixed(3)}`,
-          );
-          lines.push(
-            `model tx=${poseModel.tx.toFixed(2)} ty=${poseModel.ty.toFixed(2)} tz=${poseModel.tz.toFixed(2)} rx=${poseModel.rx.toFixed(2)} ry=${poseModel.ry.toFixed(2)} rz=${poseModel.rz.toFixed(2)} s=${poseModel.s.toFixed(2)} mx=${poseModel.mx ? 1 : 0}`,
-          );
-          lines.push(`visibleVerts=[${[...visibleVerts].sort((a, b) => a - b).join(", ")}]`);
-          overlayFaces.forEach((f) => {
-            const c = {
-              x: (f.quadPoly[0].x + f.quadPoly[1].x + f.quadPoly[2].x + f.quadPoly[3].x) * 0.25,
-              y: (f.quadPoly[0].y + f.quadPoly[1].y + f.quadPoly[2].y + f.quadPoly[3].y) * 0.25,
-            };
-            const ux = f.quadUv[1].x - f.quadUv[0].x;
-            const uy = f.quadUv[1].y - f.quadUv[0].y;
-            const vx = f.quadUv[3].x - f.quadUv[0].x;
-            const vy = f.quadUv[3].y - f.quadUv[0].y;
-            const uvA = f.uvApplied || [];
-            const uvText = uvA
-              .map((p, i) => `${["TL", "TR", "BR", "BL"][i]}(${p.u.toFixed(2)},${p.v.toFixed(2)})`)
-              .join(" ");
-            lines.push(
-              `${f.id.padEnd(6)} vis=${f.visible ? "1" : "0"} area=${f.area.toFixed(1).padStart(8)} center=(${c.x.toFixed(1)},${c.y.toFixed(1)}) U=(${ux.toFixed(1)},${uy.toFixed(1)}) V=(${vx.toFixed(1)},${vy.toFixed(1)}) poly=[${f.poly.join(",")}] uvCorners=[${f.uvCorners.join(",")}] handFlipX=${f.handedFlipX ? 1 : 0} rawHand=${f.rawHandedFlipX ? 1 : 0} uvApplied=${uvText} n=(${f.normal.x.toFixed(2)},${f.normal.y.toFixed(2)},${f.normal.z.toFixed(2)})`,
-            );
-          });
-          lines.push(
-            "expected assets: front<-cover_front/label_front, back<-cover_back, spine<-spine, disc<-disc_art",
-          );
-          debugText = lines.join("\n");
-        }
-        return { overlay: { pts, faces: overlayFaces, visibleVerts }, debugText };
-      }
-      function draw3DWebGLOverlays(overlay) {
-        if (
-          !S.view.wireframe &&
-          !S.view.vertices &&
-          !S.view.normals &&
-          !S.view.uvAxisDebug &&
-          !S.view.templateLabels
-        )
-          return;
-        if (!overlay) return;
-        const pts = overlay.pts || [];
-        const faces = overlay.faces || [];
-        const visibleVerts = overlay.visibleVerts || new Set();
-        faces.forEach((f) => {
-          if (S.view.wireframe && f.visible) {
-            X.save();
-            X.strokeStyle =
-              getComputedStyle(document.documentElement).getPropertyValue("--ds-border").trim() ||
-              "rgba(210,220,240,0.7)";
-            X.lineWidth = 1.2;
-            X.beginPath();
-            X.moveTo(f.quadPoly[0].x, f.quadPoly[0].y);
-            X.lineTo(f.quadPoly[1].x, f.quadPoly[1].y);
-            X.lineTo(f.quadPoly[2].x, f.quadPoly[2].y);
-            X.lineTo(f.quadPoly[3].x, f.quadPoly[3].y);
-            X.closePath();
-            X.stroke();
-            X.restore();
-          }
-          if (S.view.templateLabels && f.visible) {
-            const qx =
-              (f.quadPoly[0].x + f.quadPoly[1].x + f.quadPoly[2].x + f.quadPoly[3].x) / 4;
-            const qy =
-              (f.quadPoly[0].y + f.quadPoly[1].y + f.quadPoly[2].y + f.quadPoly[3].y) / 4;
-            X.save();
-            X.font = canvasFont(CANVAS_FS_MICRO + 1, "700");
-            X.textAlign = "center";
-            X.textBaseline = "middle";
-            const label = f.id.toUpperCase();
-            const pad = 5;
-            const tw = X.measureText(label).width + pad * 2;
-            X.fillStyle = "rgba(8, 12, 18, 0.78)";
-            X.fillRect(qx - tw * 0.5, qy - 9, tw, 18);
-            X.fillStyle = "#f4f8ff";
-            X.fillText(label, qx, qy + 0.5);
-            X.restore();
-          }
-          if (S.view.normals && f.visible) {
-            const cx =
-              (f.quadPoly[0].x + f.quadPoly[1].x + f.quadPoly[2].x + f.quadPoly[3].x) / 4;
-            const cy =
-              (f.quadPoly[0].y + f.quadPoly[1].y + f.quadPoly[2].y + f.quadPoly[3].y) / 4;
-            const ex = cx + f.normal.x * 22;
-            const ey = cy - f.normal.y * 22;
-            X.save();
-            X.strokeStyle = cssVar("--ds-accent", "#7bd0ff");
-            X.fillStyle = X.strokeStyle;
-            X.lineWidth = 2;
-            X.beginPath();
-            X.moveTo(cx, cy);
-            X.lineTo(ex, ey);
-            X.stroke();
-            const ang = Math.atan2(ey - cy, ex - cx);
-            X.beginPath();
-            X.moveTo(ex, ey);
-            X.lineTo(ex - Math.cos(ang - 0.45) * 8, ey - Math.sin(ang - 0.45) * 8);
-            X.lineTo(ex - Math.cos(ang + 0.45) * 8, ey - Math.sin(ang + 0.45) * 8);
-            X.closePath();
-            X.fill();
-            X.restore();
-          }
-          if (S.view.uvAxisDebug && f.visible) drawUvAxisDebug(f.quadUv, f.id.toUpperCase());
-        });
-        drawVertices(pts, X, S.view.faceViz === "opaque" ? visibleVerts : null);
-      }
+      const {
+        WEBGL_FACE_UV_ORDER,
+        WEBGL_FACE_POLY,
+        WEBGL_FACE_UV_COORDS,
+        CANONICAL_EXPORT_MAPPING_PROFILE,
+        WEBGL_FACE_UV_ARRAY,
+        WEBGL_BASE_MODEL_YAW,
+        caseFaceDefs,
+      } = window.KataCartRenderConfig;
 
       function setStatus(msg) {
         U.statusText.textContent = msg;
@@ -3507,37 +2840,6 @@
           sync2DInspectorState(currentAsset);
           syncViewToggleUI();
         }
-      }
-      function reset2DWorkspaceView() {
-        S.view.stage2dPanX = 0;
-        S.view.stage2dPanY = 0;
-        S.view.stage2dZoom = 1;
-      }
-      function zoom2DWorkspaceAt(nextZoom, anchorX, anchorY, baseFrame, canvasW, canvasH) {
-        const prevZoom = clampNumber(S.view.stage2dZoom || 1, STAGE_2D_ZOOM_MIN, STAGE_2D_ZOOM_MAX);
-        const clampedZoom = clampNumber(nextZoom, STAGE_2D_ZOOM_MIN, STAGE_2D_ZOOM_MAX);
-        if (!baseFrame || !canvasW || !canvasH || clampedZoom === prevZoom) {
-          S.view.stage2dZoom = clampedZoom;
-          return;
-        }
-        const prevFx = (canvasW - baseFrame.fw * prevZoom) / 2 + S.view.stage2dPanX;
-        const prevFy = (canvasH - baseFrame.fh * prevZoom) / 2 + S.view.stage2dPanY;
-        const localX = (anchorX - prevFx) / Math.max(1, baseFrame.fw * prevZoom);
-        const localY = (anchorY - prevFy) / Math.max(1, baseFrame.fh * prevZoom);
-        const nextFx = anchorX - localX * (baseFrame.fw * clampedZoom);
-        const nextFy = anchorY - localY * (baseFrame.fh * clampedZoom);
-        S.view.stage2dZoom = clampedZoom;
-        S.view.stage2dPanX = nextFx - (canvasW - baseFrame.fw * clampedZoom) / 2;
-        S.view.stage2dPanY = nextFy - (canvasH - baseFrame.fh * clampedZoom) / 2;
-      }
-      function pointInRect(x, y, rect) {
-        return !!(
-          rect &&
-          x >= rect.x &&
-          x <= rect.x + rect.w &&
-          y >= rect.y &&
-          y <= rect.y + rect.h
-        );
       }
       async function copyTextToClipboard(text) {
         const payload = String(text || "");
@@ -3714,222 +3016,6 @@
         syncContextFromAsset();
         renderAssetStrip();
       }
-      function syncInspectorPanels() {
-        const metaCollapsed = !!S.chrome.metaCollapsed;
-        const contextCollapsed = !!S.chrome.contextCollapsed;
-        U.canvasMetaPanel?.classList.toggle("is-collapsed", metaCollapsed);
-        U.canvasContextPanel?.classList.toggle("is-collapsed", contextCollapsed);
-        if (U.toggleMetaPanelBtn) {
-          U.toggleMetaPanelBtn.setAttribute("aria-expanded", metaCollapsed ? "false" : "true");
-          U.toggleMetaPanelBtn.title = metaCollapsed ? "Expand metadata" : "Collapse metadata";
-        }
-        if (U.toggleContextPanelBtn) {
-          U.toggleContextPanelBtn.setAttribute("aria-expanded", contextCollapsed ? "false" : "true");
-          U.toggleContextPanelBtn.title = contextCollapsed
-            ? "Expand face inspector"
-            : "Collapse face inspector";
-        }
-      }
-      function toggleMetaPanel() {
-        S.chrome.metaCollapsed = !S.chrome.metaCollapsed;
-        syncInspectorPanels();
-        saveWorkspacePrefs();
-        setStatus(S.chrome.metaCollapsed ? "Metadata collapsed." : "Metadata expanded.");
-      }
-      function toggleContextPanel() {
-        S.chrome.contextCollapsed = !S.chrome.contextCollapsed;
-        syncInspectorPanels();
-        saveWorkspacePrefs();
-        setStatus(
-          S.chrome.contextCollapsed ? "Face inspector collapsed." : "Face inspector expanded.",
-        );
-      }
-      function syncWorkspaceChrome() {
-        const preview = !!S.view.preview;
-        const inspectorCollapsed = preview || !!S.chrome.inspectorCollapsed;
-        const assetStripCollapsed = preview || !!S.chrome.assetStripCollapsed;
-        U.workspaceMain?.classList.toggle("is-preview", preview);
-        const currentAsset = asset();
-        const is2d = currentAsset?.type === "2d";
-        const hasArtwork = !!currentAsset?.image;
-        U.stage?.classList.toggle(
-          "asset-edit-ready",
-          !preview && is2d && !hasArtwork,
-        );
-        U.stage?.classList.toggle(
-          "asset-view-ready",
-          !preview && is2d && hasArtwork && !S.view.assetEditSelected,
-        );
-        U.stage?.classList.toggle(
-          "asset-edit-selected",
-          !preview && is2d && hasArtwork && S.view.assetEditSelected,
-        );
-        U.overlayLeft?.classList.toggle("is-collapsed", inspectorCollapsed);
-        U.overlayRight?.classList.toggle("is-preview", preview);
-        U.stageCanvas?.parentElement?.classList.toggle("is-preview", preview);
-        U.assetStripShell?.classList.toggle("is-collapsed", assetStripCollapsed);
-        U.togglePreviewBtn?.classList.toggle("is-active", preview);
-        U.toggleInspectorBtn?.classList.toggle("is-active", !preview && !S.chrome.inspectorCollapsed);
-        U.toggleAssetStripBtn?.classList.toggle("is-active", !preview && !S.chrome.assetStripCollapsed);
-        if (U.togglePreviewBtn) {
-          U.togglePreviewBtn.title = preview ? "Exit preview mode" : "Enter preview mode";
-          U.togglePreviewBtn.innerHTML = preview
-            ? '<i class="iconoir-eye-off"></i>Preview'
-            : '<i class="iconoir-eye-empty"></i>Preview';
-        }
-        if (U.toggleInspectorBtn) {
-          U.toggleInspectorBtn.title =
-            inspectorCollapsed && !preview ? "Show inspector panel" : "Hide inspector panel";
-        }
-        if (U.toggleAssetStripBtn) {
-          U.toggleAssetStripBtn.title =
-            assetStripCollapsed && !preview ? "Show face strip" : "Hide face strip";
-        }
-        syncInspectorPanels();
-        syncFocusButton();
-      }
-      function syncFocusButton() {
-        if (!U.focusWorkspaceBtn) return;
-        const active = !!document.fullscreenElement;
-        U.focusWorkspaceBtn.classList.toggle("is-active", active);
-        U.focusWorkspaceBtn.title = active ? "Exit full screen" : "Enter full screen";
-        U.focusWorkspaceBtn.innerHTML = active
-          ? '<i class="iconoir-minimize"></i>Full Screen'
-          : '<i class="iconoir-expand"></i>Full Screen';
-      }
-      function openExportModalToTab(tabId) {
-        S.exportTab = tabId || "package";
-        openExportModal();
-      }
-      function closeContextMenu() {
-        S.contextMenu.open = false;
-        if (!U.contextMenu) return;
-        U.contextMenu.hidden = true;
-        U.contextMenu.innerHTML = "";
-      }
-      function openContextMenu(x, y, items) {
-        if (!U.contextMenu || !items?.length) return;
-        U.contextMenu.innerHTML = "";
-        items.forEach((item) => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "kc-context-menu-btn";
-          btn.innerHTML = `${item.icon ? `<i class="${item.icon}"></i>` : ""}<span>${item.label}</span>`;
-          btn.addEventListener("click", () => {
-            closeContextMenu();
-            item.action?.();
-          });
-          U.contextMenu.append(btn);
-        });
-        U.contextMenu.hidden = false;
-        const vw = window.innerWidth || 0;
-        const vh = window.innerHeight || 0;
-        const rect = U.contextMenu.getBoundingClientRect();
-        const nx = Math.max(8, Math.min(x, vw - rect.width - 8));
-        const ny = Math.max(8, Math.min(y, vh - rect.height - 8));
-        U.contextMenu.style.left = `${nx}px`;
-        U.contextMenu.style.top = `${ny}px`;
-        S.contextMenu.open = true;
-      }
-      async function toggleWorkspaceFullscreen() {
-        const target = document.documentElement;
-        try {
-          if (document.fullscreenElement) {
-            await document.exitFullscreen();
-            setStatus("Full screen off.");
-            return;
-          }
-          if (target?.requestFullscreen) {
-            await target.requestFullscreen();
-            setStatus("Full screen on.");
-          }
-        } catch (_) {
-          setStatus("Full screen toggle failed.");
-        }
-      }
-      function syncViewToggleUI() {
-        const currentAsset = asset();
-        const is3d = currentAsset?.type === "3d";
-        const is2d = currentAsset?.type === "2d";
-        if (U.spinCheckbox) U.spinCheckbox.checked = S.view.spin;
-        if (U.gridCheckbox) U.gridCheckbox.checked = S.view.grid;
-        U.toolAutoRotateBtn.classList.toggle("active", is3d && S.view.spin);
-        if (U.toolAutoRotateMenuBtn)
-          U.toolAutoRotateMenuBtn.classList.toggle("active", is3d && S.view.spin);
-        U.toolNormalsBtn.classList.toggle("active", is3d && S.view.normals);
-        if (U.toolNormalsMenuBtn)
-          U.toolNormalsMenuBtn.classList.toggle("active", is3d && S.view.normals);
-        U.toolRenderStandardBtn.classList.toggle(
-          "active",
-          is3d && S.view.renderMode === "standard",
-        );
-        U.toolRenderWobbleBtn.classList.toggle(
-          "active",
-          is3d && S.view.renderMode === "wobble",
-        );
-        if (U.toolFaceVizBtn) {
-          const isTransparent = is3d && S.view.faceViz === "transparent";
-          U.toolFaceVizBtn.classList.toggle("active", isTransparent);
-          U.toolFaceVizBtn.title = isTransparent
-            ? "Transparent faces on"
-            : "Transparent faces off";
-          const ic = U.toolFaceVizBtn.querySelector("i");
-          if (ic) ic.className = isTransparent ? "iconoir-eye-closed" : "iconoir-eye";
-        }
-        U.toolTemplateLabelsBtn.classList.toggle("active", S.view.templateLabels);
-        if (U.toolTemplateLabelsMenuBtn)
-          U.toolTemplateLabelsMenuBtn.classList.toggle(
-            "active",
-            S.view.templateLabels,
-          );
-        [
-          U.toolRenderStandardBtn,
-          U.toolRenderWobbleBtn,
-          U.toolFaceVizBtn,
-          U.toolAutoRotateBtn,
-          U.toolAutoRotateMenuBtn,
-          U.toolNormalsBtn,
-          U.toolNormalsMenuBtn,
-        ].forEach((btn) => {
-          if (!btn) return;
-          btn.disabled = !is3d;
-        });
-        [
-          U.viewFrontBtn,
-          U.viewBackBtn,
-          U.viewLeftBtn,
-          U.viewRightBtn,
-          U.viewTopBtn,
-          U.viewBottomBtn,
-          U.viewIsoBtn,
-        ].forEach((btn) => {
-          if (!btn) return;
-          btn.disabled = !is3d;
-        });
-        if (U.viewHomeBtn)
-          U.viewHomeBtn.title = is2d
-            ? S.view.assetEditSelected
-              ? "Center artwork"
-              : "Reset canvas view"
-            : "Home view";
-        if (U.viewFitBtn)
-          U.viewFitBtn.title = is2d
-            ? S.view.assetEditSelected
-              ? "Fit artwork"
-              : "Fit canvas view"
-            : "Fit/reset view";
-        const showMoreTools = is3d || isCompactHeaderMode();
-        U.toolMoreBtn.hidden = !showMoreTools;
-        if (!showMoreTools) setHeaderMoreOpen(false);
-        U.poseSelect.disabled = !is3d;
-        U.faceTintInput.disabled = !is3d;
-        U.wireframeCheckbox.disabled = !is3d;
-        U.verticesCheckbox.disabled = !is3d;
-        U.uvAxisDebugCheckbox.disabled = !is3d;
-        U.rendererSelect.disabled = !is3d;
-        U.cameraPad?.querySelector(".camera-pad-grid")?.classList.toggle("is-2d", is2d);
-        syncWorkspaceChrome();
-      }
       function syncSettingsControls() {
         if (U.rendererSelect) U.rendererSelect.value = S.renderer.engine;
         if (U.themeSelect) U.themeSelect.value = S.theme;
@@ -3958,6 +3044,132 @@
       function isCompactHeaderMode() {
         return window.matchMedia(HEADER_COMPACT_MEDIA).matches;
       }
+      const workspaceShell = window.KataCartWorkspaceShell.createWorkspaceShell({
+        S,
+        U,
+        asset,
+        saveWorkspacePrefs,
+        setStatus,
+        openExportModal,
+        isCompactHeaderMode,
+        setHeaderMoreOpen,
+      });
+      const {
+        syncInspectorPanels,
+        toggleMetaPanel,
+        toggleContextPanel,
+        syncWorkspaceChrome,
+        syncFocusButton,
+        openExportModalToTab,
+        closeContextMenu,
+        openContextMenu,
+        toggleWorkspaceFullscreen,
+        syncViewToggleUI,
+      } = workspaceShell;
+      const faceInspector = window.KataCartFaceInspector.createFaceInspector({
+        S,
+        U,
+        cart,
+        asset,
+        tById,
+        templateSpec,
+        assetPhysicalDimsMm,
+        ensure2DTransform,
+        ensureModelTransform,
+        clampNumber,
+        set2DAssetEditSelected,
+        syncViewToggleUI,
+        syncExportModalState,
+        saveWorkspacePrefs,
+        setDropHover,
+      });
+      const {
+        syncContextFromAsset,
+        sync2DTransformFields,
+        sync2DInspectorState,
+        sync3DTransformFields,
+        syncTransformFromUI,
+        syncTransformValueInput,
+        fitAsset,
+        reset2DTransform,
+        toggle2DMirror,
+        sync3DTransformFromUI,
+        sync3DTransformValueInput,
+        reset3DTransform,
+      } = faceInspector;
+      const render2D = window.KataCartRender2D.createRender2D({
+        S,
+        U,
+        X,
+        ensure2DTransform,
+        clampNumber,
+        STAGE_2D_ZOOM_MIN,
+        STAGE_2D_ZOOM_MAX,
+        canvasFont,
+        CANVAS_FS_1,
+        CANVAS_FS_2,
+        drawTemplateOverlay,
+        drawInnerEdgeLabels,
+        sync2DTransformFields,
+        set2DAssetEditSelected,
+        syncWorkspaceChrome,
+        setStatus,
+      });
+      const {
+        reset2DWorkspaceView,
+        zoom2DWorkspaceAt,
+        pointInRect,
+        getPixelizedSourceImage,
+        getMappedTemplateImage,
+        draw2D,
+        beginStagePointerInteraction,
+        moveStagePointerInteraction,
+        endStagePointerInteraction,
+        cancelStagePointerInteraction,
+        handleStageWheelInteraction,
+      } = render2D;
+      const render3D = window.KataCartRender3D.createRender3D({
+        S,
+        U,
+        X,
+        getMappedTemplateImage,
+        canvasFont,
+        CANVAS_FS_MICRO,
+        CANVAS_FS_1,
+        templateSpec,
+        discDiameterMmForTemplate,
+        applyPosePresetToModel,
+        drawInnerEdgeLabels,
+        rgbaFromHex,
+        ensureModelTransform,
+        caseFaceDefs,
+      });
+      const {
+        draw3D: render3DCanvas,
+        drawMiniModel: render3DMiniModel,
+        drawUVUnwrap: render3DUVUnwrap,
+      } = render3D;
+      const render3DWebGL = window.KataCartRender3DWebGL.createRender3DWebGL({
+        S,
+        U,
+        X,
+        canvasFont,
+        CANVAS_FS_MICRO,
+        caseFaceDefs,
+        ensureModelTransform,
+        templateSpec,
+        discDiameterMmForTemplate,
+        applyPosePresetToModel,
+        getMappedTemplateImage,
+        WEBGL_FACE_UV_ARRAY,
+        WEBGL_FACE_UV_COORDS,
+        WEBGL_BASE_MODEL_YAW,
+      });
+      const {
+        clearWebGL: clearWebGLRenderer,
+        draw3DWebGL: render3DWebGLPath,
+        draw3DWebGLOverlays: render3DWebGLOverlays,
+      } = render3DWebGL;
       function isEmpty2DAssetActive() {
         const a = asset();
         return !!(a && a.type === "2d" && !a.image);
@@ -4402,90 +3614,6 @@
         });
       }
 
-      function syncContextFromAsset() {
-        const c = cart();
-        const a = asset();
-        if (!c || !a) return;
-        c.lastAssetId = a.id;
-        const t = tById(c.templateId);
-        const isDiscTemplate = !!templateSpec(t).capabilities?.supportsDiscPose;
-        const mm = a.type === "2d" ? assetPhysicalDimsMm(a.id, t) : null;
-        U.hudAsset.textContent = `Face: ${a.label}`;
-        const assetDims =
-          a.type === "2d"
-            ? `${a.w}x${a.h}px${mm ? ` (${mm.w}x${mm.h}mm)` : ""}`
-            : a.type === "3d"
-              ? "3D Viewer"
-              : "UV Viewer";
-        U.hudTemplate.textContent = `Template: ${t.name} ${t.d.w}x${t.d.h}x${t.d.z}mm | Face ${a.label} ${assetDims} | UV ${t.uv.w}x${t.uv.h}px`;
-        const is2d = a.type === "2d";
-        const is3d = a.type === "3d";
-        const isUV = a.type === "uv";
-        const isDiscAsset = is2d && a.id === "disc_art";
-        if (!is2d || !a.image) set2DAssetEditSelected(false);
-        if (U.faceSelect) {
-          U.faceSelect.innerHTML = "";
-          c.assets.forEach((item) => {
-            const option = document.createElement("option");
-            option.value = item.id;
-            option.textContent = item.label;
-            option.selected = item.id === a.id;
-            U.faceSelect.append(option);
-          });
-        }
-        if (U.assetSelect) {
-          U.assetSelect.innerHTML = "";
-          const currentAssetOption = document.createElement("option");
-          currentAssetOption.value = "__current__";
-          currentAssetOption.textContent = a.image?.filename || "No artwork assigned";
-          currentAssetOption.selected = true;
-          U.assetSelect.append(currentAssetOption);
-          if (a.type === "2d") {
-            const uploadOption = document.createElement("option");
-            uploadOption.value = "__upload__";
-            uploadOption.textContent = "Upload Artwork...";
-            U.assetSelect.append(uploadOption);
-          }
-        }
-        if (U.artworkFileRow) U.artworkFileRow.hidden = !is2d;
-        U.context2D.hidden = !is2d;
-        U.context3D.hidden = !is3d;
-        U.contextUV.hidden = !isUV;
-        if (U.discArtStyleRow) U.discArtStyleRow.hidden = !isDiscAsset;
-        if (U.discBackStyleAssetSelect && isDiscAsset)
-          U.discBackStyleAssetSelect.value = S.view.discBackStyle;
-        if (U.poseSelect) {
-          ["disc-open", "disc-split"].forEach((value) => {
-            const option = [...U.poseSelect.options].find((o) => o.value === value);
-            if (option) option.disabled = !isDiscTemplate;
-          });
-          if (!isDiscTemplate && (S.view.pose === "disc-open" || S.view.pose === "disc-split")) {
-            S.view.pose = "default";
-            U.poseSelect.value = "default";
-          }
-        }
-        U.miniGizmo.hidden = !is3d;
-        U.reset3dBtn.disabled = !is3d;
-        U.rotX90Btn.disabled = !is3d;
-        U.rotY90Btn.disabled = !is3d;
-        U.mirror3dXBtn.disabled = !is3d;
-        U.cartNameOverlay.value = c.name;
-        U.metaNotes.value = c.notes || "";
-        U.metaTags.value = c.tags || "";
-        U.metaSku.value = c.sku || "";
-        if (is2d) {
-          ensure2DTransform(a);
-          sync2DTransformFields(a);
-          sync2DInspectorState(a);
-        } else if (is3d) {
-          ensureModelTransform(c);
-          sync3DTransformFields(c);
-        }
-        setDropHover(false);
-        syncViewToggleUI();
-        syncExportModalState();
-      }
-
       function renderWorkspace() {
         const c = cart();
         if (!c) return;
@@ -4579,899 +3707,6 @@
           }
         }
         X.restore();
-      }
-      function rot(p) {
-        const cy = Math.cos(S.view.yaw),
-          sy = Math.sin(S.view.yaw);
-        const cp = Math.cos(S.view.pitch),
-          sp = Math.sin(S.view.pitch);
-        const x = p.x * cy - p.z * sy;
-        const z = p.x * sy + p.z * cy;
-        return { x, y: p.y * cp - z * sp, z: p.y * sp + z * cp };
-      }
-      function proj(p, k, cx, cy) {
-        const f = k / (p.z + 4.2);
-        return { x: cx + p.x * f, y: cy - p.y * f, z: p.z };
-      }
-      function stylizeProjectedPoint(pt, z, idx) {
-        if (S.view.renderMode !== "wobble") return pt;
-        const wobble = 2.3 + Math.max(0, z + 0.8) * 1.2;
-        const t = performance.now() * 0.00105 + idx * 1.13;
-        const jx = Math.sin(t) * wobble;
-        const jy = Math.cos(t * 0.93) * wobble;
-        return {
-          x: Math.round((pt.x + jx) / 3) * 3,
-          y: Math.round((pt.y + jy) / 3) * 3,
-          z: pt.z,
-        };
-      }
-      function model(p, m) {
-        const s = m.s || 1;
-        let x = p.x * s * (m.mx ? -1 : 1);
-        let y = p.y * s;
-        let z = p.z * s;
-        const rx = (m.rx * Math.PI) / 180;
-        const ry = (m.ry * Math.PI) / 180;
-        const rz = (m.rz * Math.PI) / 180;
-        const cx = Math.cos(rx),
-          sx = Math.sin(rx);
-        const cy = Math.cos(ry),
-          sy = Math.sin(ry);
-        const cz = Math.cos(rz),
-          sz = Math.sin(rz);
-        const y1 = y * cx - z * sx;
-        const z1 = y * sx + z * cx;
-        y = y1;
-        z = z1;
-        const x2 = x * cy + z * sy;
-        const z2 = -x * sy + z * cy;
-        x = x2;
-        z = z2;
-        const x3 = x * cz - y * sz;
-        const y3 = x * sz + y * cz;
-        x = x3;
-        y = y3;
-        return { x: x + m.tx, y: y + m.ty, z: z + m.tz };
-      }
-      function face(poly, pts, color, a, ctx = X, stroke = true) {
-        ctx.beginPath();
-        ctx.moveTo(pts[poly[0]].x, pts[poly[0]].y);
-        for (let i = 1; i < poly.length; i += 1)
-          ctx.lineTo(pts[poly[i]].x, pts[poly[i]].y);
-        ctx.closePath();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        if (S.view.wireframe && stroke) {
-          ctx.strokeStyle =
-            getComputedStyle(document.documentElement)
-              .getPropertyValue("--ds-border")
-              .trim() || "#777";
-          ctx.stroke();
-        }
-      }
-      function drawVertices(pts, ctx = X, visibleIdx = null) {
-        if (!S.view.vertices) return;
-        ctx.save();
-        ctx.fillStyle =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-accent")
-            .trim() || "#7bd0ff";
-        pts.forEach((p, i) => {
-          if (visibleIdx && !visibleIdx.has(i)) return;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 2.6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.font = canvasFont(CANVAS_FS_MICRO);
-          ctx.fillText(String(i), p.x + 4, p.y - 3);
-        });
-        ctx.restore();
-      }
-      function drawUvAxisDebug(quad, faceId = "", ctx = X) {
-        if (!S.view.uvAxisDebug || !quad || quad.length !== 4) return;
-        function qp(u, v) {
-          const p0 = quad[0],
-            p1 = quad[1],
-            p2 = quad[2],
-            p3 = quad[3];
-          return {
-            x:
-              p0.x * (1 - u) * (1 - v) +
-              p1.x * u * (1 - v) +
-              p2.x * u * v +
-              p3.x * (1 - u) * v,
-            y:
-              p0.y * (1 - u) * (1 - v) +
-              p1.y * u * (1 - v) +
-              p2.y * u * v +
-              p3.y * (1 - u) * v,
-          };
-        }
-        function arrow(a, b, color) {
-          const ang = Math.atan2(b.y - a.y, b.x - a.x);
-          ctx.strokeStyle = color;
-          ctx.fillStyle = color;
-          ctx.lineWidth = 1.8;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(b.x, b.y);
-          ctx.lineTo(b.x - Math.cos(ang - 0.5) * 6, b.y - Math.sin(ang - 0.5) * 6);
-          ctx.lineTo(b.x - Math.cos(ang + 0.5) * 6, b.y - Math.sin(ang + 0.5) * 6);
-          ctx.closePath();
-          ctx.fill();
-        }
-        const c = qp(0.5, 0.5);
-        const u = qp(0.78, 0.5);
-        const v = qp(0.5, 0.78);
-        ctx.save();
-        arrow(c, u, "#ff6d6d");
-        arrow(c, v, "#66d4ff");
-        ctx.fillStyle = "#ffffff";
-        ctx.font = canvasFont(CANVAS_FS_MICRO, "700");
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText("U+", u.x + 4, u.y);
-        ctx.fillText("V+", v.x + 4, v.y);
-        if (faceId) {
-          const t = qp(0.1, 0.1);
-          ctx.fillText(`${faceId}`, t.x + 2, t.y + 2);
-        }
-        ctx.restore();
-      }
-      function assetImageById(cart, id) {
-        if (!cart) return null;
-        const a = cart.assets.find((x) => x.id === id && x.image && x.image.img);
-        return a ? getMappedTemplateImage(a) : null;
-      }
-      function applyImageToTriangle(img, s0, s1, s2, d0, d1, d2, ctx = X) {
-        const den =
-          s0.x * (s1.y - s2.y) +
-          s1.x * (s2.y - s0.y) +
-          s2.x * (s0.y - s1.y);
-        if (!den) return;
-        const a =
-          (d0.x * (s1.y - s2.y) +
-            d1.x * (s2.y - s0.y) +
-            d2.x * (s0.y - s1.y)) /
-          den;
-        const b =
-          (d0.y * (s1.y - s2.y) +
-            d1.y * (s2.y - s0.y) +
-            d2.y * (s0.y - s1.y)) /
-          den;
-        const c =
-          (d0.x * (s2.x - s1.x) +
-            d1.x * (s0.x - s2.x) +
-            d2.x * (s1.x - s0.x)) /
-          den;
-        const d =
-          (d0.y * (s2.x - s1.x) +
-            d1.y * (s0.x - s2.x) +
-            d2.y * (s1.x - s0.x)) /
-          den;
-        const e =
-          (d0.x * (s1.x * s2.y - s2.x * s1.y) +
-            d1.x * (s2.x * s0.y - s0.x * s2.y) +
-            d2.x * (s0.x * s1.y - s1.x * s0.y)) /
-          den;
-        const f =
-          (d0.y * (s1.x * s2.y - s2.x * s1.y) +
-            d1.y * (s2.x * s0.y - s0.x * s2.y) +
-            d2.y * (s0.x * s1.y - s1.x * s0.y)) /
-          den;
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(d0.x, d0.y);
-        ctx.lineTo(d1.x, d1.y);
-        ctx.lineTo(d2.x, d2.y);
-        ctx.closePath();
-        ctx.clip();
-        ctx.transform(a, b, c, d, e, f);
-        ctx.drawImage(img, 0, 0);
-        ctx.restore();
-      }
-      function applyImageToQuad(img, quad, opts = {}, ctx = X) {
-        const {
-          flipX = false,
-          flipY = false,
-          rotate180 = false,
-          rotate90 = false,
-          rotate270 = false,
-        } = opts;
-        function quadSignedArea(q) {
-          let s = 0;
-          for (let i = 0; i < q.length; i += 1) {
-            const a = q[i];
-            const b = q[(i + 1) % q.length];
-            s += a.x * b.y - a.y * b.x;
-          }
-          return s * 0.5;
-        }
-        // If destination winding is mirrored, flip one source axis to preserve readable orientation.
-        const handedFlipX = quadSignedArea(quad) < 0 ? !flipX : flipX;
-        const sw = img.width;
-        const sh = img.height;
-        const source = [
-          { x: 0, y: 0 },
-          { x: sw, y: 0 },
-          { x: sw, y: sh },
-          { x: 0, y: sh },
-        ].map((p) => ({
-          x: handedFlipX ? sw - p.x : p.x,
-          y: flipY ? sh - p.y : p.y,
-        }));
-        const q = rotate180
-          ? [source[2], source[3], source[0], source[1]]
-          : source;
-        let qq = q;
-        if (rotate90) qq = [q[3], q[0], q[1], q[2]];
-        if (rotate270) qq = [q[1], q[2], q[3], q[0]];
-        applyImageToTriangle(
-          img,
-          qq[0],
-          qq[1],
-          qq[2],
-          quad[0],
-          quad[1],
-          quad[2],
-          ctx,
-        );
-        applyImageToTriangle(
-          img,
-          qq[0],
-          qq[2],
-          qq[3],
-          quad[0],
-          quad[2],
-          quad[3],
-          ctx,
-        );
-      }
-      function vsub(a, b) {
-        return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
-      }
-      function vcross(a, b) {
-        return {
-          x: a.y * b.z - a.z * b.y,
-          y: a.z * b.x - a.x * b.z,
-          z: a.x * b.y - a.y * b.x,
-        };
-      }
-      function vnorm(a) {
-        const m = Math.hypot(a.x, a.y, a.z) || 1;
-        return { x: a.x / m, y: a.y / m, z: a.z / m };
-      }
-      function vdot(a, b) {
-        return a.x * b.x + a.y * b.y + a.z * b.z;
-      }
-      function drawFaceAssist(faceName, quad, n, camForward) {
-        if (!S.view.normals) return;
-        if (vdot(n, camForward) >= -0.02) return;
-        const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
-        const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
-        const dx = n.x * 22;
-        const dy = -n.y * 22;
-        const ex = cx + dx;
-        const ey = cy + dy;
-        X.save();
-        X.strokeStyle =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-accent")
-            .trim() || "#7bd0ff";
-        X.fillStyle = X.strokeStyle;
-        X.lineWidth = 2;
-        X.beginPath();
-        X.moveTo(cx, cy);
-        X.lineTo(ex, ey);
-        X.stroke();
-        const ang = Math.atan2(ey - cy, ex - cx);
-        X.beginPath();
-        X.moveTo(ex, ey);
-        X.lineTo(ex - Math.cos(ang - 0.45) * 8, ey - Math.sin(ang - 0.45) * 8);
-        X.lineTo(ex - Math.cos(ang + 0.45) * 8, ey - Math.sin(ang + 0.45) * 8);
-        X.closePath();
-        X.fill();
-        X.fillStyle = "#eaf6ff";
-        X.font = canvasFont(CANVAS_FS_MICRO);
-        X.textAlign = "left";
-        X.textBaseline = "middle";
-        X.fillText(faceName, ex + 6, ey);
-        X.restore();
-      }
-      function resolveFaceTexOpts(faceId) {
-        // Keep core case faces untransformed; orientation is defined by explicit quad corner ordering.
-        const map = {
-          front: {},
-          back: {},
-          // Spine needs horizontal flip so side-edge adjacency matches front/back faces.
-          spine: { flipX: true },
-          right: { flipY: true, rotate90: true, flipX: true },
-          top: { flipX: true },
-          bottom: { flipY: true },
-        };
-        return map[faceId] || { flipY: true };
-      }
-      function textureQuadForFace(faceId, pts) {
-        // Return quad corners in texture order: TL, TR, BR, BL.
-        const map = {
-          front: [2, 3, 0, 1],
-          back: [7, 6, 5, 4],
-          spine: [2, 6, 5, 1],
-          right: [3, 7, 4, 0],
-          top: [3, 2, 6, 7],
-          bottom: [0, 4, 5, 1],
-        };
-        const idx = map[faceId];
-        if (!idx) return null;
-        return [pts[idx[0]], pts[idx[1]], pts[idx[2]], pts[idx[3]]];
-      }
-      function getFaceAssetBindings(cart) {
-        // Single source of truth for asset->face binding so UV unwrap and 3D render match.
-        return {
-          front: assetImageById(cart, "cover_front") || assetImageById(cart, "label_front"),
-          back: assetImageById(cart, "cover_back"),
-          spine: assetImageById(cart, "spine"),
-          disc: assetImageById(cart, "disc_art"),
-        };
-      }
-      function orientedImageForFace(img, opts = {}) {
-        if (!img) return null;
-        const {
-          flipX = false,
-          flipY = false,
-          rotate180 = false,
-          rotate90 = false,
-          rotate270 = false,
-        } = opts;
-        const out = document.createElement("canvas");
-        const sw = img.width;
-        const sh = img.height;
-        const quarter = rotate90 || rotate270;
-        out.width = quarter ? sh : sw;
-        out.height = quarter ? sw : sh;
-        const x = out.getContext("2d");
-        x.save();
-        x.translate(out.width / 2, out.height / 2);
-        if (rotate90) x.rotate(Math.PI / 2);
-        if (rotate270) x.rotate(-Math.PI / 2);
-        if (rotate180) x.rotate(Math.PI);
-        x.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-        x.drawImage(img, -sw / 2, -sh / 2, sw, sh);
-        x.restore();
-        return out;
-      }
-      function getPixelizedSourceImage(a) {
-        if (!a?.image?.img) return null;
-        const px = Math.max(1, Math.round(a.tr?.px || 1));
-        if (px <= 1) return a.image.img;
-        if (!a.image.pixelCache) a.image.pixelCache = {};
-        if (a.image.pixelCache[px]) return a.image.pixelCache[px];
-        const src = a.image.img;
-        const sw = src.width;
-        const sh = src.height;
-        const tw = Math.max(1, Math.floor(sw / px));
-        const th = Math.max(1, Math.floor(sh / px));
-        const low = document.createElement("canvas");
-        low.width = tw;
-        low.height = th;
-        const lx = low.getContext("2d");
-        lx.imageSmoothingEnabled = false;
-        lx.drawImage(src, 0, 0, tw, th);
-        const out = document.createElement("canvas");
-        out.width = sw;
-        out.height = sh;
-        const ox = out.getContext("2d");
-        ox.imageSmoothingEnabled = false;
-        ox.drawImage(low, 0, 0, tw, th, 0, 0, sw, sh);
-        a.image.pixelCache[px] = out;
-        return out;
-      }
-      function getMappedTemplateImage(a) {
-        if (!a?.image?.img) return null;
-        const src = getPixelizedSourceImage(a);
-        if (!src) return null;
-        const key = [
-          a.image.src,
-          a.image.filename || "",
-          a.w,
-          a.h,
-          a.tr.x,
-          a.tr.y,
-          a.tr.s,
-          a.tr.stx || 1,
-          a.tr.sty || 1,
-          a.tr.r,
-          a.tr.mx ? 1 : 0,
-          a.tr.my ? 1 : 0,
-          Math.round(a.tr.px || 1),
-          S.view.templateLabels ? 1 : 0,
-        ].join("|");
-        if (a.image.mappedKey === key && a.image.mappedCache) return a.image.mappedCache;
-        const c = document.createElement("canvas");
-        c.width = Math.max(1, a.w);
-        c.height = Math.max(1, a.h);
-        const x = c.getContext("2d");
-        const fit = Math.min(c.width / src.width, c.height / src.height);
-        const dw = src.width * fit * a.tr.s * (a.tr.stx || 1);
-        const dh = src.height * fit * a.tr.s * (a.tr.sty || 1);
-        const tx = (a.tr.x / 220) * (c.width * 0.45);
-        const ty = (a.tr.y / 220) * (c.height * 0.45);
-        x.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
-        x.translate(c.width / 2 + tx, c.height / 2 + ty);
-        x.rotate((a.tr.r * Math.PI) / 180);
-        x.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-        x.drawImage(src, -dw / 2, -dh / 2, dw, dh);
-        drawInnerEdgeLabels(x, a, 0, 0, c.width, c.height);
-        a.image.mappedKey = key;
-        a.image.mappedCache = c;
-        return c;
-      }
-      function drawDiscTexture(img, quad, ctx = X) {
-        function drawDiscBackStyle(cx, cy, r) {
-          const style = S.view.discBackStyle || "silver-rainbow";
-          ctx.save();
-          if (style === "ps1-black") {
-            const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.4, r * 0.15, cx, cy, r);
-            g.addColorStop(0, "rgba(88,88,92,0.95)");
-            g.addColorStop(0.58, "rgba(28,30,34,0.96)");
-            g.addColorStop(1, "rgba(10,12,16,0.98)");
-            ctx.fillStyle = g;
-            ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-          } else if (style === "ps2-blue") {
-            const g = ctx.createRadialGradient(cx, cy, r * 0.15, cx, cy, r);
-            g.addColorStop(0, "rgba(126,185,255,0.9)");
-            g.addColorStop(0.55, "rgba(45,96,190,0.92)");
-            g.addColorStop(1, "rgba(14,36,96,0.95)");
-            ctx.fillStyle = g;
-            ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-          } else {
-            const g = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-            g.addColorStop(0, "rgba(216,222,230,0.96)");
-            g.addColorStop(0.18, "rgba(126,170,255,0.46)");
-            g.addColorStop(0.35, "rgba(255,132,206,0.46)");
-            g.addColorStop(0.52, "rgba(117,255,209,0.42)");
-            g.addColorStop(0.7, "rgba(255,238,156,0.42)");
-            g.addColorStop(1, "rgba(176,182,194,0.96)");
-            ctx.fillStyle = g;
-            ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-          }
-          ctx.restore();
-        }
-        function qp(u, v) {
-          const p0 = quad[0],
-            p1 = quad[1],
-            p2 = quad[2],
-            p3 = quad[3];
-          return {
-            x:
-              p0.x * (1 - u) * (1 - v) +
-              p1.x * u * (1 - v) +
-              p2.x * u * v +
-              p3.x * (1 - u) * v,
-            y:
-              p0.y * (1 - u) * (1 - v) +
-              p1.y * u * (1 - v) +
-              p2.y * u * v +
-              p3.y * (1 - u) * v,
-          };
-        }
-        const r = 0.33;
-        const dq = [
-          qp(0.5 - r, 0.5 - r),
-          qp(0.5 + r, 0.5 - r),
-          qp(0.5 + r, 0.5 + r),
-          qp(0.5 - r, 0.5 + r),
-        ];
-        const cx = (dq[0].x + dq[1].x + dq[2].x + dq[3].x) / 4;
-        const cy = (dq[0].y + dq[1].y + dq[2].y + dq[3].y) / 4;
-        const discR = Math.max(8, Math.hypot(dq[1].x - dq[0].x, dq[1].y - dq[0].y) * 0.5);
-        const hubRadius = r * 0.16;
-        function traceProjectedDisc(radius, segments = 64) {
-          const segs = Math.max(24, segments | 0);
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            const p = qp(0.5 + Math.cos(a) * radius, 0.5 + Math.sin(a) * radius);
-            if (i === 0) ctx.moveTo(p.x, p.y);
-            else ctx.lineTo(p.x, p.y);
-          }
-          ctx.closePath();
-        }
-        ctx.save();
-        ctx.beginPath();
-        traceProjectedDisc(r, 72);
-        ctx.clip();
-        drawDiscBackStyle(cx, cy, discR);
-        applyImageToQuad(img, dq, {}, ctx);
-        if ((S.view.discBackStyle || "silver-rainbow") !== "silver-rainbow") {
-          ctx.globalAlpha = 0.16;
-          drawDiscBackStyle(cx, cy, discR);
-          ctx.globalAlpha = 1;
-        }
-        ctx.restore();
-        ctx.save();
-        ctx.beginPath();
-        traceProjectedDisc(hubRadius, 56);
-        ctx.fillStyle = "rgba(10,14,20,0.78)";
-        ctx.fill();
-        ctx.strokeStyle =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-accent")
-            .trim() || "#7bd0ff";
-        ctx.lineWidth = 1.5;
-        ctx.globalAlpha = 0.7;
-        ctx.stroke();
-        ctx.restore();
-      }
-      function discDiameterMmForTemplate(template) {
-        if (!template) return 120;
-        const spec = templateSpec(template);
-        return Number(spec?.discDiameterMm || 120);
-      }
-      function assetPhysicalDimsMm(assetId, template) {
-        if (!template || !assetId) return null;
-        const spec = templateSpec(template);
-        if (assetId === "cover_front" || assetId === "cover_back")
-          return { w: Math.round(template.d.w), h: Math.round(template.d.h) };
-        if (assetId === "spine")
-          return { w: Number(template.d.z.toFixed(1)), h: Math.round(template.d.h) };
-        if (assetId === "disc_art" && spec.capabilities?.discAsset) {
-          const dia = Math.round(discDiameterMmForTemplate(template));
-          return { w: dia, h: dia };
-        }
-        if (assetId === "label_front")
-          return { w: Math.round(template.d.w), h: Math.round(template.d.h) };
-        return null;
-      }
-      function applyPosePresetToModel(modelTr, pose) {
-        if (!modelTr) return;
-        if (pose === "hero") {
-          modelTr.ry += -28;
-          modelTr.rx += 8;
-          return;
-        }
-        if (pose === "showcase-left") {
-          modelTr.ry += -42;
-          modelTr.rx += 10;
-          return;
-        }
-        if (pose === "showcase-right") {
-          modelTr.ry += 42;
-          modelTr.rx += 10;
-          return;
-        }
-        if (pose === "flat") {
-          modelTr.rx += 90;
-          return;
-        }
-        if (pose === "edge") {
-          modelTr.ry += 90;
-        }
-      }
-      function quadCenter(quad) {
-        if (!quad || quad.length !== 4) return { x: 0, y: 0 };
-        return {
-          x: (quad[0].x + quad[1].x + quad[2].x + quad[3].x) * 0.25,
-          y: (quad[0].y + quad[1].y + quad[2].y + quad[3].y) * 0.25,
-        };
-      }
-      function quadProjectedHeight(quad) {
-        if (!quad || quad.length !== 4) return 0;
-        const l = Math.hypot(quad[3].x - quad[0].x, quad[3].y - quad[0].y);
-        const r = Math.hypot(quad[2].x - quad[1].x, quad[2].y - quad[1].y);
-        return (l + r) * 0.5;
-      }
-      function quadProjectedWidth(quad) {
-        if (!quad || quad.length !== 4) return 0;
-        const t = Math.hypot(quad[1].x - quad[0].x, quad[1].y - quad[0].y);
-        const b = Math.hypot(quad[2].x - quad[3].x, quad[2].y - quad[3].y);
-        return (t + b) * 0.5;
-      }
-      function discRadiusPxForQuad(template, quad, minPx = 12, fill = 0.94) {
-        if (!template || !quad || quad.length !== 4) return minPx;
-        const pxH = quadProjectedHeight(quad);
-        const pxW = quadProjectedWidth(quad);
-        const pxPerMmH = pxH / Math.max(1, template.d.h);
-        const pxPerMmW = pxW / Math.max(1, template.d.w);
-        const pxPerMm = Math.max(0.0001, Math.min(pxPerMmH, pxPerMmW));
-        const r = discDiameterMmForTemplate(template) * 0.5 * pxPerMm * fill;
-        return Math.max(minPx, r);
-      }
-      function drawQuadPath(ctx, quad) {
-        if (!ctx || !quad || quad.length !== 4) return;
-        ctx.beginPath();
-        ctx.moveTo(quad[0].x, quad[0].y);
-        ctx.lineTo(quad[1].x, quad[1].y);
-        ctx.lineTo(quad[2].x, quad[2].y);
-        ctx.lineTo(quad[3].x, quad[3].y);
-        ctx.closePath();
-      }
-      function drawQuadFill(quad, color, alpha = 1, ctx = X) {
-        if (!quad || quad.length !== 4) return;
-        ctx.save();
-        drawQuadPath(ctx, quad);
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.restore();
-      }
-      function computeOpenCaseFlap(frontQuad, backQuad, stageW, stageH, open = 1) {
-        if (!frontQuad || frontQuad.length !== 4) return null;
-        const h0 = frontQuad[0];
-        const h1 = frontQuad[3];
-        const p0 = frontQuad[1];
-        const p1 = frontQuad[2];
-        const a = -1.15 * Math.max(0.7, Math.min(1.35, open));
-        const rot2 = (p, h) => {
-          const dx = p.x - h.x;
-          const dy = p.y - h.y;
-          return {
-            x: h.x + dx * Math.cos(a) - dy * Math.sin(a),
-            y: h.y + dx * Math.sin(a) + dy * Math.cos(a),
-          };
-        };
-        let q1 = rot2(p0, h0);
-        let q2 = rot2(p1, h1);
-        const frontCenter = {
-          x: (frontQuad[0].x + frontQuad[1].x + frontQuad[2].x + frontQuad[3].x) / 4,
-          y: (frontQuad[0].y + frontQuad[1].y + frontQuad[2].y + frontQuad[3].y) / 4,
-        };
-        const backCenter =
-          backQuad && backQuad.length === 4
-            ? {
-                x: (backQuad[0].x + backQuad[1].x + backQuad[2].x + backQuad[3].x) / 4,
-                y: (backQuad[0].y + backQuad[1].y + backQuad[2].y + backQuad[3].y) / 4,
-              }
-            : frontCenter;
-        let vx = frontCenter.x - backCenter.x;
-        let vy = frontCenter.y - backCenter.y;
-        const vlen = Math.hypot(vx, vy) || 1;
-        vx /= vlen;
-        vy /= vlen;
-        const push = Math.max(6, Math.min(Math.min(stageW, stageH) * 0.03, 24));
-        q1 = { x: q1.x + vx * push, y: q1.y + vy * push };
-        q2 = { x: q2.x + vx * push, y: q2.y + vy * push };
-        return {
-          hinge: [h0, h1],
-          flap: [h0, q1, q2, h1],
-          rimTop: [frontQuad[0], frontQuad[1], q1, h0],
-          rimBottom: [h1, q2, frontQuad[2], frontQuad[3]],
-        };
-      }
-      function draw3D(cart, template, w, h, ca, ci) {
-        ensureModelTransform(cart);
-        const d = template.d;
-        const pose = S.view.pose || "default";
-        const isDisc = !!templateSpec(template).capabilities?.discAsset;
-        const discVisibleInPose = pose === "disc-open" || pose === "disc-split";
-        const n = 1 / Math.max(d.w, d.h, d.z || 1);
-        const sx = d.w * n;
-        const sy = d.h * n;
-        const sz = Math.max(0.04, d.z * n);
-        const poseModel = { ...cart.modelTr };
-        applyPosePresetToModel(poseModel, pose);
-        const splitX = pose === "disc-split" && isDisc ? -w * 0.12 : 0;
-        const k = Math.min(w, h) * 0.36 * S.view.zoom,
-          cx = w * 0.5 + splitX,
-          cy = h * 0.56;
-        const verts = [
-          { x: -sx, y: -sy, z: -sz },
-          { x: sx, y: -sy, z: -sz },
-          { x: sx, y: sy, z: -sz },
-          { x: -sx, y: sy, z: -sz },
-          { x: -sx, y: -sy, z: sz },
-          { x: sx, y: -sy, z: sz },
-          { x: sx, y: sy, z: sz },
-          { x: -sx, y: sy, z: sz },
-        ]
-          .map((p) => model(p, poseModel))
-          .map(rot);
-        const pts = verts.map((v, i) =>
-          stylizeProjectedPoint(proj(v, k, cx, cy), v.z, i),
-        );
-        const bind = getFaceAssetBindings(cart);
-        const faces = caseFaceDefs(bind);
-        const camForward = vnorm({ x: 0, y: 0, z: 1 });
-        let frontQuad = null;
-        let backQuad = null;
-        let openingQuad = null;
-        const visibleVerts = new Set();
-        faces
-          .map((f) => ({
-            ...f,
-            z: f.poly.reduce((acc, n) => acc + verts[n].z, 0) / f.poly.length,
-          }))
-          .sort((a, b) => a.z - b.z)
-          .forEach((f, i) => {
-            const p0 = verts[f.poly[0]];
-            const p1 = verts[f.poly[1]];
-            const p3 = verts[f.poly[3]];
-            const n = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
-            const facing = vdot(n, camForward);
-            const baseAlpha = S.view.faceViz === "transparent" ? 0.14 : 1;
-            const backAlpha = S.view.faceViz === "transparent" ? 0.1 : 1;
-            const quad = textureQuadForFace(f.id, pts) || f.poly.map((n) => pts[n]);
-            if (f.id === "front") frontQuad = quad;
-            if (f.id === "back") backQuad = quad;
-            if (f.id === "right") openingQuad = quad;
-            if (S.view.faceViz === "opaque" && facing >= -0.005) return;
-            const tint = rgbaFromHex(S.view.faceTint, baseAlpha, { r: 140, g: 148, b: 160 });
-            const fillColor =
-              facing < -0.005
-                ? tint
-                : `rgba(255, 255, 255, ${backAlpha})`;
-            const strokeVisible = !(S.view.faceViz === "opaque" && facing >= -0.005);
-            face(f.poly, pts, fillColor, 1, X, strokeVisible);
-            if (facing < -0.005) f.poly.forEach((idx) => visibleVerts.add(idx));
-            drawFaceAssist(f.id.toUpperCase(), quad, n, camForward);
-            if (facing < -0.005) drawUvAxisDebug(quad, f.id.toUpperCase());
-            if (!f.tex || facing >= -0.005) return;
-            if (pose === "disc-open" && isDisc && f.id === "front") return;
-            applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id));
-            if (f.id === "front" && bind.disc && discVisibleInPose && pose !== "disc-split")
-              drawDiscTexture(bind.disc, quad);
-          });
-        if (pose === "disc-open" && isDisc && frontQuad) {
-          const open = computeOpenCaseFlap(frontQuad, backQuad, w, h, 1);
-          if (open) {
-            drawQuadFill(open.rimTop, "rgba(188, 194, 206, 0.2)", 1, X);
-            drawQuadFill(open.rimBottom, "rgba(176, 184, 198, 0.18)", 1, X);
-            drawQuadFill(open.flap, "rgba(156, 164, 178, 0.2)", 1, X);
-            if (bind.front) applyImageToQuad(bind.front, open.flap, resolveFaceTexOpts("front"));
-            X.save();
-            X.strokeStyle = "rgba(255,255,255,0.5)";
-            X.beginPath();
-            X.moveTo(open.hinge[0].x, open.hinge[0].y);
-            X.lineTo(open.hinge[1].x, open.hinge[1].y);
-            X.stroke();
-            X.restore();
-          }
-          if (bind.disc && backQuad) drawDiscTexture(bind.disc, backQuad);
-        }
-        if (pose === "disc-split" && isDisc && bind.disc) {
-          const refQuad = frontQuad || backQuad || openingQuad;
-          const caseCenter = quadCenter(refQuad);
-          const openCenter = quadCenter(openingQuad || refQuad);
-          let dx = openCenter.x - caseCenter.x;
-          let dy = openCenter.y - caseCenter.y;
-          const dl = Math.hypot(dx, dy) || 1;
-          dx /= dl;
-          dy /= dl;
-          const projH = quadProjectedHeight(refQuad);
-          const discR = discRadiusPxForQuad(template, refQuad, 12, 0.94);
-          const lift = Math.max(discR * 0.6, projH * 0.08);
-          const cxSplit = openCenter.x + dx * lift;
-          const cySplit = openCenter.y + dy * lift;
-          const q = [
-            { x: cxSplit - discR, y: cySplit - discR },
-            { x: cxSplit + discR, y: cySplit - discR },
-            { x: cxSplit + discR, y: cySplit + discR },
-            { x: cxSplit - discR, y: cySplit + discR },
-          ];
-          drawDiscTexture(bind.disc, q);
-        }
-        drawVertices(pts, X, S.view.faceViz === "opaque" ? visibleVerts : null);
-      }
-      function drawMiniModel(cart, template) {
-        const ctx = U.miniCanvas.getContext("2d");
-        if (!ctx) return;
-        const dpr = window.devicePixelRatio || 1;
-        const rw = U.miniCanvas.clientWidth || 160;
-        const rh = U.miniCanvas.clientHeight || 160;
-        const w = Math.max(1, Math.floor(rw * dpr));
-        const h = Math.max(1, Math.floor(rh * dpr));
-        if (U.miniCanvas.width !== w || U.miniCanvas.height !== h) {
-          U.miniCanvas.width = w;
-          U.miniCanvas.height = h;
-        }
-        ctx.clearRect(0, 0, w, h);
-        const d = template.d;
-        const n = 1 / Math.max(d.w, d.h, d.z || 1);
-        const sx = d.w * n;
-        const sy = d.h * n;
-        const sz = Math.max(0.04, d.z * n);
-        const k = Math.min(w, h) * 0.42 * (S.gizmo.size / 100);
-        const cx = w * 0.5;
-        const cy = h * 0.56;
-        const camYaw = S.view.yaw;
-        const camPitch = S.view.pitch;
-        const m = { ...cart.modelTr };
-        const pose = S.view.pose || "default";
-        applyPosePresetToModel(m, pose);
-        function rcam(p) {
-          const cy = Math.cos(camYaw);
-          const sy = Math.sin(camYaw);
-          const cp = Math.cos(camPitch);
-          const sp = Math.sin(camPitch);
-          const x = p.x * cy - p.z * sy;
-          const z = p.x * sy + p.z * cy;
-          return { x, y: p.y * cp - z * sp, z: p.y * sp + z * cp };
-        }
-        const verts = [
-          { x: -sx, y: -sy, z: -sz },
-          { x: sx, y: -sy, z: -sz },
-          { x: sx, y: sy, z: -sz },
-          { x: -sx, y: sy, z: -sz },
-          { x: -sx, y: -sy, z: sz },
-          { x: sx, y: -sy, z: sz },
-          { x: sx, y: sy, z: sz },
-          { x: -sx, y: sy, z: sz },
-        ]
-          .map((p) => model(p, m))
-          .map(rcam);
-        const pts = verts.map((v) => {
-          const f = k / (v.z + 4.2);
-          return { x: cx + v.x * f, y: cy - v.y * f, z: v.z };
-        });
-        const bind = getFaceAssetBindings(cart);
-        const isDisc = !!templateSpec(template).capabilities?.discAsset;
-        const discVisibleInPose = pose === "disc-open" || pose === "disc-split";
-        const visibleVerts = new Set();
-        const faces = caseFaceDefs(bind);
-        const camForward = vnorm({ x: 0, y: 0, z: 1 });
-        faces
-          .map((f) => ({
-            ...f,
-            z: f.poly.reduce((acc, n) => acc + verts[n].z, 0) / f.poly.length,
-          }))
-          .sort((a, b) => a.z - b.z)
-          .forEach((f) => {
-            const p0 = verts[f.poly[0]];
-            const p1 = verts[f.poly[1]];
-            const p3 = verts[f.poly[3]];
-            const n = vnorm(vcross(vsub(p1, p0), vsub(p3, p0)));
-            const facing = vdot(n, camForward);
-            const tint = rgbaFromHex(S.view.faceTint, 0.24, { r: 140, g: 148, b: 160 });
-            const fillColor =
-              facing < -0.005 ? tint : "rgba(255,255,255,0.1)";
-            const strokeVisible = !(S.view.faceViz === "opaque" && facing >= -0.005);
-            face(f.poly, pts, fillColor, 1, ctx, strokeVisible);
-            if (facing < -0.005) f.poly.forEach((idx) => visibleVerts.add(idx));
-            if (!f.tex || facing >= -0.005) return;
-            if (pose === "disc-open" && isDisc && f.id === "front") return;
-            const quad = textureQuadForFace(f.id, pts) || f.poly.map((n) => pts[n]);
-            applyImageToQuad(f.tex, quad, resolveFaceTexOpts(f.id), ctx);
-            if (f.id === "front" && bind.disc && discVisibleInPose && pose !== "disc-split")
-              drawDiscTexture(bind.disc, quad, ctx);
-          });
-        if (pose === "disc-open" && isDisc) {
-          const front = textureQuadForFace("front", pts) || [pts[0], pts[3], pts[2], pts[1]];
-          const back = textureQuadForFace("back", pts) || [pts[4], pts[5], pts[6], pts[7]];
-          const open = computeOpenCaseFlap(front, back, w, h, 0.95);
-          if (open) {
-            drawQuadFill(open.rimTop, "rgba(186, 193, 206, 0.18)", 1, ctx);
-            drawQuadFill(open.rimBottom, "rgba(174, 181, 196, 0.16)", 1, ctx);
-            drawQuadFill(open.flap, "rgba(154, 162, 176, 0.18)", 1, ctx);
-            if (bind.front) applyImageToQuad(bind.front, open.flap, resolveFaceTexOpts("front"), ctx);
-          }
-        }
-        if (pose === "disc-split" && isDisc && bind.disc) {
-          const front = textureQuadForFace("front", pts) || [pts[0], pts[3], pts[2], pts[1]];
-          const opening = textureQuadForFace("right", pts) || [pts[3], pts[0], pts[4], pts[7]];
-          const caseCenter = quadCenter(front);
-          const openCenter = quadCenter(opening);
-          let dx = openCenter.x - caseCenter.x;
-          let dy = openCenter.y - caseCenter.y;
-          const dl = Math.hypot(dx, dy) || 1;
-          dx /= dl;
-          dy /= dl;
-          const projH = quadProjectedHeight(front);
-          const discR = discRadiusPxForQuad(template, front, 7, 0.94);
-          const lift = Math.max(discR * 0.55, projH * 0.08);
-          const cxSplit = openCenter.x + dx * lift;
-          const cySplit = openCenter.y + dy * lift;
-          const q = [
-            { x: cxSplit - discR, y: cySplit - discR },
-            { x: cxSplit + discR, y: cySplit - discR },
-            { x: cxSplit + discR, y: cySplit + discR },
-            { x: cxSplit - discR, y: cySplit + discR },
-          ];
-          drawDiscTexture(bind.disc, q, ctx);
-        }
-        drawVertices(pts, ctx, S.view.faceViz === "opaque" ? visibleVerts : null);
       }
       function templateEdgeLabelsByAsset(a) {
         const map = {
@@ -5782,89 +4017,6 @@
           X.restore();
         }
       }
-      function draw2D(a, w, h, ca) {
-        ensure2DTransform(a);
-        const m = 56,
-          r = a.w / a.h;
-        let fw = w - m * 2,
-          fh = fw / r;
-        if (fh > h - m * 2) {
-          fh = h - m * 2;
-          fw = fh * r;
-        }
-        const stageZoom = clampNumber(S.view.stage2dZoom || 1, STAGE_2D_ZOOM_MIN, STAGE_2D_ZOOM_MAX);
-        const fx = (w - fw * stageZoom) / 2 + (S.view.stage2dPanX || 0),
-          fy = (h - fh * stageZoom) / 2 + (S.view.stage2dPanY || 0);
-        fw *= stageZoom;
-        fh *= stageZoom;
-        X.fillStyle =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-text-muted")
-            .trim() || "#999";
-        X.font = canvasFont(CANVAS_FS_1);
-        X.fillText(`${a.label} template ${a.w}x${a.h}`, fx, fy - 10);
-        S.view.assetFrameRect = { x: fx, y: fy, w: fw, h: fh };
-        if (!a.image) {
-          const cb =
-            getComputedStyle(document.documentElement)
-              .getPropertyValue("--ds-border")
-              .trim() || "#5d6876";
-          X.save();
-          X.setLineDash([8, 6]);
-          X.lineWidth = 2;
-          X.strokeStyle = S.view.dragOver ? ca : cb;
-          X.strokeRect(fx + 6, fy + 6, fw - 12, fh - 12);
-          X.restore();
-          X.font = canvasFont(CANVAS_FS_2);
-          X.fillText(
-            "Drop artwork here or use Upload Artwork",
-            fx + 14,
-            fy + 26,
-          );
-          X.font = canvasFont(CANVAS_FS_1);
-          X.fillText("Supports PNG/JPG/WebP", fx + 14, fy + 46);
-          drawTemplateOverlay(a, fx, fy, fw, fh, ca);
-          return;
-        }
-        const mapped = getMappedTemplateImage(a);
-        if (mapped && !(S.view.assetEditSelected && a.image)) X.drawImage(mapped, fx, fy, fw, fh);
-        if (S.view.assetEditSelected && a.image?.img) {
-          const src = getPixelizedSourceImage(a);
-          const fit = Math.min(fw / src.width, fh / src.height);
-          const dw = src.width * fit * a.tr.s * (a.tr.stx || 1);
-          const dh = src.height * fit * a.tr.s * (a.tr.sty || 1);
-          const tx = (a.tr.x / 220) * (fw * 0.45);
-          const ty = (a.tr.y / 220) * (fh * 0.45);
-          const cx = fx + fw / 2 + tx;
-          const cy = fy + fh / 2 + ty;
-          X.save();
-          X.globalAlpha = 0.18;
-          X.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
-          X.translate(cx, cy);
-          X.rotate((a.tr.r * Math.PI) / 180);
-          X.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-          X.drawImage(src, -dw / 2, -dh / 2, dw, dh);
-          X.restore();
-          X.save();
-          X.beginPath();
-          X.rect(fx, fy, fw, fh);
-          X.clip();
-          X.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
-          X.translate(cx, cy);
-          X.rotate((a.tr.r * Math.PI) / 180);
-          X.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-          X.drawImage(src, -dw / 2, -dh / 2, dw, dh);
-          X.restore();
-          X.save();
-          X.strokeStyle = ca;
-          X.lineWidth = 2;
-          X.setLineDash([10, 8]);
-          X.strokeRect(fx, fy, fw, fh);
-          X.setLineDash([]);
-          X.restore();
-        }
-        drawTemplateOverlay(a, fx, fy, fw, fh, ca);
-      }
       function draw() {
         if (S.screen !== "workspace") return;
         resizeCanvas();
@@ -5889,23 +4041,23 @@
         U.stageGlCanvas.hidden = !useWebGL;
         if (is3D) {
           if (useWebGL) {
-            const frame = draw3DWebGL(c, t, w, h);
+            const frame = render3DWebGLPath(c, t, w, h);
             if (!frame) {
-              draw3D(c, t, w, h, ca, ci);
+              render3DCanvas(c, t, w, h, ca, ci);
               if (S.debug.mapping && U.debugOutput) {
                 U.debugOutput.hidden = false;
                 U.debugOutput.textContent = "WebGL unavailable; running Canvas Stable fallback.";
               }
             } else {
-              draw3DWebGLOverlays(frame.overlay);
+              render3DWebGLOverlays(frame.overlay);
               if (S.debug.mapping && U.debugOutput) {
                 U.debugOutput.hidden = false;
                 U.debugOutput.textContent = frame.debugText || "No debug frame text.";
               }
             }
           } else {
-            clearWebGL();
-            draw3D(c, t, w, h, ca, ci);
+            clearWebGLRenderer();
+            render3DCanvas(c, t, w, h, ca, ci);
             if (S.debug.mapping && U.debugOutput) {
               U.debugOutput.hidden = false;
               U.debugOutput.textContent =
@@ -5913,16 +4065,16 @@
             }
           }
         } else {
-          clearWebGL();
+          clearWebGLRenderer();
           if (U.debugOutput) {
             U.debugOutput.textContent = S.debug.mapping
               ? "Select Model View to inspect mapping diagnostics."
               : "Mapping debug disabled.";
           }
-          if (a.type === "uv") drawUVUnwrap(c, t, w, h, ca);
+          if (a.type === "uv") render3DUVUnwrap(c, t, w, h, ca);
           else draw2D(a, w, h, ca);
         }
-        if (isModelViewActive()) drawMiniModel(c, t);
+        if (isModelViewActive()) render3DMiniModel(c, t);
         const currentAsset = asset();
         if (currentAsset?.type === "2d") {
           ensure2DTransform(currentAsset);
@@ -5944,157 +4096,6 @@
 
       function clampNumber(value, min, max) {
         return Math.min(max, Math.max(min, value));
-      }
-      function sync2DTransformFields(a) {
-        U.txRange.value = String(a.tr.x);
-        U.tyRange.value = String(a.tr.y);
-        U.tsRange.value = String(Math.round(a.tr.s * 100));
-        U.trRange.value = String(Math.round(a.tr.r));
-        U.pxRange.value = String(Math.round(a.tr.px || 1));
-        U.txOut.value = String(a.tr.x);
-        U.tyOut.value = String(a.tr.y);
-        U.tsOut.value = a.tr.s.toFixed(2);
-        U.trOut.value = String(Math.round(a.tr.r));
-        U.pxOut.value = String(Math.round(a.tr.px || 1));
-      }
-      function sync2DInspectorState(a) {
-        const is2d = a?.type === "2d";
-        const hasArtwork = !!a?.image;
-        const controlReady = is2d && hasArtwork;
-        const controls = [
-          U.txRange,
-          U.tyRange,
-          U.tsRange,
-          U.trRange,
-          U.pxRange,
-          U.txOut,
-          U.tyOut,
-          U.tsOut,
-          U.trOut,
-          U.pxOut,
-          U.mirrorXBtn,
-          U.mirrorYBtn,
-          U.fitContainBtn,
-          U.fitFillBtn,
-          U.fitWidthBtn,
-          U.fitHeightBtn,
-          U.reset2dBtn,
-        ];
-        controls.forEach((control) => {
-          if (control) control.disabled = !controlReady;
-        });
-        if (!U.context2D) return;
-        U.context2D.classList.toggle("is-edit-locked", is2d && !controlReady);
-        U.context2D.classList.toggle(
-          "is-edit-active",
-          is2d && controlReady && !!S.view.assetEditSelected,
-        );
-        U.context2D.classList.toggle("is-empty", is2d && !hasArtwork);
-      }
-      function sync3DTransformFields(c) {
-        U.m3dXRange.value = String(c.modelTr.tx);
-        U.m3dYRange.value = String(c.modelTr.ty);
-        U.m3dSRange.value = String(Math.round(c.modelTr.s * 100));
-        U.m3dXOut.value = c.modelTr.tx.toFixed(2);
-        U.m3dYOut.value = c.modelTr.ty.toFixed(2);
-        U.m3dSOut.value = c.modelTr.s.toFixed(2);
-      }
-      function syncTransformFromUI() {
-        const a = asset();
-        if (!a || a.type !== "2d") return;
-        ensure2DTransform(a);
-        a.tr.x = Number(U.txRange.value);
-        a.tr.y = Number(U.tyRange.value);
-        a.tr.s = Number(U.tsRange.value) / 100;
-        a.tr.r = Number(U.trRange.value);
-        a.tr.px = Number(U.pxRange.value);
-        sync2DTransformFields(a);
-      }
-      function syncTransformValueInput(key) {
-        const a = asset();
-        if (!a || a.type !== "2d") return;
-        ensure2DTransform(a);
-        if (key === "x") {
-          a.tr.x = clampNumber(Number(U.txOut.value || 0), -220, 220);
-        } else if (key === "y") {
-          a.tr.y = clampNumber(Number(U.tyOut.value || 0), -220, 220);
-        } else if (key === "scale") {
-          a.tr.s = clampNumber(Number(U.tsOut.value || 1), 0.2, 3);
-        } else if (key === "rotate") {
-          a.tr.r = clampNumber(Number(U.trOut.value || 0), -180, 180);
-        } else if (key === "pixelize") {
-          a.tr.px = clampNumber(Math.round(Number(U.pxOut.value || 1)), 1, 64);
-        }
-        sync2DTransformFields(a);
-      }
-      function fitAsset(mode) {
-        const a = asset();
-        if (!a || a.type !== "2d" || !a.image) return;
-        ensure2DTransform(a);
-        const sx = a.w / a.image.width;
-        const sy = a.h / a.image.height;
-        const contain = Math.min(sx, sy);
-        if (mode === "fill") {
-          a.tr.s = 1;
-          a.tr.stx = sx / contain;
-          a.tr.sty = sy / contain;
-        } else if (mode === "width") {
-          a.tr.s = 1;
-          a.tr.stx = sx / contain;
-          a.tr.sty = sx / contain;
-        } else if (mode === "height") {
-          a.tr.s = 1;
-          a.tr.stx = sy / contain;
-          a.tr.sty = sy / contain;
-        } else {
-          a.tr.s = 1;
-          a.tr.stx = 1;
-          a.tr.sty = 1;
-        }
-        sync2DTransformFields(a);
-      }
-      function reset2DTransform() {
-        const a = asset();
-        if (!a || a.type !== "2d") return;
-        a.tr = { x: 0, y: 0, s: 1, stx: 1, sty: 1, r: 0, mx: false, my: false, px: 1 };
-        syncContextFromAsset();
-        saveWorkspacePrefs();
-      }
-      function toggle2DMirror(axis) {
-        const a = asset();
-        if (!a || a.type !== "2d") return;
-        ensure2DTransform(a);
-        if (axis === "x") a.tr.mx = !a.tr.mx;
-        if (axis === "y") a.tr.my = !a.tr.my;
-      }
-      function sync3DTransformFromUI() {
-        const c = cart();
-        if (!c) return;
-        ensureModelTransform(c);
-        c.modelTr.tx = Number(U.m3dXRange.value);
-        c.modelTr.ty = Number(U.m3dYRange.value);
-        c.modelTr.s = Number(U.m3dSRange.value) / 100;
-        sync3DTransformFields(c);
-      }
-      function sync3DTransformValueInput(key) {
-        const c = cart();
-        if (!c) return;
-        ensureModelTransform(c);
-        if (key === "x") {
-          c.modelTr.tx = clampNumber(Number(U.m3dXOut.value || 0), -1, 1);
-        } else if (key === "y") {
-          c.modelTr.ty = clampNumber(Number(U.m3dYOut.value || 0), -1, 1);
-        } else if (key === "scale") {
-          c.modelTr.s = clampNumber(Number(U.m3dSOut.value || 1), 0.4, 2.3);
-        }
-        sync3DTransformFields(c);
-      }
-      function reset3DTransform() {
-        const c = cart();
-        if (!c) return;
-        c.modelTr = { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0, s: 1, mx: false };
-        syncContextFromAsset();
-        saveWorkspacePrefs();
       }
       function templateCanvasForAsset(a) {
         const c = document.createElement("canvas");
@@ -8194,92 +6195,53 @@
         if (!currentAsset || (currentAsset.type !== "3d" && currentAsset.type !== "2d"))
           return;
         if (currentAsset.type === "2d") {
-          const rect = U.stageCanvas.getBoundingClientRect();
-          const px = (e.clientX - rect.left) * (U.stageCanvas.width / Math.max(1, rect.width));
-          const py = (e.clientY - rect.top) * (U.stageCanvas.height / Math.max(1, rect.height));
-          const insideFrame = pointInRect(px, py, S.view.assetFrameRect);
-          S.view.stageClickSelectCandidate = !!currentAsset.image && insideFrame;
-          if (S.view.assetEditSelected && !insideFrame) {
-            set2DAssetEditSelected(false);
-            syncWorkspaceChrome();
-            setStatus("Artwork deselected.");
-          }
-          S.view.dragMode =
-            currentAsset.image && S.view.assetEditSelected && insideFrame ? "asset" : "viewport";
+          beginStagePointerInteraction(e, currentAsset);
         } else {
           S.view.dragMode = "orbit";
+          lastPt = { x: e.clientX, y: e.clientY };
         }
         S.view.drag = true;
         S.view.dragMoved = false;
         U.stageCanvas.classList.add("drag");
-        lastPt = { x: e.clientX, y: e.clientY };
         U.stageCanvas.setPointerCapture(e.pointerId);
       });
       U.stageCanvas.addEventListener("pointermove", (e) => {
+        const currentAsset = asset();
+        if (currentAsset?.type === "2d") {
+          moveStagePointerInteraction(e, currentAsset);
+          return;
+        }
         if (!S.view.drag || !lastPt) return;
         const dx = e.clientX - lastPt.x,
           dy = e.clientY - lastPt.y;
         lastPt = { x: e.clientX, y: e.clientY };
-        const currentAsset = asset();
         if (currentAsset?.type === "3d") {
           S.view.dragMoved = true;
           S.view.yaw += dx * 0.01;
           S.view.pitch += dy * 0.01;
-          return;
-        }
-        if (currentAsset?.type === "2d") {
-          if (S.view.dragMode === "asset") {
-            ensure2DTransform(currentAsset);
-            S.view.dragMoved = true;
-            const rect = U.stageCanvas.getBoundingClientRect();
-            const frame = S.view.assetFrameRect || { w: rect.width, h: rect.height };
-            currentAsset.tr.x = clampNumber(
-              currentAsset.tr.x + dx * (220 / Math.max(1, frame.w * 0.45)),
-              -220,
-              220,
-            );
-            currentAsset.tr.y = clampNumber(
-              currentAsset.tr.y + dy * (220 / Math.max(1, frame.h * 0.45)),
-              -220,
-              220,
-            );
-            sync2DTransformFields(currentAsset);
-            return;
-          }
-          if (S.view.dragMode === "viewport") {
-            S.view.dragMoved = true;
-            const rect = U.stageCanvas.getBoundingClientRect();
-            S.view.stage2dPanX += dx * (U.stageCanvas.width / Math.max(1, rect.width));
-            S.view.stage2dPanY += dy * (U.stageCanvas.height / Math.max(1, rect.height));
-          }
         }
       });
       U.stageCanvas.addEventListener("pointerup", (e) => {
-        if (
-          !S.view.dragMoved &&
-          S.view.dragMode === "viewport" &&
-          S.view.stageClickSelectCandidate &&
-          asset()?.type === "2d" &&
-          asset()?.image
-        ) {
-          set2DAssetEditSelected(true);
-          syncWorkspaceChrome();
-          setStatus("Artwork selected.");
+        const currentAsset = asset();
+        if (currentAsset?.type === "2d") {
+          endStagePointerInteraction(currentAsset);
+        } else {
+          S.view.drag = false;
+          S.view.dragMoved = false;
+          S.view.dragMode = "";
         }
-        S.view.drag = false;
-        S.view.dragMoved = false;
-        S.view.dragMode = "";
-        S.view.stageClickSelectCandidate = false;
         U.stageCanvas.classList.remove("drag");
         lastPt = null;
         if (U.stageCanvas.hasPointerCapture(e.pointerId))
           U.stageCanvas.releasePointerCapture(e.pointerId);
       });
       U.stageCanvas.addEventListener("pointercancel", (e) => {
-        S.view.drag = false;
-        S.view.dragMoved = false;
-        S.view.dragMode = "";
-        S.view.stageClickSelectCandidate = false;
+        if (asset()?.type === "2d") cancelStagePointerInteraction();
+        else {
+          S.view.drag = false;
+          S.view.dragMoved = false;
+          S.view.dragMode = "";
+        }
         U.stageCanvas.classList.remove("drag");
         lastPt = null;
         if (U.stageCanvas.hasPointerCapture(e.pointerId))
@@ -8291,35 +6253,7 @@
           e.preventDefault();
           const currentAsset = asset();
           if (currentAsset?.type === "2d") {
-            const rect = U.stageCanvas.getBoundingClientRect();
-            const px = (e.clientX - rect.left) * (U.stageCanvas.width / Math.max(1, rect.width));
-            const py = (e.clientY - rect.top) * (U.stageCanvas.height / Math.max(1, rect.height));
-            if (S.view.assetEditSelected) {
-              ensure2DTransform(currentAsset);
-              currentAsset.tr.s = clampNumber(
-                currentAsset.tr.s + (e.deltaY < 0 ? 0.08 : -0.08),
-                0.2,
-                3,
-              );
-              sync2DTransformFields(currentAsset);
-              return;
-            }
-            const frame = S.view.assetFrameRect;
-            const baseFrame =
-              frame && S.view.stage2dZoom
-                ? {
-                    fw: frame.w / Math.max(S.view.stage2dZoom, 0.001),
-                    fh: frame.h / Math.max(S.view.stage2dZoom, 0.001),
-                  }
-                : null;
-            zoom2DWorkspaceAt(
-              (S.view.stage2dZoom || 1) + (e.deltaY < 0 ? 0.12 : -0.12),
-              px,
-              py,
-              baseFrame,
-              U.stageCanvas.width,
-              U.stageCanvas.height,
-            );
+            handleStageWheelInteraction(e, currentAsset);
             return;
           }
           S.view.zoom = Math.max(ZOOM_MIN, S.view.zoom + (e.deltaY < 0 ? 0.12 : -0.12));
