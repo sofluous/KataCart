@@ -15,6 +15,7 @@
       rgbaFromHex,
       ensureModelTransform,
       caseFaceDefs,
+      WEBGL_BASE_MODEL_YAW,
     } = deps;
 
     function rot(p) {
@@ -552,6 +553,7 @@
       const sy = d.h * n;
       const sz = Math.max(0.04, d.z * n);
       const poseModel = { ...cart.modelTr };
+      poseModel.ry += (WEBGL_BASE_MODEL_YAW * 180) / Math.PI;
       applyPosePresetToModel(poseModel, pose);
       const splitX = pose === "disc-split" && isDisc ? -w * 0.12 : 0;
       const k = Math.min(w, h) * 0.36 * S.view.zoom;
@@ -670,12 +672,14 @@
       const sx = d.w * n;
       const sy = d.h * n;
       const sz = Math.max(0.04, d.z * n);
-      const k = Math.min(w, h) * 0.42 * (S.gizmo.size / 100);
+      const previewZoom = Number.isFinite(Number(S.gizmo.zoom)) ? Number(S.gizmo.zoom) : 1;
+      const k = Math.min(w, h) * 0.3 * (S.gizmo.size / 100) * previewZoom;
       const cx = w * 0.5;
-      const cy = h * 0.56;
-      const camYaw = S.view.yaw;
-      const camPitch = S.view.pitch;
+      const cy = h * 0.58;
+      const camYaw = Number.isFinite(Number(S.gizmo.yaw)) ? Number(S.gizmo.yaw) : -0.55;
+      const camPitch = Number.isFinite(Number(S.gizmo.pitch)) ? Number(S.gizmo.pitch) : 0.3;
       const m = { ...cart.modelTr };
+      m.ry += (WEBGL_BASE_MODEL_YAW * 180) / Math.PI;
       const pose = S.view.pose || "default";
       applyPosePresetToModel(m, pose);
       function rcam(p) {
@@ -699,9 +703,9 @@
       ]
         .map((p) => model(p, m))
         .map(rcam);
-      const pts = verts.map((v) => {
+      const pts = verts.map((v, i) => {
         const f = k / (v.z + 4.2);
-        return { x: cx + v.x * f, y: cy - v.y * f, z: v.z };
+        return stylizeProjectedPoint({ x: cx + v.x * f, y: cy - v.y * f, z: v.z }, v.z, i);
       });
       const bind = getFaceAssetBindings(cart);
       const isDisc = !!templateSpec(template).capabilities?.discAsset;

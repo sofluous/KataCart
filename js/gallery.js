@@ -172,7 +172,7 @@
           <div class="cart-meta">
             <strong>${cart.name}</strong>
             <span class="muted">${summary.template.name}</span>
-            <span class="muted">${summary.filled}/${summary.total} 2D assets filled</span>
+            <span class="muted">${summary.filled}/${summary.total} 2D faces ready</span>
           </div>
           <div class="gallery-actions">
             <button class="btn" type="button"><i class="iconoir-arrow-right-circle"></i>Open</button>

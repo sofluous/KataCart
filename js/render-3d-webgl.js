@@ -657,6 +657,9 @@
       clearWebGL,
       draw3DWebGL,
       draw3DWebGLOverlays,
+      mappedFaceSources,
+      composedDiscSource,
+      hexToRgb01,
     };
   }
 

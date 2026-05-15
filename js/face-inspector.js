@@ -84,13 +84,14 @@
       const isDiscTemplate = !!templateSpec(t).capabilities?.supportsDiscPose;
       const mm = a.type === "2d" ? assetPhysicalDimsMm(a.id, t) : null;
       U.hudAsset.textContent = `Face: ${a.label}`;
-      const assetDims =
+      const surfaceSummary =
         a.type === "2d"
-          ? `${a.w}x${a.h}px${mm ? ` (${mm.w}x${mm.h}mm)` : ""}`
+          ? `Artwork ${a.w}x${a.h}px${mm ? ` (${mm.w}x${mm.h}mm)` : ""}`
           : a.type === "3d"
-            ? "3D Viewer"
-            : "UV Viewer";
-      U.hudTemplate.textContent = `Template: ${t.name} ${t.d.w}x${t.d.h}x${t.d.z}mm | Face ${a.label} ${assetDims} | UV ${t.uv.w}x${t.uv.h}px`;
+            ? "Model view"
+            : "UV view";
+      U.hudTemplate.textContent =
+        `Template: ${t.name} ${t.d.w}x${t.d.h}x${t.d.z}mm | ${surfaceSummary} | UV ${t.uv.w}x${t.uv.h}px`;
       const is2d = a.type === "2d";
       const is3d = a.type === "3d";
       const isUV = a.type === "uv";
@@ -137,7 +138,7 @@
           U.poseSelect.value = "default";
         }
       }
-      U.miniGizmo.hidden = !is3d;
+      U.miniGizmo.hidden = false;
       U.reset3dBtn.disabled = !is3d;
       U.rotX90Btn.disabled = !is3d;
       U.rotY90Btn.disabled = !is3d;

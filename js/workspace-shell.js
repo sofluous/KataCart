@@ -268,7 +268,6 @@
         U.viewBottomBtn,
         U.viewIsoBtn,
       ].forEach((btn) => setHidden(btn, !is3d));
-      setHidden(U.gizmoSizeRange?.closest(".gizmo-size"), !is3d);
       if (U.viewHomeBtn)
         U.viewHomeBtn.title = is2d
           ? S.view.assetEditSelected
