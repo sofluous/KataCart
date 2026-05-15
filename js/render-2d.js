@@ -11,6 +11,7 @@
       canvasFont,
       CANVAS_FS_1,
       CANVAS_FS_2,
+      renderStyleCache,
       drawTemplateOverlay,
       drawInnerEdgeLabels,
       sync2DTransformFields,
@@ -149,22 +150,15 @@
       const frameY = (h - frameH * stageZoom) / 2 + (S.view.stage2dPanY || 0);
       frameW *= stageZoom;
       frameH *= stageZoom;
-      X.fillStyle =
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--ds-text-muted")
-          .trim() || "#999";
+      X.fillStyle = renderStyleCache.textMuted;
       X.font = canvasFont(CANVAS_FS_1);
       X.fillText(`${a.label} template ${a.w}x${a.h}`, frameX, frameY - 10);
       S.view.assetFrameRect = { x: frameX, y: frameY, w: frameW, h: frameH };
       if (!a.image) {
-        const borderColor =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-border")
-            .trim() || "#5d6876";
         X.save();
         X.setLineDash([8, 6]);
         X.lineWidth = 2;
-        X.strokeStyle = S.view.dragOver ? accentColor : borderColor;
+        X.strokeStyle = S.view.dragOver ? accentColor : renderStyleCache.border;
         X.strokeRect(frameX + 6, frameY + 6, frameW - 12, frameH - 12);
         X.restore();
         X.font = canvasFont(CANVAS_FS_2);

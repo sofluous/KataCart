@@ -2990,6 +2990,14 @@
       const STAGE_2D_ZOOM_MIN = 0.35;
       const STAGE_2D_ZOOM_MAX = 4;
       let last = performance.now();
+      let renderDirty = true;
+      let renderLoopScheduled = false;
+      const renderStyleCache = {
+        accent: "#7bd0ff",
+        info: "#79c6ff",
+        border: "#6b7a8b",
+        textMuted: "#999",
+      };
       const {
         WEBGL_FACE_UV_ORDER,
         WEBGL_FACE_POLY,
@@ -3005,6 +3013,14 @@
 
       function setStatus(msg) {
         U.statusText.textContent = msg;
+      }
+      function refreshRenderStyleCache() {
+        const styles = getComputedStyle(document.documentElement);
+        renderStyleCache.accent = styles.getPropertyValue("--ds-accent").trim() || "#7bd0ff";
+        renderStyleCache.info = styles.getPropertyValue("--ds-info").trim() || "#79c6ff";
+        renderStyleCache.border = styles.getPropertyValue("--ds-border").trim() || "#6b7a8b";
+        renderStyleCache.textMuted =
+          styles.getPropertyValue("--ds-text-muted").trim() || "#999";
       }
       function openSettingsDrawer() {
         S.settingsOpen = true;
@@ -3073,13 +3089,16 @@
             },
             currentAsset,
           );
+          requestRender();
           return;
         }
         S.view.zoom = Math.max(ZOOM_MIN, S.view.zoom + (deltaY < 0 ? 0.12 : -0.12));
+        requestRender();
       }
       function applyGizmoZoom(value) {
         S.gizmo.zoom = clampGizmoZoom(value);
         saveWorkspacePrefs();
+        requestRender();
       }
       function tById(id) {
         return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
@@ -3174,6 +3193,7 @@
         if (!rerender) return;
         syncContextFromAsset();
         renderAssetStrip();
+        requestRender();
       }
       function syncSettingsControls() {
         if (U.rendererSelect) U.rendererSelect.value = S.renderer.engine;
@@ -3213,12 +3233,15 @@
       let appShell = null;
       function openWorkspace(cartId) {
         appShell?.openWorkspace(cartId);
+        requestRender();
       }
       function renderAssetStrip() {
         appShell?.renderAssetStrip();
+        requestRender();
       }
       function renderWorkspace() {
         appShell?.renderWorkspace();
+        requestRender();
       }
       const createFlow = window.KataCartCreateFlow.createCreateFlow({
         S,
@@ -3315,6 +3338,7 @@
         canvasFont,
         CANVAS_FS_1,
         CANVAS_FS_2,
+        renderStyleCache,
         drawTemplateOverlay,
         drawInnerEdgeLabels,
         sync2DTransformFields,
@@ -3739,17 +3763,13 @@
         X.restore();
       }
       function drawTemplateOverlay(a, fx, fy, fw, fh, ca) {
-        const border =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-border")
-            .trim() || "#6b7a8b";
         X.save();
         X.strokeStyle = ca;
         X.setLineDash([8, 6]);
         X.lineWidth = 1.5;
         X.strokeRect(fx, fy, fw, fh);
         X.setLineDash([]);
-        X.strokeStyle = border;
+        X.strokeStyle = renderStyleCache.border;
         X.strokeRect(fx + 0.5, fy + 0.5, fw - 1, fh - 1);
         X.restore();
 
@@ -3894,14 +3914,8 @@
         const w = U.stageCanvas.width,
           h = U.stageCanvas.height;
         X.clearRect(0, 0, w, h);
-        const ca =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-accent")
-            .trim() || "#7bd0ff";
-        const ci =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--ds-info")
-            .trim() || "#79c6ff";
+        const ca = renderStyleCache.accent;
+        const ci = renderStyleCache.info;
         drawBackgroundTexture(w, h);
         const c = cart(),
           a = asset();
@@ -3956,13 +3970,33 @@
           U.hudCamera.textContent = `Rot ${S.view.yaw.toFixed(2)}, ${S.view.pitch.toFixed(2)} | Zoom ${S.view.zoom.toFixed(2)}`;
         }
       }
+      function workspaceNeedsAnimation() {
+        return (
+          S.screen === "workspace" &&
+          ((S.view.spin && asset()?.type === "3d") || !!S.view.drag || !!S.gizmo.drag)
+        );
+      }
+      function ensureRenderLoop() {
+        if (renderLoopScheduled) return;
+        renderLoopScheduled = true;
+        requestAnimationFrame(loop);
+      }
+      function requestRender() {
+        renderDirty = true;
+        ensureRenderLoop();
+      }
       function loop(ts) {
+        renderLoopScheduled = false;
         const dt = Math.min(0.05, (ts - last) / 1000);
         last = ts;
         if (S.screen === "workspace" && S.view.spin && asset()?.type === "3d")
           S.view.yaw += dt * 0.8;
-        draw();
-        requestAnimationFrame(loop);
+        const animating = workspaceNeedsAnimation();
+        if (renderDirty || animating) {
+          renderDirty = false;
+          draw();
+        }
+        if (renderDirty || workspaceNeedsAnimation()) ensureRenderLoop();
       }
 
       function clampNumber(value, min, max) {
@@ -4013,6 +4047,7 @@
           syncContextFromAsset();
           renderAssetStrip();
           saveWorkspacePrefs();
+          requestRender();
         };
         im.onerror = () => setStatus("Failed to load image file.");
         im.src = u;
@@ -4044,6 +4079,8 @@
         saveWorkspacePrefs,
         setStatus,
         copyTextToClipboard,
+        refreshRenderStyleCache,
+        requestRender,
         closeSettingsDrawer,
         openSettingsDrawer,
         closeContextMenu,
@@ -4099,6 +4136,7 @@
         cancelStagePointerInteraction,
         handleStageWheelInteraction,
         applyWorkspaceWheelZoom,
+        refreshRenderStyleCache,
         syncWorkspaceChrome,
         openContextMenu,
         applyCameraPreset,
@@ -4117,18 +4155,14 @@
         renderCreatePanel,
         tById,
         applyDefaultViewForTemplate,
-        loop,
+        requestRender,
       });
 
       bindCreateUI();
       bootUI.bindChromeAndSettingsUI();
       workspaceInput.bindWorkspaceInputs();
 
-      workspaceInput.initApp({
-        set(ts) {
-          last = ts;
-        },
-      });
+      workspaceInput.initApp();
     </script>
   </body>
 </html>

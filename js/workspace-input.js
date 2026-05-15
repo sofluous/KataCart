@@ -32,6 +32,7 @@
       cancelStagePointerInteraction,
       handleStageWheelInteraction,
       applyWorkspaceWheelZoom,
+      refreshRenderStyleCache,
       syncWorkspaceChrome,
       openContextMenu,
       applyCameraPreset,
@@ -50,6 +51,7 @@
       renderCreatePanel,
       tById,
       applyDefaultViewForTemplate,
+      requestRender,
     } = deps;
 
     let lastPt = null;
@@ -90,6 +92,7 @@
             if (currentAsset?.type === "2d") U.assetFileInput.click();
           }
           syncContextFromAsset();
+          requestRender();
         });
 
       U.assetFileInput.addEventListener("change", (event) => {
@@ -124,18 +127,21 @@
         if (!currentCart) return;
         ensureModelTransform(currentCart);
         currentCart.modelTr.rx += 90;
+        requestRender();
       });
       U.rotY90Btn.addEventListener("click", () => {
         const currentCart = cart();
         if (!currentCart) return;
         ensureModelTransform(currentCart);
         currentCart.modelTr.ry += 90;
+        requestRender();
       });
       U.mirror3dXBtn.addEventListener("click", () => {
         const currentCart = cart();
         if (!currentCart) return;
         ensureModelTransform(currentCart);
         currentCart.modelTr.mx = !currentCart.modelTr.mx;
+        requestRender();
       });
       U.reset3dBtn.addEventListener("click", reset3DTransform);
 
@@ -145,6 +151,7 @@
         S.gizmo.px = event.clientX;
         S.gizmo.py = event.clientY;
         U.miniCanvas.setPointerCapture(event.pointerId);
+        requestRender();
       });
       U.miniCanvas.addEventListener("pointermove", (event) => {
         if (!S.gizmo.drag) return;
@@ -154,18 +161,21 @@
         S.gizmo.py = event.clientY;
         S.gizmo.yaw += dx * 0.01;
         S.gizmo.pitch = clampGizmoPitch(S.gizmo.pitch - dy * 0.01);
+        requestRender();
       });
       U.miniCanvas.addEventListener("pointerup", (event) => {
         S.gizmo.drag = false;
         saveWorkspacePrefs();
         if (U.miniCanvas.hasPointerCapture(event.pointerId))
           U.miniCanvas.releasePointerCapture(event.pointerId);
+        requestRender();
       });
       U.miniCanvas.addEventListener("pointercancel", (event) => {
         S.gizmo.drag = false;
         saveWorkspacePrefs();
         if (U.miniCanvas.hasPointerCapture(event.pointerId))
           U.miniCanvas.releasePointerCapture(event.pointerId);
+        requestRender();
       });
       U.miniCanvas.addEventListener(
         "wheel",
@@ -190,6 +200,7 @@
         S.view.dragMoved = false;
         U.stageCanvas.classList.add("drag");
         U.stageCanvas.setPointerCapture(event.pointerId);
+        requestRender();
       });
       U.stageCanvas.addEventListener("pointermove", (event) => {
         const currentAsset = asset();
@@ -205,6 +216,7 @@
           S.view.dragMoved = true;
           S.view.yaw += dx * 0.01;
           S.view.pitch = deps.clampViewPitch(S.view.pitch - dy * 0.01);
+          requestRender();
         }
       });
       U.stageCanvas.addEventListener("pointerup", (event) => {
@@ -220,6 +232,7 @@
         lastPt = null;
         if (U.stageCanvas.hasPointerCapture(event.pointerId))
           U.stageCanvas.releasePointerCapture(event.pointerId);
+        requestRender();
       });
       U.stageCanvas.addEventListener("pointercancel", (event) => {
         if (asset()?.type === "2d") cancelStagePointerInteraction();
@@ -232,6 +245,7 @@
         lastPt = null;
         if (U.stageCanvas.hasPointerCapture(event.pointerId))
           U.stageCanvas.releasePointerCapture(event.pointerId);
+        requestRender();
       });
       U.stageCanvas.addEventListener(
         "wheel",
@@ -240,6 +254,7 @@
           const currentAsset = asset();
           if (currentAsset?.type === "2d") {
             handleStageWheelInteraction(event, currentAsset);
+            requestRender();
             return;
           }
           applyWorkspaceWheelZoom(event.deltaY, event.clientX, event.clientY);
@@ -319,14 +334,17 @@
         if (!isEmpty2DAssetActive()) return;
         event.preventDefault();
         setDropHover(true);
+        requestRender();
       });
       U.stageCanvas.addEventListener("dragenter", (event) => {
         if (!isEmpty2DAssetActive()) return;
         event.preventDefault();
         setDropHover(true);
+        requestRender();
       });
       U.stageCanvas.addEventListener("dragleave", () => {
         setDropHover(false);
+        requestRender();
       });
       U.stageCanvas.addEventListener("drop", (event) => {
         if (!isEmpty2DAssetActive()) return;
@@ -341,13 +359,60 @@
         }
         uploadImage(file);
       });
+
+      [
+        U.faceSelect,
+        U.txRange,
+        U.tyRange,
+        U.tsRange,
+        U.trRange,
+        U.pxRange,
+        U.m3dXRange,
+        U.m3dYRange,
+        U.m3dSRange,
+      ]
+        .filter(Boolean)
+        .forEach((control) => {
+          control.addEventListener("input", () => requestRender());
+        });
+
+      [
+        U.txOut,
+        U.tyOut,
+        U.tsOut,
+        U.trOut,
+        U.pxOut,
+        U.m3dXOut,
+        U.m3dYOut,
+        U.m3dSOut,
+      ]
+        .filter(Boolean)
+        .forEach((control) => {
+          control.addEventListener("change", () => requestRender());
+        });
+
+      [
+        U.mirrorXBtn,
+        U.mirrorYBtn,
+        U.fitContainBtn,
+        U.fitFillBtn,
+        U.fitWidthBtn,
+        U.fitHeightBtn,
+        U.reset2dBtn,
+        U.reset3dBtn,
+      ]
+        .filter(Boolean)
+        .forEach((control) => {
+          control.addEventListener("click", () => requestRender());
+        });
     }
 
-    function initApp(lastRef) {
+    function initApp() {
       bindExportUI();
       window.addEventListener("resize", () => {
         resizeCanvas();
         if (!isCompactHeaderMode()) setHeaderMoreOpen(false);
+        requestRender();
       });
 
       if (window.DesignSystemThemeSelector && U.themeSelect) {
@@ -357,6 +422,7 @@
         U.themeSelect.innerHTML = `<option value="${S.theme}">${S.theme}</option>`;
         U.themeSelect.value = S.theme;
       }
+      refreshRenderStyleCache?.();
       loadWorkspacePrefs();
       S.carts = buildStarterCarts();
       document.body.style.background = S.view.glow
@@ -365,10 +431,7 @@
       openGallery();
       preloadSampleFolderAssets().catch(() => {});
       renderCreatePanel();
-      requestAnimationFrame((ts) => {
-        lastRef.set(ts);
-        requestAnimationFrame(deps.loop);
-      });
+      requestRender();
     }
 
     return {

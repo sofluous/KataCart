@@ -13,6 +13,8 @@
       saveWorkspacePrefs,
       setStatus,
       copyTextToClipboard,
+      refreshRenderStyleCache,
+      requestRender,
       closeSettingsDrawer,
       openSettingsDrawer,
       closeContextMenu,
@@ -42,7 +44,10 @@
         }),
       );
 
-      U.backToGalleryBtn.addEventListener("click", deps.openGallery);
+      U.backToGalleryBtn.addEventListener("click", () => {
+        deps.openGallery();
+        requestRender();
+      });
       U.settingsOpenBtns.forEach((button) =>
         button.addEventListener("click", () => {
           if (S.settingsOpen) {
@@ -108,12 +113,16 @@
       U.themeSelect.addEventListener("ds-theme-change", (event) => {
         const nextTheme = event?.detail?.theme || U.themeSelect.value;
         S.theme = nextTheme;
+        refreshRenderStyleCache();
+        requestRender();
         setStatus(`Theme set to ${S.theme}.`);
       });
       U.themeSelect.addEventListener("input", () => {
         if (window.DesignSystemThemeSelector) return;
         S.theme = U.themeSelect.value;
         document.documentElement.dataset.theme = S.theme;
+        refreshRenderStyleCache();
+        requestRender();
         setStatus(`Theme set to ${S.theme}.`);
       });
       if (U.rendererSelect)
@@ -264,6 +273,7 @@
       document.addEventListener("fullscreenchange", () => {
         syncFocusButton();
         closeContextMenu();
+        requestRender();
       });
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
@@ -272,6 +282,7 @@
             S.view.preview = false;
             syncWorkspaceChrome();
             saveWorkspacePrefs();
+            requestRender();
             setStatus("Preview mode off.");
             return;
           }
@@ -291,12 +302,14 @@
             S.view.preview = !S.view.preview;
             syncWorkspaceChrome();
             saveWorkspacePrefs();
+            requestRender();
             setStatus(S.view.preview ? "Preview mode on." : "Preview mode off.");
           }
           if (event.key.toLowerCase() === "i") {
             S.chrome.inspectorCollapsed = !S.chrome.inspectorCollapsed;
             syncWorkspaceChrome();
             saveWorkspacePrefs();
+            requestRender();
             setStatus(S.chrome.inspectorCollapsed ? "Inspector hidden." : "Inspector shown.");
           }
         }
@@ -332,16 +345,19 @@
           const currentAsset = asset();
           if (!currentAsset?.image) {
             reset2DWorkspaceView();
+            requestRender();
             return;
           }
           if (!S.view.assetEditSelected) {
             reset2DWorkspaceView();
+            requestRender();
             return;
           }
           ensure2DTransform(currentAsset);
           currentAsset.tr.x = 0;
           currentAsset.tr.y = 0;
           sync2DTransformFields(currentAsset);
+          requestRender();
           return;
         }
         applyCameraPreset("home");
@@ -353,9 +369,11 @@
         if (asset()?.type === "2d") {
           if (!asset()?.image || !S.view.assetEditSelected) {
             reset2DWorkspaceView();
+            requestRender();
             return;
           }
           fitAsset("contain");
+          requestRender();
           return;
         }
         applyCameraPreset("fit");
@@ -369,11 +387,13 @@
               STAGE_2D_ZOOM_MIN,
               STAGE_2D_ZOOM_MAX,
             );
+            requestRender();
             return;
           }
           ensure2DTransform(currentAsset);
           currentAsset.tr.s = clampNumber(currentAsset.tr.s + 0.08, 0.2, 3);
           sync2DTransformFields(currentAsset);
+          requestRender();
           return;
         }
         S.view.zoom += 0.16;
@@ -387,11 +407,13 @@
               STAGE_2D_ZOOM_MIN,
               STAGE_2D_ZOOM_MAX,
             );
+            requestRender();
             return;
           }
           ensure2DTransform(currentAsset);
           currentAsset.tr.s = clampNumber(currentAsset.tr.s - 0.08, 0.2, 3);
           sync2DTransformFields(currentAsset);
+          requestRender();
           return;
         }
         S.view.zoom = Math.max(ZOOM_MIN, S.view.zoom - 0.16);
@@ -400,9 +422,11 @@
         if (asset()?.type === "2d") {
           if (!asset()?.image || !S.view.assetEditSelected) {
             reset2DWorkspaceView();
+            requestRender();
             return;
           }
           reset2DTransform();
+          requestRender();
           return;
         }
         const currentCart = cart();
@@ -411,6 +435,58 @@
       if (U.focusWorkspaceBtn)
         U.focusWorkspaceBtn.addEventListener("click", async () => {
           await toggleWorkspaceFullscreen();
+        });
+
+      [
+        U.togglePreviewBtn,
+        U.toggleInspectorBtn,
+        U.toggleAssetStripBtn,
+        U.toggleMetaPanelBtn,
+        U.toggleContextPanelBtn,
+        U.toggleRenderPanelBtn,
+        U.toolAutoRotateBtn,
+        U.toolAutoRotateMenuBtn,
+        U.toolNormalsBtn,
+        U.toolNormalsMenuBtn,
+        U.toolRenderStandardBtn,
+        U.toolRenderWobbleBtn,
+        U.toolFaceVizBtn,
+        U.toolTemplateLabelsBtn,
+        U.toolTemplateLabelsMenuBtn,
+        U.viewFrontBtn,
+        U.viewBackBtn,
+        U.viewLeftBtn,
+        U.viewRightBtn,
+        U.viewTopBtn,
+        U.viewBottomBtn,
+        U.viewHomeBtn,
+        U.viewIsoBtn,
+        U.viewFitBtn,
+        U.zoomInBtn,
+        U.zoomOutBtn,
+        U.zoomResetBtn,
+      ]
+        .filter(Boolean)
+        .forEach((control) => {
+          control.addEventListener("click", () => requestRender());
+        });
+
+      [
+        U.rendererSelect,
+        U.poseSelect,
+        U.discBackStyleAssetSelect,
+        U.faceTintInput,
+        U.bgTextureSelect,
+        U.wireframeCheckbox,
+        U.verticesCheckbox,
+        U.uvAxisDebugCheckbox,
+        U.spinCheckbox,
+        U.gridCheckbox,
+        U.glowCheckbox,
+      ]
+        .filter(Boolean)
+        .forEach((control) => {
+          control.addEventListener("input", () => requestRender());
         });
     }
 
