@@ -38,13 +38,13 @@
         --strip: 156px;
         --gizmo-size: max(320px, var(--ds-hud-card-max-w));
         --kc-space-1: var(--ds-space-1);
-        --kc-space-2: 6px;
+        --kc-space-2: var(--ds-toolbar-compact-gap, 6px);
         --kc-space-3: var(--ds-space-2);
-        --kc-space-4: 10px;
+        --kc-space-4: var(--ds-rhythm-content, 10px);
         --kc-space-5: var(--ds-space-3);
-        --kc-space-6: 14px;
-        --kc-tool-btn-h: 30px;
-        --kc-tool-btn-w: 30px;
+        --kc-space-6: var(--ds-rhythm-section, 14px);
+        --kc-tool-btn-h: var(--ds-icon-action-size, 30px);
+        --kc-tool-btn-w: var(--ds-icon-action-size, 30px);
         --kc-header-btn-h: var(--ds-control-h-sm);
         --kc-cam-cell-w: min(var(--ds-size-cam-cell-w), 30px);
         --kc-cam-cell-h: min(var(--ds-size-cam-cell-h), 28px);
@@ -65,16 +65,16 @@
         --kc-hud-top: 50px;
         --kc-camera-bottom: 56px;
         --kc-slider-gap: var(--kc-space-tight);
-        --kc-space-tight: 2px;
-        --kc-space-compact: 4px;
-        --kc-toolstrip-pad: 3px;
-        --kc-seg-icon-gap: 5px;
+        --kc-space-tight: var(--ds-space-1, 2px);
+        --kc-space-compact: var(--ds-toolbar-compact-gap, 4px);
+        --kc-toolstrip-pad: var(--ds-space-1, 3px);
+        --kc-seg-icon-gap: var(--ds-field-row-gap, 5px);
         --kc-more-menu-min-w: 170px;
         --kc-drop-bottom: var(--kc-camera-bottom);
         --kc-mini-top: 124px;
         --kc-strip-col-min: 150px;
         --kc-strip-col-max: 190px;
-        --kc-asset-card-pad: 7px;
+        --kc-asset-card-pad: var(--ds-space-2, 7px);
         --kc-asset-box-h: 98px;
         --kc-canvas-meta-top: var(--kc-overlay-inset);
         --kc-canvas-meta-w: min(420px, 58%);
@@ -96,7 +96,7 @@
         --kc-gallery-thumb-min-h: 110px;
         --kc-gallery-card-pad: var(--ds-space-2);
         --kc-gallery-action-min-h: var(--ds-control-h-sm);
-        --kc-gallery-action-shift: 6px;
+        --kc-gallery-action-shift: var(--ds-space-2, 6px);
         --kc-gallery-card-h-grid: 280px;
         --kc-gallery-card-h-tile: 238px;
         --kc-mini-anchor-gap: var(--ds-space-2);
@@ -159,6 +159,31 @@
         display: inline-flex;
         align-items: center;
         gap: var(--ds-space-2);
+      }
+      .btn.ds-icon-action,
+      .seg-btn.ds-icon-action,
+      .cam-btn.ds-icon-action {
+        min-width: var(--ds-icon-action-size);
+        width: var(--ds-icon-action-size);
+        min-height: var(--ds-icon-action-size);
+        height: var(--ds-icon-action-size);
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+        border-color: var(--ds-icon-action-border);
+        border-radius: var(--ds-icon-action-radius);
+        background: transparent;
+        color: var(--ds-icon-action-fg);
+      }
+      .btn.ds-icon-action:hover,
+      .btn.ds-icon-action:focus-visible,
+      .seg-btn.ds-icon-action:hover,
+      .seg-btn.ds-icon-action:focus-visible,
+      .cam-btn.ds-icon-action:hover,
+      .cam-btn.ds-icon-action:focus-visible {
+        border-color: var(--ds-icon-action-border-hover);
+        background: var(--ds-icon-action-hover-bg);
+        color: var(--ds-icon-action-fg-hover);
       }
       .btn.primary {
         background: var(--ds-btn-primary-bg);
@@ -2058,7 +2083,7 @@
             </div>
           </div>
           <div class="workspace-header-right">
-            <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings">
+            <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings" aria-label="Settings">
               <i class="iconoir-settings"></i>Settings
             </button>
           </div>
@@ -2084,27 +2109,27 @@
           <div class="workspace-header-center">
             <div class="canvas-toolstrip header-toolstrip workspace-toolrail">
               <div class="seg-pair" aria-label="Render mode">
-                <button id="toolRenderStandardBtn" class="seg-btn workspace-toolrail-btn" type="button" title="Standard render">
+                <button id="toolRenderStandardBtn" class="seg-btn ds-icon-action workspace-toolrail-btn" type="button" title="Standard render" aria-label="Standard render">
                   <i class="iconoir-3d-select-face"></i>
                 </button>
-                <button id="toolRenderWobbleBtn" class="seg-btn workspace-toolrail-btn" type="button" title="PS1 wobble render">
+                <button id="toolRenderWobbleBtn" class="seg-btn ds-icon-action workspace-toolrail-btn" type="button" title="PS1 wobble render" aria-label="PS1 wobble render">
                   <i class="iconoir-frame-alt-empty"></i>
                 </button>
               </div>
-              <button id="toolFaceVizBtn" class="seg-btn workspace-toolrail-btn" type="button" title="Toggle transparent faces">
+              <button id="toolFaceVizBtn" class="seg-btn ds-icon-action workspace-toolrail-btn" type="button" title="Toggle transparent faces" aria-label="Toggle transparent faces">
                 <i class="iconoir-eye"></i>
               </button>
-              <button id="toolTemplateLabelsBtn" class="seg-btn workspace-toolrail-btn workspace-compact-hide" type="button" title="Toggle UV labels">
+              <button id="toolTemplateLabelsBtn" class="seg-btn ds-icon-action workspace-toolrail-btn workspace-compact-hide" type="button" title="Toggle UV labels" aria-label="Toggle UV labels">
                 <i class="iconoir-text-box"></i>
               </button>
-              <button id="toolAutoRotateBtn" class="seg-btn workspace-toolrail-btn workspace-compact-hide" type="button" title="Auto rotate">
+              <button id="toolAutoRotateBtn" class="seg-btn ds-icon-action workspace-toolrail-btn workspace-compact-hide" type="button" title="Auto rotate" aria-label="Auto rotate">
                 <i class="iconoir-refresh-double"></i>
               </button>
-              <button id="toolNormalsBtn" class="seg-btn workspace-toolrail-btn workspace-compact-hide" type="button" title="Show normals">
+              <button id="toolNormalsBtn" class="seg-btn ds-icon-action workspace-toolrail-btn workspace-compact-hide" type="button" title="Show normals" aria-label="Show normals">
                 <i class="iconoir-axis-3d"></i>
               </button>
               <div class="header-more workspace-compact-more">
-                <button id="toolMoreBtn" class="seg-btn workspace-toolrail-btn" type="button" title="More view tools" aria-expanded="false" aria-controls="toolMoreMenu">
+                <button id="toolMoreBtn" class="seg-btn ds-icon-action workspace-toolrail-btn" type="button" title="More view tools" aria-label="More view tools" aria-expanded="false" aria-controls="toolMoreMenu">
                   <i class="iconoir-more-horiz-circle"></i><span class="workspace-compact-more-label">More</span>
                 </button>
                 <div id="toolMoreMenu" class="header-more-menu" hidden>
@@ -2131,7 +2156,7 @@
             <button id="exportJsonBtn" class="btn primary" type="button">
               <i class="iconoir-download"></i>Export...
             </button>
-            <button id="settingsBtn" class="btn" data-open-settings type="button" title="Settings">
+            <button id="settingsBtn" class="btn" data-open-settings type="button" title="Settings" aria-label="Settings">
               <i class="iconoir-settings"></i>Settings
             </button>
           </div>
@@ -2375,42 +2400,42 @@
             </div>
             <div class="camera-pad workspace-dock-card" aria-label="Camera pad">
               <div class="camera-pad-zoom">
-                <button id="zoomInBtn" class="cam-btn" type="button" title="Zoom in">
+                <button id="zoomInBtn" class="cam-btn ds-icon-action" type="button" title="Zoom in" aria-label="Zoom in">
                   <i class="iconoir-plus"></i>
                 </button>
-                <button id="zoomOutBtn" class="cam-btn" type="button" title="Zoom out">
+                <button id="zoomOutBtn" class="cam-btn ds-icon-action" type="button" title="Zoom out" aria-label="Zoom out">
                   <i class="iconoir-minus"></i>
                 </button>
-                <button id="zoomResetBtn" class="cam-btn" type="button" title="Reset zoom">
+                <button id="zoomResetBtn" class="cam-btn ds-icon-action" type="button" title="Reset zoom" aria-label="Reset zoom">
                   <i class="iconoir-undo-circle"></i>
                 </button>
               </div>
               <div class="camera-pad-grid">
-                <button id="viewFrontBtn" class="cam-btn cam-front" type="button" title="Front view">
+                <button id="viewFrontBtn" class="cam-btn ds-icon-action cam-front" type="button" title="Front view" aria-label="Front view">
                   <i class="iconoir-view-grid"></i>
                 </button>
-                <button id="viewTopBtn" class="cam-btn cam-top" type="button" title="Top view">
+                <button id="viewTopBtn" class="cam-btn ds-icon-action cam-top" type="button" title="Top view" aria-label="Top view">
                   <i class="iconoir-nav-arrow-up"></i>
                 </button>
-                <button id="viewBackBtn" class="cam-btn cam-back" type="button" title="Back view">
+                <button id="viewBackBtn" class="cam-btn ds-icon-action cam-back" type="button" title="Back view" aria-label="Back view">
                   <i class="iconoir-view-columns-3"></i>
                 </button>
-                <button id="viewLeftBtn" class="cam-btn cam-left" type="button" title="Left view">
+                <button id="viewLeftBtn" class="cam-btn ds-icon-action cam-left" type="button" title="Left view" aria-label="Left view">
                   <i class="iconoir-nav-arrow-left"></i>
                 </button>
-                <button id="viewHomeBtn" class="cam-btn cam-home" type="button" title="Home view">
+                <button id="viewHomeBtn" class="cam-btn ds-icon-action cam-home" type="button" title="Home view" aria-label="Home view">
                   <i class="iconoir-home"></i>
                 </button>
-                <button id="viewRightBtn" class="cam-btn cam-right" type="button" title="Right view">
+                <button id="viewRightBtn" class="cam-btn ds-icon-action cam-right" type="button" title="Right view" aria-label="Right view">
                   <i class="iconoir-nav-arrow-right"></i>
                 </button>
-                <button id="viewIsoBtn" class="cam-btn cam-iso" type="button" title="Isometric view">
+                <button id="viewIsoBtn" class="cam-btn ds-icon-action cam-iso" type="button" title="Isometric view" aria-label="Isometric view">
                   <i class="iconoir-cube-bandage"></i>
                 </button>
-                <button id="viewBottomBtn" class="cam-btn cam-bottom" type="button" title="Bottom view">
+                <button id="viewBottomBtn" class="cam-btn ds-icon-action cam-bottom" type="button" title="Bottom view" aria-label="Bottom view">
                   <i class="iconoir-nav-arrow-down"></i>
                 </button>
-                <button id="viewFitBtn" class="cam-btn cam-fit" type="button" title="Fit/reset view">
+                <button id="viewFitBtn" class="cam-btn ds-icon-action cam-fit" type="button" title="Fit/reset view" aria-label="Fit/reset view">
                   <i class="iconoir-frame-select"></i>
                 </button>
               </div>
@@ -2430,7 +2455,7 @@
     <aside id="settingsDrawer">
       <div class="settings-head">
         <h2 class="u-m0">Settings</h2>
-        <button id="closeSettingsBtn" class="btn" type="button">
+        <button id="closeSettingsBtn" class="btn" type="button" aria-label="Close settings">
           <i class="iconoir-xmark-circle"></i>Close
         </button>
       </div>
