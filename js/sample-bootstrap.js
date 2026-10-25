@@ -36,7 +36,8 @@
       TEMPLATES.forEach((t) => {
         if (represented.has(t.id)) return;
         const c = createCart(t, `${t.name} Placeholder`);
-        c.sampleFolder = t.id;
+        c.sampleFolder = null;
+        c.isPlaceholder = true;
         carts.push(c);
       });
       return carts;
@@ -60,8 +61,15 @@
 
     async function preloadSampleFolderAssets() {
       const plan = [];
+      function discCandidatesForFolder(folder) {
+        const name = String(folder || "").toLowerCase();
+        if (name === "cd_1") return ["front-disc.png", "back-disc.png"];
+        if (name === "ps2_debug") return ["dsic.png"];
+        return ["disc.png", "disc_art.png", "front-disc.png", "back-disc.png", "dsic.png"];
+      }
       S.carts.forEach((c) => {
-        const f = c.sampleFolder || c.name;
+        if (!c.sampleFolder || c.isPlaceholder) return;
+        const f = c.sampleFolder;
         plan.push(
           assignTextureByCandidates(c, "cover_front", f, [
             "frontcover.png",
@@ -79,9 +87,7 @@
           ]),
         );
         plan.push(assignTextureByCandidates(c, "spine", f, ["spine.png", "spine-1.png"]));
-        plan.push(
-          assignTextureByCandidates(c, "disc_art", f, ["disc.png", "dsic.png", "disc_art.png"]),
-        );
+        plan.push(assignTextureByCandidates(c, "disc_art", f, discCandidatesForFolder(f)));
         plan.push(
           assignTextureByCandidates(c, "label_front", f, [
             "label_front.png",
