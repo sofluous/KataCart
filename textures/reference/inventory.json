@@ -1,0 +1,5029 @@
+[
+  {
+    "source": "_reference/Disc/pngimg.com - compact_disc_PNG102166.png",
+    "size": [
+      1714,
+      1694
+    ]
+  },
+  {
+    "source": "_reference/GC/Gamecube Template - Shenske.png",
+    "size": [
+      3256,
+      2156
+    ]
+  },
+  {
+    "source": "_reference/GC/Gamecube Template - Shenske.psd",
+    "layers": [
+      {
+        "name": "Gamecube Template",
+        "bounds": [
+          -22,
+          -88,
+          3271,
+          2181
+        ],
+        "visible": true
+      },
+      {
+        "name": "Background",
+        "bounds": [
+          -22,
+          -10,
+          3259,
+          2166
+        ],
+        "visible": true
+      },
+      {
+        "name": "Back",
+        "bounds": [
+          -5,
+          17,
+          1702,
+          2181
+        ],
+        "visible": true
+      },
+      {
+        "name": "Background",
+        "bounds": [
+          -5,
+          1456,
+          1702,
+          2181
+        ],
+        "visible": true
+      },
+      {
+        "name": "Back Information",
+        "bounds": [
+          36,
+          1495,
+          1518,
+          2124
+        ],
+        "visible": true
+      },
+      {
+        "name": "Nintendo",
+        "bounds": [
+          36,
+          1505,
+          306,
+          1571
+        ],
+        "visible": true
+      },
+      {
+        "name": "Important",
+        "bounds": [
+          476,
+          1495,
+          771,
+          1781
+        ],
+        "visible": true
+      },
+      {
+        "name": "Warning",
+        "bounds": [
+          930,
+          1504,
+          1518,
+          1608
+        ],
+        "visible": true
+      },
+      {
+        "name": "THIS OFFICIAL SEAL IS YOUR ASS",
+        "bounds": [
+          481,
+          1992,
+          837,
+          2124
+        ],
+        "visible": true
+      },
+      {
+        "name": "Nintendo Seal",
+        "bounds": [
+          531,
+          1812,
+          729,
+          1962
+        ],
+        "visible": true
+      },
+      {
+        "name": "LICENSED BY NINTENDO. Nintendo",
+        "bounds": [
+          36,
+          2046,
+          437,
+          2120
+        ],
+        "visible": true
+      },
+      {
+        "name": "Information from Publisher    ",
+        "bounds": [
+          36,
+          1741,
+          438,
+          1872
+        ],
+        "visible": true
+      },
+      {
+        "name": "NINTENDO OF AMERICA INC. PO BO",
+        "bounds": [
+          36,
+          1590,
+          268,
+          1692
+        ],
+        "visible": true
+      },
+      {
+        "name": "SKU",
+        "bounds": [
+          932,
+          1788,
+          1518,
+          2122
+        ],
+        "visible": true
+      },
+      {
+        "name": "SKU",
+        "bounds": [
+          932,
+          1788,
+          1518,
+          2122
+        ],
+        "visible": true
+      },
+      {
+        "name": "1   234567890  2",
+        "bounds": [
+          952,
+          2062,
+          1301,
+          2086
+        ],
+        "visible": true
+      },
+      {
+        "name": "00000",
+        "bounds": [
+          1324,
+          1848,
+          1453,
+          1880
+        ],
+        "visible": true
+      },
+      {
+        "name": "ESRB back",
+        "bounds": [
+          1088,
+          1621,
+          1517,
+          1816
+        ],
+        "visible": true
+      },
+      {
+        "name": "A-O",
+        "bounds": [
+          1088,
+          1621,
+          1517,
+          1816
+        ],
+        "visible": true
+      },
+      {
+        "name": "M",
+        "bounds": [
+          1088,
+          1621,
+          1517,
+          1816
+        ],
+        "visible": true
+      },
+      {
+        "name": "T",
+        "bounds": [
+          1088,
+          1621,
+          1517,
+          1816
+        ],
+        "visible": true
+      },
+      {
+        "name": "E",
+        "bounds": [
+          1088,
+          1621,
+          1517,
+          1816
+        ],
+        "visible": true
+      },
+      {
+        "name": "K-A",
+        "bounds": [
+          1088,
+          1621,
+          1517,
+          1816
+        ],
+        "visible": false
+      },
+      {
+        "name": " Information Here",
+        "bounds": [
+          1231,
+          1702,
+          1463,
+          1723
+        ],
+        "visible": true
+      },
+      {
+        "name": "Top Left Icons",
+        "bounds": [
+          53,
+          17,
+          633,
+          170
+        ],
+        "visible": true
+      },
+      {
+        "name": "Black Controls",
+        "bounds": [
+          53,
+          17,
+          633,
+          170
+        ],
+        "visible": true
+      },
+      {
+        "name": "4 Players copy",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "1-4 Players Simultaneous",
+        "bounds": [
+          31,
+          116,
+          161,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube Controller copy 4",
+        "bounds": [
+          53,
+          15,
+          139,
+          108
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 Players copy",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "1-2 Players Simultaneous",
+        "bounds": [
+          31,
+          116,
+          161,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube Controller copy",
+        "bounds": [
+          53,
+          25,
+          139,
+          103
+        ],
+        "visible": false
+      },
+      {
+        "name": "1 Player copy",
+        "bounds": [
+          53,
+          32,
+          139,
+          141
+        ],
+        "visible": true
+      },
+      {
+        "name": "1 Player ",
+        "bounds": [
+          58,
+          116,
+          136,
+          141
+        ],
+        "visible": true
+      },
+      {
+        "name": "Gamecube Controller copy 5",
+        "bounds": [
+          53,
+          32,
+          139,
+          93
+        ],
+        "visible": true
+      },
+      {
+        "name": "Memory Card",
+        "bounds": [
+          179,
+          34,
+          298,
+          165
+        ],
+        "visible": true
+      },
+      {
+        "name": "Memory Card Uses 99 Blocks",
+        "bounds": [
+          179,
+          116,
+          298,
+          165
+        ],
+        "visible": true
+      },
+      {
+        "name": "Memory Card copy 5",
+        "bounds": [
+          201,
+          34,
+          275,
+          94
+        ],
+        "visible": true
+      },
+      {
+        "name": "Progressive Scan",
+        "bounds": [
+          324,
+          27,
+          468,
+          170
+        ],
+        "visible": true
+      },
+      {
+        "name": "Progressive Scan Compatible",
+        "bounds": [
+          324,
+          116,
+          468,
+          170
+        ],
+        "visible": true
+      },
+      {
+        "name": "Progressive Scan",
+        "bounds": [
+          351,
+          27,
+          441,
+          101
+        ],
+        "visible": true
+      },
+      {
+        "name": "Gameboy Compatible",
+        "bounds": [
+          478,
+          17,
+          633,
+          170
+        ],
+        "visible": true
+      },
+      {
+        "name": "Game Boy Advance Compatible",
+        "bounds": [
+          478,
+          116,
+          633,
+          170
+        ],
+        "visible": true
+      },
+      {
+        "name": "GBA compatible",
+        "bounds": [
+          489,
+          17,
+          626,
+          111
+        ],
+        "visible": true
+      },
+      {
+        "name": "White Controls",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "4 Players copy 2",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "1-4 Players Simultaneous",
+        "bounds": [
+          31,
+          116,
+          161,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube Controller copy 6",
+        "bounds": [
+          53,
+          15,
+          139,
+          108
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 Players copy 2",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "1-2 Players Simultaneous",
+        "bounds": [
+          31,
+          116,
+          161,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube Controller copy 2",
+        "bounds": [
+          53,
+          25,
+          139,
+          103
+        ],
+        "visible": false
+      },
+      {
+        "name": "1 Player copy 2",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "1 Player ",
+        "bounds": [
+          58,
+          116,
+          136,
+          141
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube Controller copy 7",
+        "bounds": [
+          53,
+          32,
+          139,
+          93
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory Card copy",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory Card Uses 99 Blocks",
+        "bounds": [
+          179,
+          116,
+          298,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory Card copy 6",
+        "bounds": [
+          201,
+          34,
+          275,
+          94
+        ],
+        "visible": false
+      },
+      {
+        "name": "Progressive Scan copy 2",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Progressive Scan Compatible",
+        "bounds": [
+          324,
+          116,
+          468,
+          170
+        ],
+        "visible": false
+      },
+      {
+        "name": "Progressive Scan copy",
+        "bounds": [
+          351,
+          27,
+          441,
+          101
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gameboy Compatible",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Game Boy Advance Compatible",
+        "bounds": [
+          478,
+          116,
+          633,
+          170
+        ],
+        "visible": false
+      },
+      {
+        "name": "GBA compatible copy",
+        "bounds": [
+          489,
+          17,
+          626,
+          111
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          1543,
+          1456,
+          1700,
+          2156
+        ],
+        "visible": true
+      },
+      {
+        "name": "USA",
+        "bounds": [
+          1543,
+          1456,
+          1700,
+          2156
+        ],
+        "visible": true
+      },
+      {
+        "name": "PAL",
+        "bounds": [
+          1543,
+          -9,
+          1701,
+          2156
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front",
+        "bounds": [
+          1581,
+          -88,
+          3271,
+          2136
+        ],
+        "visible": true
+      },
+      {
+        "name": "Nintendo Seal",
+        "bounds": [
+          1749,
+          1970,
+          1951,
+          2124
+        ],
+        "visible": true
+      },
+      {
+        "name": "Nintendo",
+        "bounds": [
+          3002,
+          2080,
+          3231,
+          2136
+        ],
+        "visible": true
+      },
+      {
+        "name": "ISFE Ratings",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 1",
+        "bounds": [
+          3017,
+          1784,
+          3218,
+          2055
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 2",
+        "bounds": [
+          3018,
+          1785,
+          3217,
+          2054
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 3",
+        "bounds": [
+          3017,
+          1785,
+          3217,
+          2055
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 4",
+        "bounds": [
+          3017,
+          1785,
+          3217,
+          2054
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 5",
+        "bounds": [
+          3017,
+          1785,
+          3217,
+          2055
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 6",
+        "bounds": [
+          3017,
+          1785,
+          3217,
+          2054
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 7",
+        "bounds": [
+          3017,
+          1784,
+          3218,
+          2055
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 8",
+        "bounds": [
+          3017,
+          1785,
+          3217,
+          2055
+        ],
+        "visible": false
+      },
+      {
+        "name": "Layer 9",
+        "bounds": [
+          3017,
+          1784,
+          3218,
+          2056
+        ],
+        "visible": false
+      },
+      {
+        "name": "ESRB Ratings",
+        "bounds": [
+          3044,
+          1812,
+          3221,
+          2056
+        ],
+        "visible": true
+      },
+      {
+        "name": "AO",
+        "bounds": [
+          3045,
+          1812,
+          3221,
+          2056
+        ],
+        "visible": true
+      },
+      {
+        "name": "M",
+        "bounds": [
+          3045,
+          1812,
+          3221,
+          2056
+        ],
+        "visible": true
+      },
+      {
+        "name": "T",
+        "bounds": [
+          3045,
+          1812,
+          3221,
+          2056
+        ],
+        "visible": true
+      },
+      {
+        "name": "E",
+        "bounds": [
+          3044,
+          1812,
+          3221,
+          2056
+        ],
+        "visible": true
+      },
+      {
+        "name": "K-A",
+        "bounds": [
+          3045,
+          1812,
+          3221,
+          2055
+        ],
+        "visible": false
+      },
+      {
+        "name": "Top Banner",
+        "bounds": [
+          1581,
+          -88,
+          3271,
+          291
+        ],
+        "visible": true
+      },
+      {
+        "name": "Top Black Banner copy",
+        "bounds": [
+          1581,
+          -88,
+          3271,
+          291
+        ],
+        "visible": true
+      },
+      {
+        "name": "Gamecube Logo",
+        "bounds": [
+          2180,
+          53,
+          2827,
+          200
+        ],
+        "visible": true
+      },
+      {
+        "name": "only for (US)",
+        "bounds": [
+          1698,
+          -1,
+          1984,
+          269
+        ],
+        "visible": true
+      },
+      {
+        "name": "only for (PAL)",
+        "bounds": [
+          1701,
+          0,
+          1966,
+          267
+        ],
+        "visible": false
+      },
+      {
+        "name": "Player's Choice",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Top Banner",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Top Black Banner copy 2",
+        "bounds": [
+          1700,
+          100,
+          3271,
+          393
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube Logo copy",
+        "bounds": [
+          2179,
+          137,
+          2827,
+          284
+        ],
+        "visible": false
+      },
+      {
+        "name": "Players Choice",
+        "bounds": [
+          1702,
+          0,
+          3256,
+          100
+        ],
+        "visible": false
+      },
+      {
+        "name": "only for copy",
+        "bounds": [
+          1697,
+          -1,
+          1983,
+          269
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Yellow",
+        "bounds": [
+          1543,
+          1456,
+          1700,
+          2156
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gamecube logo",
+        "bounds": [
+          1569,
+          1585,
+          1667,
+          2053
+        ],
+        "visible": false
+      }
+    ],
+    "size": [
+      3256,
+      2156
+    ]
+  },
+  {
+    "source": "_reference/PS1/NicePng_empty-box-png_2874227.png",
+    "size": [
+      544,
+      476
+    ]
+  },
+  {
+    "source": "_reference/PS1/pngkey.com-ps1-logo-png-3460985.png",
+    "size": [
+      620,
+      247
+    ]
+  },
+  {
+    "source": "_reference/PS1/PS1 Template - Shenske.psd",
+    "layers": [
+      {
+        "name": "Playstation Template",
+        "bounds": [
+          -162,
+          -34,
+          3390,
+          2363
+        ],
+        "visible": true
+      },
+      {
+        "name": "Background",
+        "bounds": [
+          -4,
+          -7,
+          3225,
+          2160
+        ],
+        "visible": true
+      },
+      {
+        "name": "Back",
+        "bounds": [
+          -162,
+          1576,
+          1527,
+          2363
+        ],
+        "visible": true
+      },
+      {
+        "name": "Black back",
+        "bounds": [
+          -162,
+          1576,
+          1527,
+          2363
+        ],
+        "visible": true
+      },
+      {
+        "name": "Gray Back",
+        "bounds": [
+          -162,
+          1576,
+          1528,
+          2363
+        ],
+        "visible": false
+      },
+      {
+        "name": "www.us.playstation.com",
+        "bounds": [
+          1057,
+          1622,
+          1484,
+          1662
+        ],
+        "visible": true
+      },
+      {
+        "name": "Greatest Hits Back",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Green Back copy",
+        "bounds": [
+          -262,
+          1565,
+          1692,
+          2615
+        ],
+        "visible": false
+      },
+      {
+        "name": "www.us.playstation.com",
+        "bounds": [
+          1057,
+          1622,
+          1484,
+          1662
+        ],
+        "visible": false
+      },
+      {
+        "name": "Barcode",
+        "bounds": [
+          1064,
+          1929,
+          1483,
+          2127
+        ],
+        "visible": true
+      },
+      {
+        "name": "White box",
+        "bounds": [
+          1064,
+          1929,
+          1483,
+          2127
+        ],
+        "visible": true
+      },
+      {
+        "name": "Default Barcode",
+        "bounds": [
+          1071,
+          1932,
+          1473,
+          2122
+        ],
+        "visible": true
+      },
+      {
+        "name": "7    11719  41832     0",
+        "bounds": [
+          1085,
+          2091,
+          1468,
+          2119
+        ],
+        "visible": true
+      },
+      {
+        "name": "legal information",
+        "bounds": [
+          30,
+          1775,
+          1038,
+          2130
+        ],
+        "visible": true
+      },
+      {
+        "name": "SET Company Legal Info",
+        "bounds": [
+          559,
+          1951,
+          1038,
+          2040
+        ],
+        "visible": true
+      },
+      {
+        "name": "Default",
+        "bounds": [
+          559,
+          1951,
+          1038,
+          2040
+        ],
+        "visible": true
+      },
+      {
+        "name": "SCE Logo",
+        "bounds": [
+          735,
+          1780,
+          846,
+          1932
+        ],
+        "visible": false
+      },
+      {
+        "name": "default",
+        "bounds": [
+          559,
+          1951,
+          1038,
+          2040
+        ],
+        "visible": true
+      },
+      {
+        "name": "All trademarks and copyrights ",
+        "bounds": [
+          558,
+          2064,
+          1028,
+          2130
+        ],
+        "visible": true
+      },
+      {
+        "name": "\"PlayStation\" and the \"PS\" Fam",
+        "bounds": [
+          30,
+          1775,
+          534,
+          2127
+        ],
+        "visible": true
+      },
+      {
+        "name": "Layer 2",
+        "bounds": [
+          23,
+          1767,
+          450,
+          2133
+        ],
+        "visible": false
+      },
+      {
+        "name": "ESRB back",
+        "bounds": [
+          1063,
+          1703,
+          1483,
+          1904
+        ],
+        "visible": true
+      },
+      {
+        "name": "ESRB back",
+        "bounds": [
+          1063,
+          1703,
+          1483,
+          1904
+        ],
+        "visible": true
+      },
+      {
+        "name": "3",
+        "bounds": [
+          1071,
+          1817,
+          1388,
+          1838
+        ],
+        "visible": true
+      },
+      {
+        "name": "2",
+        "bounds": [
+          1072,
+          1780,
+          1309,
+          1801
+        ],
+        "visible": true
+      },
+      {
+        "name": "1",
+        "bounds": [
+          1070,
+          1745,
+          1330,
+          1766
+        ],
+        "visible": true
+      },
+      {
+        "name": "TEEN                          ",
+        "bounds": [
+          1070,
+          1710,
+          1472,
+          1731
+        ],
+        "visible": true
+      },
+      {
+        "name": "ELSPA back",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Rebuild",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Box",
+        "bounds": [
+          1063,
+          1706,
+          1482,
+          1899
+        ],
+        "visible": false
+      },
+      {
+        "name": "COPYRIGHT \u00a9 1994, EUROPEAN LEI",
+        "bounds": [
+          1070,
+          1860,
+          1476,
+          1894
+        ],
+        "visible": false
+      },
+      {
+        "name": "Boxes",
+        "bounds": [
+          1071,
+          1730,
+          1332,
+          1859
+        ],
+        "visible": false
+      },
+      {
+        "name": "ELSPA",
+        "bounds": [
+          1343,
+          1735,
+          1466,
+          1854
+        ],
+        "visible": false
+      },
+      {
+        "name": "For Ages ~ Pour Ages ~ Para A\u00f1",
+        "bounds": [
+          1074,
+          1713,
+          1473,
+          1728
+        ],
+        "visible": false
+      },
+      {
+        "name": "#'s",
+        "bounds": [
+          1082,
+          1740,
+          1280,
+          1845
+        ],
+        "visible": false
+      },
+      {
+        "name": "18+",
+        "bounds": [
+          1147,
+          1737,
+          1319,
+          1848
+        ],
+        "visible": false
+      },
+      {
+        "name": "15-17",
+        "bounds": [
+          1145,
+          1737,
+          1319,
+          1848
+        ],
+        "visible": false
+      },
+      {
+        "name": "11-14",
+        "bounds": [
+          1145,
+          1737,
+          1318,
+          1848
+        ],
+        "visible": false
+      },
+      {
+        "name": "3-10",
+        "bounds": [
+          1145,
+          1738,
+          1318,
+          1848
+        ],
+        "visible": false
+      },
+      {
+        "name": "back icons",
+        "bounds": [
+          34,
+          1604,
+          993,
+          1745
+        ],
+        "visible": true
+      },
+      {
+        "name": "Shape copy 2",
+        "bounds": [
+          703,
+          1685,
+          868,
+          1744
+        ],
+        "visible": false
+      },
+      {
+        "name": "Mouse",
+        "bounds": [
+          770,
+          1685,
+          993,
+          1744
+        ],
+        "visible": true
+      },
+      {
+        "name": "mouse",
+        "bounds": [
+          770,
+          1685,
+          993,
+          1744
+        ],
+        "visible": true
+      },
+      {
+        "name": "m1",
+        "bounds": [
+          776,
+          1685,
+          831,
+          1744
+        ],
+        "visible": true
+      },
+      {
+        "name": "Mouse Compatible",
+        "bounds": [
+          857,
+          1694,
+          970,
+          1739
+        ],
+        "visible": true
+      },
+      {
+        "name": "Optional Controller",
+        "bounds": [
+          527,
+          1685,
+          749,
+          1745
+        ],
+        "visible": true
+      },
+      {
+        "name": "Optional Controller",
+        "bounds": [
+          527,
+          1685,
+          749,
+          1745
+        ],
+        "visible": true
+      },
+      {
+        "name": "Optional Controller SLEH-0003",
+        "bounds": [
+          596,
+          1693,
+          743,
+          1735
+        ],
+        "visible": true
+      },
+      {
+        "name": "Multitap",
+        "bounds": [
+          281,
+          1685,
+          503,
+          1745
+        ],
+        "visible": true
+      },
+      {
+        "name": "Multitap",
+        "bounds": [
+          281,
+          1685,
+          503,
+          1745
+        ],
+        "visible": true
+      },
+      {
+        "name": "Multi Tap Compatible 1 - 4 Pla",
+        "bounds": [
+          351,
+          1693,
+          496,
+          1739
+        ],
+        "visible": true
+      },
+      {
+        "name": "Link Consoles",
+        "bounds": [
+          34,
+          1685,
+          257,
+          1744
+        ],
+        "visible": true
+      },
+      {
+        "name": "Link",
+        "bounds": [
+          34,
+          1685,
+          257,
+          1744
+        ],
+        "visible": true
+      },
+      {
+        "name": "Link Cable 2 Consoles",
+        "bounds": [
+          122,
+          1693,
+          232,
+          1735
+        ],
+        "visible": true
+      },
+      {
+        "name": "Analog",
+        "bounds": [
+          704,
+          1605,
+          926,
+          1665
+        ],
+        "visible": true
+      },
+      {
+        "name": "Analog",
+        "bounds": [
+          704,
+          1605,
+          926,
+          1665
+        ],
+        "visible": true
+      },
+      {
+        "name": "Analog Control Compatible",
+        "bounds": [
+          771,
+          1614,
+          921,
+          1660
+        ],
+        "visible": true
+      },
+      {
+        "name": "Vibration",
+        "bounds": [
+          461,
+          1605,
+          683,
+          1665
+        ],
+        "visible": true
+      },
+      {
+        "name": "Rumble",
+        "bounds": [
+          461,
+          1605,
+          683,
+          1665
+        ],
+        "visible": true
+      },
+      {
+        "name": "Vibration Function Compatible",
+        "bounds": [
+          527,
+          1619,
+          678,
+          1657
+        ],
+        "visible": true
+      },
+      {
+        "name": "Memory",
+        "bounds": [
+          217,
+          1606,
+          440,
+          1667
+        ],
+        "visible": true
+      },
+      {
+        "name": "blue",
+        "bounds": [
+          217,
+          1606,
+          440,
+          1667
+        ],
+        "visible": true
+      },
+      {
+        "name": "pink",
+        "bounds": [
+          218,
+          1606,
+          440,
+          1665
+        ],
+        "visible": true
+      },
+      {
+        "name": "Memory Card 99 Blocks",
+        "bounds": [
+          295,
+          1615,
+          427,
+          1657
+        ],
+        "visible": true
+      },
+      {
+        "name": "Player",
+        "bounds": [
+          35,
+          1604,
+          200,
+          1664
+        ],
+        "visible": true
+      },
+      {
+        "name": "Player",
+        "bounds": [
+          35,
+          1604,
+          200,
+          1664
+        ],
+        "visible": true
+      },
+      {
+        "name": "1 - 4 Players P",
+        "bounds": [
+          112,
+          1611,
+          185,
+          1657
+        ],
+        "visible": true
+      },
+      {
+        "name": "Back (Hollow)",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "www.us.playstation.com",
+        "bounds": [
+          1057,
+          1622,
+          1484,
+          1662
+        ],
+        "visible": false
+      },
+      {
+        "name": "Barcode",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "White box copy",
+        "bounds": [
+          41,
+          1969,
+          424,
+          2121
+        ],
+        "visible": false
+      },
+      {
+        "name": "Default Barcode copy",
+        "bounds": [
+          78,
+          1972,
+          387,
+          2118
+        ],
+        "visible": false
+      },
+      {
+        "name": "7    11719  41832     0 copy",
+        "bounds": [
+          88,
+          2093,
+          383,
+          2115
+        ],
+        "visible": false
+      },
+      {
+        "name": "Warning",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "White box copy 2",
+        "bounds": [
+          477,
+          1969,
+          964,
+          2121
+        ],
+        "visible": false
+      },
+      {
+        "name": "       WARNING: IF YOU HAVE A ",
+        "bounds": [
+          489,
+          1987,
+          954,
+          2103
+        ],
+        "visible": false
+      },
+      {
+        "name": "warning logo",
+        "bounds": [
+          489,
+          1979,
+          519,
+          2008
+        ],
+        "visible": false
+      },
+      {
+        "name": "legal information copy",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Licensed for play on PlayStati",
+        "bounds": [
+          37,
+          1865,
+          937,
+          1944
+        ],
+        "visible": false
+      },
+      {
+        "name": "Konami Digital Entertainment. ",
+        "bounds": [
+          37,
+          1766,
+          971,
+          1849
+        ],
+        "visible": false
+      },
+      {
+        "name": "ESRB back",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Frame",
+        "bounds": [
+          1012,
+          1889,
+          1495,
+          2120
+        ],
+        "visible": false
+      },
+      {
+        "name": "TM",
+        "bounds": [
+          1030,
+          1935,
+          1048,
+          1944
+        ],
+        "visible": false
+      },
+      {
+        "name": "3",
+        "bounds": [
+          1205,
+          2019,
+          1427,
+          2040
+        ],
+        "visible": false
+      },
+      {
+        "name": "2",
+        "bounds": [
+          1205,
+          1993,
+          1427,
+          2014
+        ],
+        "visible": false
+      },
+      {
+        "name": "1",
+        "bounds": [
+          1205,
+          1967,
+          1427,
+          1988
+        ],
+        "visible": false
+      },
+      {
+        "name": "A-O (18+)",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Adults Only",
+        "bounds": [
+          1023,
+          1898,
+          1184,
+          1928
+        ],
+        "visible": false
+      },
+      {
+        "name": "18+",
+        "bounds": [
+          1431,
+          1900,
+          1482,
+          1925
+        ],
+        "visible": false
+      },
+      {
+        "name": "A-O",
+        "bounds": [
+          1052,
+          1935,
+          1175,
+          2077
+        ],
+        "visible": false
+      },
+      {
+        "name": "M (17+)",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Mature",
+        "bounds": [
+          1022,
+          1897,
+          1187,
+          1928
+        ],
+        "visible": false
+      },
+      {
+        "name": "17+",
+        "bounds": [
+          1431,
+          1900,
+          1482,
+          1925
+        ],
+        "visible": false
+      },
+      {
+        "name": "M",
+        "bounds": [
+          1028,
+          1934,
+          1182,
+          2076
+        ],
+        "visible": false
+      },
+      {
+        "name": "T (13+)",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Teen",
+        "bounds": [
+          1023,
+          1896,
+          1183,
+          1929
+        ],
+        "visible": false
+      },
+      {
+        "name": "13+",
+        "bounds": [
+          1431,
+          1900,
+          1482,
+          1925
+        ],
+        "visible": false
+      },
+      {
+        "name": "T",
+        "bounds": [
+          1034,
+          1935,
+          1159,
+          2075
+        ],
+        "visible": false
+      },
+      {
+        "name": "E (7+)",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Everyone",
+        "bounds": [
+          1024,
+          1897,
+          1183,
+          1928
+        ],
+        "visible": false
+      },
+      {
+        "name": "7+",
+        "bounds": [
+          1448,
+          1900,
+          1482,
+          1925
+        ],
+        "visible": false
+      },
+      {
+        "name": "E",
+        "bounds": [
+          1043,
+          1934,
+          1170,
+          2077
+        ],
+        "visible": false
+      },
+      {
+        "name": "K-A (all)",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Kids to Adults",
+        "bounds": [
+          1023,
+          1897,
+          1185,
+          1927
+        ],
+        "visible": false
+      },
+      {
+        "name": "All",
+        "bounds": [
+          1442,
+          1900,
+          1481,
+          1925
+        ],
+        "visible": false
+      },
+      {
+        "name": "K-A",
+        "bounds": [
+          1036,
+          1947,
+          1173,
+          2064
+        ],
+        "visible": false
+      },
+      {
+        "name": "back icons",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Shape copy 3",
+        "bounds": [
+          703,
+          1685,
+          868,
+          1744
+        ],
+        "visible": false
+      },
+      {
+        "name": "Mouse",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "mouse copy",
+        "bounds": [
+          770,
+          1685,
+          993,
+          1744
+        ],
+        "visible": false
+      },
+      {
+        "name": "m1 copy",
+        "bounds": [
+          776,
+          1685,
+          831,
+          1744
+        ],
+        "visible": false
+      },
+      {
+        "name": "Mouse Compatible copy",
+        "bounds": [
+          857,
+          1694,
+          970,
+          1739
+        ],
+        "visible": false
+      },
+      {
+        "name": "Optional Controller",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Optional Controller copy",
+        "bounds": [
+          526,
+          1685,
+          749,
+          1745
+        ],
+        "visible": false
+      },
+      {
+        "name": "Optional Controller SLEH-0003 copy",
+        "bounds": [
+          596,
+          1693,
+          743,
+          1735
+        ],
+        "visible": false
+      },
+      {
+        "name": "Multitap",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Multitap copy",
+        "bounds": [
+          280,
+          1685,
+          503,
+          1745
+        ],
+        "visible": false
+      },
+      {
+        "name": "Multi Tap Compatible 1 - 4 Pla copy",
+        "bounds": [
+          351,
+          1693,
+          496,
+          1739
+        ],
+        "visible": false
+      },
+      {
+        "name": "Link Consoles",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Link copy",
+        "bounds": [
+          34,
+          1685,
+          257,
+          1744
+        ],
+        "visible": false
+      },
+      {
+        "name": "Link Cable 2 Consoles copy",
+        "bounds": [
+          122,
+          1693,
+          232,
+          1735
+        ],
+        "visible": false
+      },
+      {
+        "name": "Analog",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Analog copy 2",
+        "bounds": [
+          704,
+          1605,
+          926,
+          1665
+        ],
+        "visible": false
+      },
+      {
+        "name": "Analog Control Compatible copy",
+        "bounds": [
+          771,
+          1614,
+          921,
+          1660
+        ],
+        "visible": false
+      },
+      {
+        "name": "Vibration",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Rumble copy",
+        "bounds": [
+          461,
+          1606,
+          683,
+          1665
+        ],
+        "visible": false
+      },
+      {
+        "name": "Vibration Function Compatible copy",
+        "bounds": [
+          527,
+          1619,
+          678,
+          1657
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory",
+        "bounds": [
+          218,
+          1606,
+          440,
+          1665
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory copy",
+        "bounds": [
+          218,
+          1606,
+          440,
+          1665
+        ],
+        "visible": false
+      },
+      {
+        "name": "Memory Card 99 Blocks copy",
+        "bounds": [
+          295,
+          1615,
+          427,
+          1657
+        ],
+        "visible": false
+      },
+      {
+        "name": "Player ",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Player copy",
+        "bounds": [
+          35,
+          1604,
+          200,
+          1664
+        ],
+        "visible": false
+      },
+      {
+        "name": "1 - 4 Players P copy",
+        "bounds": [
+          112,
+          1611,
+          185,
+          1657
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front Horizantal",
+        "bounds": [
+          1695,
+          -27,
+          3390,
+          2106
+        ],
+        "visible": true
+      },
+      {
+        "name": "EA Games Bottom",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "blue fade",
+        "bounds": [
+          1484,
+          1773,
+          3336,
+          2174
+        ],
+        "visible": false
+      },
+      {
+        "name": "lines",
+        "bounds": [
+          846,
+          1624,
+          3233,
+          2168
+        ],
+        "visible": false
+      },
+      {
+        "name": "white",
+        "bounds": [
+          1529,
+          1763,
+          3227,
+          1964
+        ],
+        "visible": false
+      },
+      {
+        "name": "EA front",
+        "bounds": [
+          2312,
+          1822,
+          2568,
+          2079
+        ],
+        "visible": false
+      },
+      {
+        "name": "EA spine",
+        "bounds": [
+          1553,
+          1861,
+          1674,
+          1982
+        ],
+        "visible": false
+      },
+      {
+        "name": "Acclaim Sports",
+        "bounds": [
+          1528,
+          1951,
+          3227,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "# of Discs",
+        "bounds": [
+          1986,
+          1976,
+          2225,
+          2095
+        ],
+        "visible": true
+      },
+      {
+        "name": "4 Discs",
+        "bounds": [
+          1986,
+          1976,
+          2225,
+          2095
+        ],
+        "visible": true
+      },
+      {
+        "name": "4 discs",
+        "bounds": [
+          1986,
+          1976,
+          2225,
+          2051
+        ],
+        "visible": true
+      },
+      {
+        "name": "4 Discs",
+        "bounds": [
+          2031,
+          2064,
+          2175,
+          2095
+        ],
+        "visible": true
+      },
+      {
+        "name": "3 Discs",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "3 discs",
+        "bounds": [
+          2010,
+          1976,
+          2194,
+          2051
+        ],
+        "visible": false
+      },
+      {
+        "name": "3 Discs",
+        "bounds": [
+          2032,
+          2064,
+          2175,
+          2095
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 Discs",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 discs",
+        "bounds": [
+          1992,
+          1976,
+          2121,
+          2051
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 Discs",
+        "bounds": [
+          1987,
+          2064,
+          2130,
+          2095
+        ],
+        "visible": false
+      },
+      {
+        "name": "Black top",
+        "bounds": [
+          1695,
+          -27,
+          3390,
+          220
+        ],
+        "visible": true
+      },
+      {
+        "name": "PS Logo \u00ae",
+        "bounds": [
+          3003,
+          40,
+          3187,
+          178
+        ],
+        "visible": true
+      },
+      {
+        "name": "Eye Toy",
+        "bounds": [
+          1690,
+          215,
+          2074,
+          602
+        ],
+        "visible": false
+      },
+      {
+        "name": "2",
+        "bounds": [
+          2429,
+          50,
+          2508,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation",
+        "bounds": [
+          1756,
+          69,
+          2419,
+          197
+        ],
+        "visible": true
+      },
+      {
+        "name": "PAL",
+        "bounds": [
+          3011,
+          240,
+          3188,
+          268
+        ],
+        "visible": false
+      },
+      {
+        "name": "NTSC",
+        "bounds": [
+          3011,
+          240,
+          3188,
+          268
+        ],
+        "visible": true
+      },
+      {
+        "name": "ELSPA Ratings",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "3+",
+        "bounds": [
+          2880,
+          1916,
+          3168,
+          2107
+        ],
+        "visible": false
+      },
+      {
+        "name": "11+",
+        "bounds": [
+          2880,
+          1916,
+          3168,
+          2107
+        ],
+        "visible": false
+      },
+      {
+        "name": "15+",
+        "bounds": [
+          2880,
+          1916,
+          3168,
+          2107
+        ],
+        "visible": false
+      },
+      {
+        "name": "18+",
+        "bounds": [
+          2880,
+          1916,
+          3168,
+          2107
+        ],
+        "visible": false
+      },
+      {
+        "name": "ESRB ratings",
+        "bounds": [
+          1756,
+          1862,
+          1932,
+          2106
+        ],
+        "visible": true
+      },
+      {
+        "name": "K-A",
+        "bounds": [
+          1756,
+          1863,
+          1931,
+          2106
+        ],
+        "visible": true
+      },
+      {
+        "name": "E",
+        "bounds": [
+          1756,
+          1862,
+          1932,
+          2106
+        ],
+        "visible": true
+      },
+      {
+        "name": "T",
+        "bounds": [
+          1756,
+          1862,
+          1931,
+          2106
+        ],
+        "visible": true
+      },
+      {
+        "name": "M",
+        "bounds": [
+          1756,
+          1862,
+          1931,
+          2106
+        ],
+        "visible": false
+      },
+      {
+        "name": "AO",
+        "bounds": [
+          1755,
+          1862,
+          1930,
+          2106
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSone",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gray Top",
+        "bounds": [
+          1695,
+          -27,
+          3390,
+          220
+        ],
+        "visible": false
+      },
+      {
+        "name": "White Square",
+        "bounds": [
+          2992,
+          16,
+          3196,
+          199
+        ],
+        "visible": false
+      },
+      {
+        "name": "PS Logo \u00ae",
+        "bounds": [
+          3003,
+          40,
+          3187,
+          178
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSone",
+        "bounds": [
+          1732,
+          32,
+          2280,
+          182
+        ],
+        "visible": false
+      },
+      {
+        "name": "Greatest Hits Front",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "NTSC",
+        "bounds": [
+          3002,
+          309,
+          3180,
+          338
+        ],
+        "visible": false
+      },
+      {
+        "name": "green bow",
+        "bounds": [
+          1696,
+          188,
+          3241,
+          333
+        ],
+        "visible": false
+      },
+      {
+        "name": "shadow",
+        "bounds": [
+          2094,
+          245,
+          2821,
+          303
+        ],
+        "visible": false
+      },
+      {
+        "name": "GREATEST HITS",
+        "bounds": [
+          2091,
+          242,
+          2818,
+          300
+        ],
+        "visible": false
+      },
+      {
+        "name": "Green top",
+        "bounds": [
+          1695,
+          -27,
+          3390,
+          220
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front Logos",
+        "bounds": [
+          1756,
+          16,
+          3196,
+          199
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front Vertical",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "EA Games Bottom copy",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "blue fade copy",
+        "bounds": [
+          1713,
+          1773,
+          3336,
+          2174
+        ],
+        "visible": false
+      },
+      {
+        "name": "white copy",
+        "bounds": [
+          1752,
+          1763,
+          3240,
+          1964
+        ],
+        "visible": false
+      },
+      {
+        "name": "EA front copy",
+        "bounds": [
+          2468,
+          1822,
+          2724,
+          2079
+        ],
+        "visible": false
+      },
+      {
+        "name": "Acclaim Sports",
+        "bounds": [
+          1942,
+          1951,
+          3227,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "# of Discs",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "4 Discs",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "4 discs copy 2",
+        "bounds": [
+          2000,
+          1978,
+          2239,
+          2053
+        ],
+        "visible": false
+      },
+      {
+        "name": "4 Discs copy 3",
+        "bounds": [
+          2045,
+          2066,
+          2189,
+          2097
+        ],
+        "visible": false
+      },
+      {
+        "name": "3 Discs",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "3 discs copy 2",
+        "bounds": [
+          2024,
+          1978,
+          2208,
+          2053
+        ],
+        "visible": false
+      },
+      {
+        "name": "3 Discs copy 3",
+        "bounds": [
+          2046,
+          2066,
+          2189,
+          2097
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 Discs",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 discs copy 2",
+        "bounds": [
+          2051,
+          1978,
+          2180,
+          2053
+        ],
+        "visible": false
+      },
+      {
+        "name": "2 Discs copy 3",
+        "bounds": [
+          2046,
+          2066,
+          2189,
+          2097
+        ],
+        "visible": false
+      },
+      {
+        "name": "black vertical bar",
+        "bounds": [
+          1696,
+          -10,
+          1952,
+          2160
+        ],
+        "visible": false
+      },
+      {
+        "name": "BIG Playstation",
+        "bounds": [
+          1743,
+          445,
+          1938,
+          1639
+        ],
+        "visible": false
+      },
+      {
+        "name": "black PS Square",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "black square copy",
+        "bounds": [
+          1748,
+          64,
+          1900,
+          212
+        ],
+        "visible": false
+      },
+      {
+        "name": "little Playstation copy",
+        "bounds": [
+          1770,
+          177,
+          1886,
+          201
+        ],
+        "visible": false
+      },
+      {
+        "name": "PS Logo \u00ae copy",
+        "bounds": [
+          1764,
+          78,
+          1887,
+          170
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSone",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "gray vertical bar",
+        "bounds": [
+          1696,
+          -10,
+          1953,
+          2160
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSone",
+        "bounds": [
+          1705,
+          597,
+          1948,
+          1488
+        ],
+        "visible": false
+      },
+      {
+        "name": "White PS Square",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "White Square",
+        "bounds": [
+          1745,
+          61,
+          1903,
+          215
+        ],
+        "visible": false
+      },
+      {
+        "name": "PS Logo \u00ae copy 3",
+        "bounds": [
+          1764,
+          78,
+          1887,
+          170
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSone",
+        "bounds": [
+          1767,
+          170,
+          1891,
+          208
+        ],
+        "visible": false
+      },
+      {
+        "name": "PAL",
+        "bounds": [
+          1743,
+          237,
+          1905,
+          263
+        ],
+        "visible": false
+      },
+      {
+        "name": "NTSC",
+        "bounds": [
+          1743,
+          238,
+          1905,
+          261
+        ],
+        "visible": false
+      },
+      {
+        "name": "SLUS 37031",
+        "bounds": [
+          1740,
+          2068,
+          1921,
+          2090
+        ],
+        "visible": false
+      },
+      {
+        "name": "ESRB ratings",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "K-A copy",
+        "bounds": [
+          1738,
+          1866,
+          1913,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "E copy",
+        "bounds": [
+          1738,
+          1865,
+          1914,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "T copy",
+        "bounds": [
+          1738,
+          1865,
+          1913,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "M copy",
+        "bounds": [
+          1738,
+          1865,
+          1913,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "AO copy",
+        "bounds": [
+          1737,
+          1865,
+          1912,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "Greatest Hits",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "GH Green Vertical Bar copy",
+        "bounds": [
+          1696,
+          0,
+          2051,
+          2156
+        ],
+        "visible": false
+      },
+      {
+        "name": "greatest hits text",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "GREATEST HITS",
+        "bounds": [
+          1728,
+          340,
+          1806,
+          1809
+        ],
+        "visible": false
+      },
+      {
+        "name": "GREATEST HITS",
+        "bounds": [
+          1725,
+          342,
+          1802,
+          1811
+        ],
+        "visible": false
+      },
+      {
+        "name": "white line",
+        "bounds": [
+          2047,
+          -4,
+          2054,
+          2158
+        ],
+        "visible": false
+      },
+      {
+        "name": "SLUS 37031",
+        "bounds": [
+          1888,
+          2068,
+          2069,
+          2090
+        ],
+        "visible": false
+      },
+      {
+        "name": "BIG Playstation copy 2",
+        "bounds": [
+          1843,
+          445,
+          2038,
+          1639
+        ],
+        "visible": false
+      },
+      {
+        "name": "NTSC copy",
+        "bounds": [
+          1843,
+          238,
+          2005,
+          261
+        ],
+        "visible": false
+      },
+      {
+        "name": "black PS Square copy",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "black square copy 2",
+        "bounds": [
+          1848,
+          64,
+          2000,
+          212
+        ],
+        "visible": false
+      },
+      {
+        "name": "little Playstation copy 2",
+        "bounds": [
+          1870,
+          177,
+          1986,
+          201
+        ],
+        "visible": false
+      },
+      {
+        "name": "PS Logo \u00ae copy 2",
+        "bounds": [
+          1864,
+          78,
+          1987,
+          170
+        ],
+        "visible": false
+      },
+      {
+        "name": "ESRB ratings",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "K-A copy 3",
+        "bounds": [
+          1835,
+          1866,
+          2010,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "E copy 3",
+        "bounds": [
+          1835,
+          1865,
+          2011,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "T copy 3",
+        "bounds": [
+          1835,
+          1865,
+          2010,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "M copy 3",
+        "bounds": [
+          1835,
+          1865,
+          2010,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "AO copy 3",
+        "bounds": [
+          1834,
+          1865,
+          2009,
+          2109
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          2095
+        ],
+        "visible": true
+      },
+      {
+        "name": "Spine Black",
+        "bounds": [
+          1527,
+          600,
+          1696,
+          2156
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine White",
+        "bounds": [
+          1527,
+          600,
+          1696,
+          2156
+        ],
+        "visible": false
+      },
+      {
+        "name": "Bottom Spine",
+        "bounds": [
+          1536,
+          2003,
+          1686,
+          2095
+        ],
+        "visible": true
+      },
+      {
+        "name": "NTSC",
+        "bounds": [
+          1536,
+          2074,
+          1686,
+          2095
+        ],
+        "visible": true
+      },
+      {
+        "name": "37031",
+        "bounds": [
+          1572,
+          2037,
+          1654,
+          2059
+        ],
+        "visible": true
+      },
+      {
+        "name": "SLUS",
+        "bounds": [
+          1574,
+          2003,
+          1649,
+          2025
+        ],
+        "visible": true
+      },
+      {
+        "name": "Top Spine PAL",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "black spine",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          669
+        ],
+        "visible": false
+      },
+      {
+        "name": "2",
+        "bounds": [
+          1592,
+          582,
+          1639,
+          614
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation",
+        "bounds": [
+          1577,
+          267,
+          1637,
+          581
+        ],
+        "visible": false
+      },
+      {
+        "name": "PAL",
+        "bounds": [
+          1547,
+          195,
+          1681,
+          216
+        ],
+        "visible": false
+      },
+      {
+        "name": "black square",
+        "bounds": [
+          1550,
+          43,
+          1678,
+          176
+        ],
+        "visible": false
+      },
+      {
+        "name": "ps logo",
+        "bounds": [
+          1562,
+          66,
+          1671,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "Top Spine",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          602
+        ],
+        "visible": true
+      },
+      {
+        "name": "black spine",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          602
+        ],
+        "visible": false
+      },
+      {
+        "name": "black spine white stroke",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          602
+        ],
+        "visible": true
+      },
+      {
+        "name": "2",
+        "bounds": [
+          1591,
+          530,
+          1643,
+          565
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation",
+        "bounds": [
+          1578,
+          232,
+          1635,
+          527
+        ],
+        "visible": true
+      },
+      {
+        "name": "white square",
+        "bounds": [
+          1550,
+          43,
+          1678,
+          176
+        ],
+        "visible": true
+      },
+      {
+        "name": "ps logo",
+        "bounds": [
+          1562,
+          66,
+          1671,
+          165
+        ],
+        "visible": true
+      },
+      {
+        "name": "PSone Spine",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gray Bar (vertical)",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          602
+        ],
+        "visible": false
+      },
+      {
+        "name": "Gray Bar",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          602
+        ],
+        "visible": false
+      },
+      {
+        "name": "white square",
+        "bounds": [
+          1550,
+          43,
+          1678,
+          176
+        ],
+        "visible": false
+      },
+      {
+        "name": "ps logo",
+        "bounds": [
+          1562,
+          66,
+          1671,
+          165
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSone",
+        "bounds": [
+          1573,
+          240,
+          1660,
+          555
+        ],
+        "visible": false
+      },
+      {
+        "name": "Greatest Hits Spine",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Green Spine copy",
+        "bounds": [
+          1526,
+          -34,
+          1696,
+          646
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine Logos",
+        "bounds": [
+          1550,
+          43,
+          1678,
+          527
+        ],
+        "visible": false
+      }
+    ],
+    "size": [
+      3225,
+      2156
+    ]
+  },
+  {
+    "source": "_reference/PS2/PS2 Template - Ketaros.psd",
+    "layers": [
+      {
+        "name": "BACK",
+        "bounds": [
+          0,
+          0,
+          1526,
+          2156
+        ],
+        "visible": true
+      },
+      {
+        "name": "FRONT",
+        "bounds": [
+          1696,
+          227,
+          3226,
+          2156
+        ],
+        "visible": true
+      },
+      {
+        "name": "SPINE",
+        "bounds": [
+          1526,
+          602,
+          1697,
+          2156
+        ],
+        "visible": true
+      },
+      {
+        "name": "PS2 TOP FRAME",
+        "bounds": [
+          1525,
+          0,
+          3225,
+          603
+        ],
+        "visible": true
+      },
+      {
+        "name": "USA NTSC",
+        "bounds": [
+          1546,
+          37,
+          1675,
+          166
+        ],
+        "visible": true
+      },
+      {
+        "name": "EUROPE PAL",
+        "bounds": [
+          1546,
+          37,
+          1675,
+          205
+        ],
+        "visible": true
+      }
+    ],
+    "size": [
+      3225,
+      2156
+    ]
+  },
+  {
+    "source": "_reference/PS2/template_playstation_2_cover_by_juanky_d3cdvp8.png",
+    "size": [
+      2133,
+      1470
+    ]
+  },
+  {
+    "source": "_reference/PS2/template_playstation_2_cover_by_juanky_d3cdvp8.psd",
+    "layers": [
+      {
+        "name": "Capa 1",
+        "bounds": [
+          0,
+          0,
+          2133,
+          1470
+        ],
+        "visible": true
+      },
+      {
+        "name": "Nombre del juegoTM",
+        "bounds": [
+          1039,
+          521,
+          1091,
+          993
+        ],
+        "visible": true
+      },
+      {
+        "name": "Capa 0",
+        "bounds": [
+          121,
+          99,
+          2009,
+          1382
+        ],
+        "visible": true
+      },
+      {
+        "name": "Capa 3",
+        "bounds": [
+          1042,
+          206,
+          1090,
+          440
+        ],
+        "visible": true
+      },
+      {
+        "name": "Capa 2",
+        "bounds": [
+          1043,
+          114,
+          1094,
+          158
+        ],
+        "visible": true
+      }
+    ],
+    "size": [
+      2133,
+      1470
+    ]
+  },
+  {
+    "source": "_reference/PSP/PSP Template - Shenske.png",
+    "size": [
+      2465,
+      1980
+    ]
+  },
+  {
+    "source": "_reference/PSP/PSP Template - Shenske.psd",
+    "layers": [
+      {
+        "name": "PSP Template",
+        "bounds": [
+          -29,
+          -33,
+          2491,
+          2000
+        ],
+        "visible": true
+      },
+      {
+        "name": "Background",
+        "bounds": [
+          -29,
+          -33,
+          2491,
+          2000
+        ],
+        "visible": true
+      },
+      {
+        "name": "Back",
+        "bounds": [
+          0,
+          -30,
+          1150,
+          125
+        ],
+        "visible": true
+      },
+      {
+        "name": "New Style",
+        "bounds": [
+          0,
+          -30,
+          1150,
+          125
+        ],
+        "visible": true
+      },
+      {
+        "name": "Top Bar",
+        "bounds": [
+          0,
+          -30,
+          1150,
+          125
+        ],
+        "visible": true
+      },
+      {
+        "name": "PS Network",
+        "bounds": [
+          45,
+          18,
+          523,
+          86
+        ],
+        "visible": true
+      },
+      {
+        "name": "LEADERBOARDS \u2022 ADD-ON CONTENT ",
+        "bounds": [
+          655,
+          31,
+          1074,
+          76
+        ],
+        "visible": true
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          1150,
+          0,
+          1315,
+          1958
+        ],
+        "visible": true
+      },
+      {
+        "name": "Bottom Info",
+        "bounds": [
+          1183,
+          1728,
+          1299,
+          1958
+        ],
+        "visible": true
+      },
+      {
+        "name": "UNIVERSAL MEDIA DISC",
+        "bounds": [
+          1183,
+          1950,
+          1281,
+          1958
+        ],
+        "visible": true
+      },
+      {
+        "name": " UMDTM",
+        "bounds": [
+          1183,
+          1916,
+          1299,
+          1946
+        ],
+        "visible": true
+      },
+      {
+        "name": "UCJB 98401",
+        "bounds": [
+          1193,
+          1809,
+          1270,
+          1865
+        ],
+        "visible": true
+      },
+      {
+        "name": "Controller",
+        "bounds": [
+          1199,
+          1728,
+          1265,
+          1771
+        ],
+        "visible": true
+      },
+      {
+        "name": "Name of PSP Media",
+        "bounds": [
+          1208,
+          654,
+          1265,
+          1496
+        ],
+        "visible": true
+      },
+      {
+        "name": "Old Style",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Black Banner",
+        "bounds": [
+          1149,
+          -9,
+          1318,
+          555
+        ],
+        "visible": false
+      },
+      {
+        "name": "White Square",
+        "bounds": [
+          1185,
+          34,
+          1281,
+          130
+        ],
+        "visible": false
+      },
+      {
+        "name": "Regestered",
+        "bounds": [
+          1286,
+          117,
+          1301,
+          131
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Logo",
+        "bounds": [
+          1192,
+          48,
+          1276,
+          113
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo",
+        "bounds": [
+          1209,
+          198,
+          1258,
+          510
+        ],
+        "visible": false
+      },
+      {
+        "name": "New Style",
+        "bounds": [
+          1150,
+          0,
+          1315,
+          298
+        ],
+        "visible": true
+      },
+      {
+        "name": "Top Banner",
+        "bounds": [
+          1150,
+          0,
+          1315,
+          298
+        ],
+        "visible": true
+      },
+      {
+        "name": "PS Logo",
+        "bounds": [
+          1213,
+          26,
+          1254,
+          263
+        ],
+        "visible": true
+      },
+      {
+        "name": "Front",
+        "bounds": [
+          1315,
+          -30,
+          2465,
+          1918
+        ],
+        "visible": true
+      },
+      {
+        "name": "ESRB Ratings",
+        "bounds": [
+          1362,
+          1677,
+          1537,
+          1918
+        ],
+        "visible": true
+      },
+      {
+        "name": "AO",
+        "bounds": [
+          1362,
+          1677,
+          1537,
+          1918
+        ],
+        "visible": true
+      },
+      {
+        "name": "M",
+        "bounds": [
+          1362,
+          1677,
+          1537,
+          1918
+        ],
+        "visible": true
+      },
+      {
+        "name": "T",
+        "bounds": [
+          1362,
+          1677,
+          1537,
+          1918
+        ],
+        "visible": true
+      },
+      {
+        "name": "E",
+        "bounds": [
+          1361,
+          1677,
+          1537,
+          1918
+        ],
+        "visible": false
+      },
+      {
+        "name": "K-A",
+        "bounds": [
+          1362,
+          1677,
+          1537,
+          1917
+        ],
+        "visible": false
+      },
+      {
+        "name": "RP",
+        "bounds": [
+          1362,
+          1677,
+          1537,
+          1917
+        ],
+        "visible": false
+      },
+      {
+        "name": "Old Style",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Network",
+        "bounds": [
+          1311,
+          113,
+          2471,
+          193
+        ],
+        "visible": false
+      },
+      {
+        "name": "Only On Playstation",
+        "bounds": [
+          1316,
+          115,
+          2468,
+          194
+        ],
+        "visible": false
+      },
+      {
+        "name": "Black Banner",
+        "bounds": [
+          1314,
+          0,
+          2467,
+          117
+        ],
+        "visible": false
+      },
+      {
+        "name": "Black Square",
+        "bounds": [
+          2358,
+          12,
+          2449,
+          103
+        ],
+        "visible": false
+      },
+      {
+        "name": "Registered",
+        "bounds": [
+          2436,
+          81,
+          2445,
+          89
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Logo",
+        "bounds": [
+          2361,
+          24,
+          2445,
+          89
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo",
+        "bounds": [
+          1492,
+          48,
+          1739,
+          87
+        ],
+        "visible": false
+      },
+      {
+        "name": "Controller",
+        "bounds": [
+          1370,
+          47,
+          1436,
+          90
+        ],
+        "visible": false
+      },
+      {
+        "name": "New Style",
+        "bounds": [
+          1315,
+          -30,
+          2465,
+          208
+        ],
+        "visible": true
+      },
+      {
+        "name": "Only On",
+        "bounds": [
+          1790,
+          124,
+          2465,
+          208
+        ],
+        "visible": true
+      },
+      {
+        "name": "Top Bar",
+        "bounds": [
+          1315,
+          -30,
+          2465,
+          125
+        ],
+        "visible": true
+      },
+      {
+        "name": "PS Network",
+        "bounds": [
+          1943,
+          22,
+          2421,
+          90
+        ],
+        "visible": true
+      },
+      {
+        "name": "PS Logo",
+        "bounds": [
+          1373,
+          16,
+          1853,
+          92
+        ],
+        "visible": true
+      },
+      {
+        "name": "Game Demo",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "GH Red Banner copy 3",
+        "bounds": [
+          1149,
+          -9,
+          1318,
+          555
+        ],
+        "visible": false
+      },
+      {
+        "name": "White Square copy 2",
+        "bounds": [
+          1185,
+          34,
+          1281,
+          130
+        ],
+        "visible": false
+      },
+      {
+        "name": "Regestered copy 3",
+        "bounds": [
+          1286,
+          117,
+          1301,
+          131
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Logo copy 3",
+        "bounds": [
+          1192,
+          48,
+          1276,
+          113
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo copy 3",
+        "bounds": [
+          1209,
+          198,
+          1258,
+          510
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "GH Red Banner copy 4",
+        "bounds": [
+          1314,
+          0,
+          2467,
+          198
+        ],
+        "visible": false
+      },
+      {
+        "name": "GAME DEMO",
+        "bounds": [
+          1591,
+          131,
+          2189,
+          185
+        ],
+        "visible": false
+      },
+      {
+        "name": "DEMO DISC  NOT FOR RESALE",
+        "bounds": [
+          1503,
+          141,
+          2278,
+          172
+        ],
+        "visible": false
+      },
+      {
+        "name": "Black Square copy 2",
+        "bounds": [
+          2358,
+          12,
+          2449,
+          103
+        ],
+        "visible": false
+      },
+      {
+        "name": "Regestered copy 4",
+        "bounds": [
+          2436,
+          81,
+          2445,
+          89
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Logo copy 4",
+        "bounds": [
+          2361,
+          24,
+          2445,
+          89
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo copy 4",
+        "bounds": [
+          1492,
+          48,
+          1739,
+          87
+        ],
+        "visible": false
+      },
+      {
+        "name": "Controller copy 2",
+        "bounds": [
+          1370,
+          47,
+          1436,
+          90
+        ],
+        "visible": false
+      },
+      {
+        "name": "Greatest Hits",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "GH Red Banner copy 2",
+        "bounds": [
+          1149,
+          -9,
+          1318,
+          555
+        ],
+        "visible": false
+      },
+      {
+        "name": "White Square copy",
+        "bounds": [
+          1185,
+          34,
+          1281,
+          130
+        ],
+        "visible": false
+      },
+      {
+        "name": "Regestered copy 2",
+        "bounds": [
+          1286,
+          117,
+          1301,
+          131
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Logo copy 2",
+        "bounds": [
+          1192,
+          48,
+          1276,
+          113
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo copy 2",
+        "bounds": [
+          1209,
+          198,
+          1258,
+          510
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "GH Red Banner copy",
+        "bounds": [
+          1314,
+          0,
+          2467,
+          198
+        ],
+        "visible": false
+      },
+      {
+        "name": "GREATEST HITS copy",
+        "bounds": [
+          1531,
+          131,
+          2248,
+          185
+        ],
+        "visible": false
+      },
+      {
+        "name": "Black Square copy",
+        "bounds": [
+          2358,
+          12,
+          2449,
+          103
+        ],
+        "visible": false
+      },
+      {
+        "name": "Regestered copy",
+        "bounds": [
+          2436,
+          81,
+          2445,
+          89
+        ],
+        "visible": false
+      },
+      {
+        "name": "Playstation Logo copy",
+        "bounds": [
+          2361,
+          24,
+          2445,
+          89
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo copy",
+        "bounds": [
+          1492,
+          48,
+          1739,
+          87
+        ],
+        "visible": false
+      },
+      {
+        "name": "Controller copy",
+        "bounds": [
+          1370,
+          47,
+          1436,
+          90
+        ],
+        "visible": false
+      },
+      {
+        "name": "UMD Video",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Back",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "pictures",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "frame",
+        "bounds": [
+          -14,
+          1139,
+          1152,
+          1561
+        ],
+        "visible": false
+      },
+      {
+        "name": "gray box",
+        "bounds": [
+          -2,
+          1450,
+          1150,
+          1996
+        ],
+        "visible": false
+      },
+      {
+        "name": "Approx. 128 Minutes",
+        "bounds": [
+          717,
+          1871,
+          968,
+          1899
+        ],
+        "visible": false
+      },
+      {
+        "name": "10202 W. Washington Blvd., Cul",
+        "bounds": [
+          30,
+          1879,
+          958,
+          1969
+        ],
+        "visible": false
+      },
+      {
+        "name": "COLUMBIA PICTURES  PRESENTS  A",
+        "bounds": [
+          28,
+          1472,
+          1112,
+          1633
+        ],
+        "visible": false
+      },
+      {
+        "name": "MADE IN JAPAN  UCJB-98401",
+        "bounds": [
+          971,
+          1956,
+          1139,
+          1969
+        ],
+        "visible": false
+      },
+      {
+        "name": "SONY PICTURES LOGO",
+        "bounds": [
+          1019,
+          1760,
+          1111,
+          1935
+        ],
+        "visible": false
+      },
+      {
+        "name": "languages",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Motion Picture \u00a9 Columbia Pict",
+        "bounds": [
+          6,
+          1667,
+          1141,
+          1687
+        ],
+        "visible": false
+      },
+      {
+        "name": "BOX",
+        "bounds": [
+          29,
+          1699,
+          1117,
+          1749
+        ],
+        "visible": false
+      },
+      {
+        "name": "LANGUAGES : ENGLISH AND FRENCH",
+        "bounds": [
+          48,
+          1713,
+          1100,
+          1735
+        ],
+        "visible": false
+      },
+      {
+        "name": "publishers logo",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "COLUMBIA PICTURES",
+        "bounds": [
+          31,
+          1784,
+          289,
+          1852
+        ],
+        "visible": false
+      },
+      {
+        "name": "MARVEL",
+        "bounds": [
+          356,
+          1785,
+          515,
+          1853
+        ],
+        "visible": false
+      },
+      {
+        "name": "pg -13",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "PG-13",
+        "bounds": [
+          575,
+          1798,
+          649,
+          1822
+        ],
+        "visible": false
+      },
+      {
+        "name": "PARENTS STRONGLY CAUTIONED",
+        "bounds": [
+          662,
+          1802,
+          914,
+          1816
+        ],
+        "visible": false
+      },
+      {
+        "name": "Some material may be Inappropr",
+        "bounds": [
+          576,
+          1832,
+          962,
+          1849
+        ],
+        "visible": false
+      },
+      {
+        "name": "bOX FOR AGE",
+        "bounds": [
+          569,
+          1791,
+          969,
+          1855
+        ],
+        "visible": false
+      },
+      {
+        "name": "Spine",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Bottom Info",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "UNIVERSAL MEDIA DISC copy",
+        "bounds": [
+          1183,
+          1950,
+          1281,
+          1958
+        ],
+        "visible": false
+      },
+      {
+        "name": " UMDTM copy",
+        "bounds": [
+          1183,
+          1916,
+          1299,
+          1946
+        ],
+        "visible": false
+      },
+      {
+        "name": "UCJB 98401 copy",
+        "bounds": [
+          1193,
+          1809,
+          1270,
+          1865
+        ],
+        "visible": false
+      },
+      {
+        "name": "Controller copy 3",
+        "bounds": [
+          1199,
+          1728,
+          1265,
+          1771
+        ],
+        "visible": false
+      },
+      {
+        "name": "Silver Spine",
+        "bounds": [
+          1135,
+          -7,
+          1336,
+          555
+        ],
+        "visible": false
+      },
+      {
+        "name": "COLUMBIA PICTURES copy",
+        "bounds": [
+          1181,
+          1674,
+          1289,
+          1780
+        ],
+        "visible": false
+      },
+      {
+        "name": "Film Logo",
+        "bounds": [
+          1183,
+          26,
+          1282,
+          99
+        ],
+        "visible": false
+      },
+      {
+        "name": " UMDTMVIDEO",
+        "bounds": [
+          1211,
+          158,
+          1252,
+          483
+        ],
+        "visible": false
+      },
+      {
+        "name": "Front",
+        "bounds": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "name": "Silver Banner Bottom",
+        "bounds": [
+          1315,
+          1865,
+          2467,
+          2427
+        ],
+        "visible": false
+      },
+      {
+        "name": " FEATURE  FILM",
+        "bounds": [
+          1576,
+          1899,
+          2235,
+          1939
+        ],
+        "visible": false
+      },
+      {
+        "name": "Silver Banner",
+        "bounds": [
+          1186,
+          -32,
+          2833,
+          562
+        ],
+        "visible": false
+      },
+      {
+        "name": "PSP Logo",
+        "bounds": [
+          1834,
+          23,
+          2126,
+          98
+        ],
+        "visible": false
+      },
+      {
+        "name": " UMDTMVIDEO",
+        "bounds": [
+          1497,
+          41,
+          1808,
+          82
+        ],
+        "visible": false
+      },
+      {
+        "name": "Film Logo",
+        "bounds": [
+          1372,
+          33,
+          1451,
+          88
+        ],
+        "visible": false
+      }
+    ],
+    "size": [
+      2465,
+      1980
+    ]
+  }
+]

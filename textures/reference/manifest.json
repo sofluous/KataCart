@@ -1,0 +1,302 @@
+[
+  {
+    "name": "gamecube",
+    "source": "_reference/GC/Gamecube Template - Shenske.png",
+    "model": "gamecube-case",
+    "status": "ready",
+    "faces": {
+      "cover_back": {
+        "path": "textures/reference/gamecube/cover_back.png",
+        "crop": [
+          0,
+          0,
+          1543,
+          2156
+        ],
+        "size": [
+          1543,
+          2156
+        ]
+      },
+      "spine": {
+        "path": "textures/reference/gamecube/spine.png",
+        "crop": [
+          1543,
+          0,
+          1700,
+          2156
+        ],
+        "size": [
+          157,
+          2156
+        ]
+      },
+      "cover_front": {
+        "path": "textures/reference/gamecube/cover_front.png",
+        "crop": [
+          1700,
+          0,
+          3256,
+          2156
+        ],
+        "size": [
+          1556,
+          2156
+        ]
+      }
+    }
+  },
+  {
+    "name": "ps2-ketaros",
+    "source": "_reference/PS2/PS2 Template - Ketaros.psd",
+    "model": "ps2-case",
+    "status": "ready",
+    "faces": {
+      "cover_back": {
+        "path": "textures/reference/ps2-ketaros/cover_back.png",
+        "crop": [
+          0,
+          0,
+          1526,
+          2156
+        ],
+        "size": [
+          1526,
+          2156
+        ]
+      },
+      "spine": {
+        "path": "textures/reference/ps2-ketaros/spine.png",
+        "crop": [
+          1526,
+          0,
+          1696,
+          2156
+        ],
+        "size": [
+          170,
+          2156
+        ]
+      },
+      "cover_front": {
+        "path": "textures/reference/ps2-ketaros/cover_front.png",
+        "crop": [
+          1696,
+          0,
+          3225,
+          2156
+        ],
+        "size": [
+          1529,
+          2156
+        ]
+      }
+    }
+  },
+  {
+    "name": "ps2-juanky",
+    "source": "_reference/PS2/template_playstation_2_cover_by_juanky_d3cdvp8.png",
+    "model": "ps2-case",
+    "status": "ready",
+    "faces": {
+      "cover_back": {
+        "path": "textures/reference/ps2-juanky/cover_back.png",
+        "crop": [
+          121,
+          99,
+          1039,
+          1382
+        ],
+        "size": [
+          918,
+          1283
+        ]
+      },
+      "spine": {
+        "path": "textures/reference/ps2-juanky/spine.png",
+        "crop": [
+          1039,
+          99,
+          1100,
+          1382
+        ],
+        "size": [
+          61,
+          1283
+        ]
+      },
+      "cover_front": {
+        "path": "textures/reference/ps2-juanky/cover_front.png",
+        "crop": [
+          1100,
+          99,
+          2009,
+          1382
+        ],
+        "size": [
+          909,
+          1283
+        ]
+      }
+    }
+  },
+  {
+    "name": "ps1-shenske",
+    "source": "_reference/PS1/PS1 Template - Shenske.psd",
+    "model": "ps1-jewel",
+    "status": "review: tall layout does not match jewel-case proportions",
+    "faces": {
+      "cover_back": {
+        "path": "textures/reference/ps1-shenske/cover_back.png",
+        "crop": [
+          0,
+          0,
+          1527,
+          2156
+        ],
+        "size": [
+          1527,
+          2156
+        ]
+      },
+      "spine": {
+        "path": "textures/reference/ps1-shenske/spine.png",
+        "crop": [
+          1527,
+          0,
+          1696,
+          2156
+        ],
+        "size": [
+          169,
+          2156
+        ]
+      },
+      "cover_front": {
+        "path": "textures/reference/ps1-shenske/cover_front.png",
+        "crop": [
+          1696,
+          0,
+          3225,
+          2156
+        ],
+        "size": [
+          1529,
+          2156
+        ]
+      }
+    }
+  },
+  {
+    "name": "psp-retail",
+    "source": "_reference/PSP/PSP Template - Shenske.png",
+    "model": null,
+    "status": "requires retail-case model; incompatible with psp-umd shell",
+    "faces": {
+      "cover_back": {
+        "path": "textures/reference/psp-retail/cover_back.png",
+        "crop": [
+          0,
+          0,
+          1150,
+          1980
+        ],
+        "size": [
+          1150,
+          1980
+        ]
+      },
+      "spine": {
+        "path": "textures/reference/psp-retail/spine.png",
+        "crop": [
+          1150,
+          0,
+          1315,
+          1980
+        ],
+        "size": [
+          165,
+          1980
+        ]
+      },
+      "cover_front": {
+        "path": "textures/reference/psp-retail/cover_front.png",
+        "crop": [
+          1315,
+          0,
+          2465,
+          1980
+        ],
+        "size": [
+          1150,
+          1980
+        ]
+      }
+    }
+  },
+  {
+    "path": "textures/reference/disc/disc_art.png",
+    "source": "_reference/Disc/pngimg.com - compact_disc_PNG102166.png",
+    "crop": null,
+    "size": [
+      1714,
+      1694
+    ],
+    "status": "reference: case scan or disc underside; not auto-assigned"
+  },
+  {
+    "path": "textures/reference/ps1-case/cover_front.png",
+    "source": "_reference/PS1/NicePng_empty-box-png_2874227.png",
+    "crop": null,
+    "size": [
+      544,
+      476
+    ],
+    "status": "reference: case scan or disc underside; not auto-assigned"
+  },
+  {
+    "path": "textures/reference/ps1-case/cover_back.png",
+    "source": "_reference/PS1/pngkey.com-ps1-logo-png-3460985.png",
+    "crop": [
+      0,
+      0,
+      278,
+      247
+    ],
+    "size": [
+      278,
+      247
+    ],
+    "status": "reference: case scan or disc underside; not auto-assigned"
+  },
+  {
+    "path": "textures/reference/ps1-case/spine.png",
+    "source": "_reference/PS1/pngkey.com-ps1-logo-png-3460985.png",
+    "crop": [
+      296,
+      0,
+      324,
+      247
+    ],
+    "size": [
+      28,
+      247
+    ],
+    "status": "reference: case scan or disc underside; not auto-assigned"
+  },
+  {
+    "path": "textures/reference/ps1-case/cover_front-alternate.png",
+    "source": "_reference/PS1/pngkey.com-ps1-logo-png-3460985.png",
+    "crop": [
+      343,
+      0,
+      620,
+      247
+    ],
+    "size": [
+      277,
+      247
+    ],
+    "status": "reference: case scan or disc underside; not auto-assigned"
+  }
+]
