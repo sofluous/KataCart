@@ -52,6 +52,7 @@
       tById,
       applyDefaultViewForTemplate,
       requestRender,
+      trackCartEdit = (c, edit) => edit(),
     } = deps;
 
     let lastPt = null;
@@ -59,7 +60,7 @@
     function bindWorkspaceInputs() {
       U.cartNameOverlay.addEventListener("input", () => {
         const currentCart = cart();
-        if (currentCart) currentCart.name = U.cartNameOverlay.value;
+        if (currentCart) trackCartEdit(currentCart, () => { currentCart.name = U.cartNameOverlay.value; });
       });
       U.cartNameOverlay.addEventListener("blur", () => {
         const currentCart = cart();
@@ -71,15 +72,15 @@
 
       U.metaNotes.addEventListener("input", () => {
         const currentCart = cart();
-        if (currentCart) currentCart.notes = U.metaNotes.value;
+        if (currentCart) trackCartEdit(currentCart, () => { currentCart.notes = U.metaNotes.value; });
       });
       U.metaTags.addEventListener("input", () => {
         const currentCart = cart();
-        if (currentCart) currentCart.tags = U.metaTags.value;
+        if (currentCart) trackCartEdit(currentCart, () => { currentCart.tags = U.metaTags.value; });
       });
       U.metaSku.addEventListener("input", () => {
         const currentCart = cart();
-        if (currentCart) currentCart.sku = U.metaSku.value;
+        if (currentCart) trackCartEdit(currentCart, () => { currentCart.sku = U.metaSku.value; });
       });
       if (U.faceSelect)
         U.faceSelect.addEventListener("input", () => {
@@ -126,21 +127,21 @@
         const currentCart = cart();
         if (!currentCart) return;
         ensureModelTransform(currentCart);
-        currentCart.modelTr.rx += 90;
+        trackCartEdit(currentCart, () => { currentCart.modelTr.rx += 90; });
         requestRender();
       });
       U.rotY90Btn.addEventListener("click", () => {
         const currentCart = cart();
         if (!currentCart) return;
         ensureModelTransform(currentCart);
-        currentCart.modelTr.ry += 90;
+        trackCartEdit(currentCart, () => { currentCart.modelTr.ry += 90; });
         requestRender();
       });
       U.mirror3dXBtn.addEventListener("click", () => {
         const currentCart = cart();
         if (!currentCart) return;
         ensureModelTransform(currentCart);
-        currentCart.modelTr.mx = !currentCart.modelTr.mx;
+        trackCartEdit(currentCart, () => { currentCart.modelTr.mx = !currentCart.modelTr.mx; });
         requestRender();
       });
       U.reset3dBtn.addEventListener("click", reset3DTransform);

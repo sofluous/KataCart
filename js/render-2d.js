@@ -18,6 +18,8 @@
       set2DAssetEditSelected,
       syncWorkspaceChrome,
       setStatus,
+      cart = () => null,
+      trackCartEdit = (c, edit) => edit(),
     } = deps;
     let lastPointer = null;
 
@@ -331,10 +333,10 @@
       getMappedTemplateImage,
       draw2D,
       beginStagePointerInteraction,
-      moveStagePointerInteraction,
+      moveStagePointerInteraction: (...args) => trackCartEdit(cart(), () => moveStagePointerInteraction(...args)),
       endStagePointerInteraction,
       cancelStagePointerInteraction,
-      handleStageWheelInteraction,
+      handleStageWheelInteraction: (...args) => trackCartEdit(cart(), () => handleStageWheelInteraction(...args)),
     };
   }
 

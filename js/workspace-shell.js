@@ -9,6 +9,7 @@
       openExportModal,
       isCompactHeaderMode,
       setHeaderMoreOpen,
+      requestRender,
     } = deps;
 
     function setPressed(button, pressed) {
@@ -156,6 +157,7 @@
         btn.addEventListener("click", () => {
           closeContextMenu();
           item.action?.();
+          requestRender();
         });
         U.contextMenu.append(btn);
       });

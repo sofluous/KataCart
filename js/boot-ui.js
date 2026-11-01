@@ -15,7 +15,9 @@
       copyTextToClipboard,
       refreshRenderStyleCache,
       requestRender,
+      trackCartEdit = (c, edit) => edit(),
       closeSettingsDrawer,
+      closeCreatePanel,
       openSettingsDrawer,
       closeContextMenu,
       syncWorkspaceChrome,
@@ -190,6 +192,7 @@
             U.debugOutput.hidden = !S.debug.mapping;
             if (!S.debug.mapping) U.debugOutput.textContent = "Mapping debug disabled.";
           }
+          requestRender();
         });
       if (U.copyDebugBtn)
         U.copyDebugBtn.addEventListener("click", async () => {
@@ -268,7 +271,7 @@
         if (!S.settingsOpen) return;
         const inDrawer = U.settingsDrawer?.contains(event.target);
         const inTrigger = U.settingsOpenBtns.some((button) => button.contains(event.target));
-        if (!inDrawer && !inTrigger) closeSettingsDrawer();
+        if (!inDrawer && !inTrigger) closeSettingsDrawer(false);
       });
       document.addEventListener("fullscreenchange", () => {
         syncFocusButton();
@@ -277,7 +280,12 @@
       });
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
-          closeContextMenu();
+          if (U.exportModal?.open) return;
+          event.preventDefault();
+          if (S.contextMenu.open) { closeContextMenu(); return; }
+          if (U.toolMoreMenu && !U.toolMoreMenu.hidden) { setHeaderMoreOpen(false); return; }
+          if (S.settingsOpen) { closeSettingsDrawer(); return; }
+          if (S.createOpen) { closeCreatePanel(); return; }
           if (S.view.preview) {
             S.view.preview = false;
             syncWorkspaceChrome();
@@ -287,9 +295,11 @@
             return;
           }
           setHeaderMoreOpen(false);
+          return;
         }
         if (
           S.screen === "workspace" &&
+          !S.settingsOpen && !S.createOpen && !U.exportModal?.open &&
           !event.repeat &&
           !event.ctrlKey &&
           !event.metaKey &&
@@ -354,8 +364,10 @@
             return;
           }
           ensure2DTransform(currentAsset);
-          currentAsset.tr.x = 0;
-          currentAsset.tr.y = 0;
+          trackCartEdit(cart(), () => {
+            currentAsset.tr.x = 0;
+            currentAsset.tr.y = 0;
+          });
           sync2DTransformFields(currentAsset);
           requestRender();
           return;
@@ -391,7 +403,7 @@
             return;
           }
           ensure2DTransform(currentAsset);
-          currentAsset.tr.s = clampNumber(currentAsset.tr.s + 0.08, 0.2, 3);
+          trackCartEdit(cart(), () => { currentAsset.tr.s = clampNumber(currentAsset.tr.s + 0.08, 0.2, 3); });
           sync2DTransformFields(currentAsset);
           requestRender();
           return;
@@ -411,7 +423,7 @@
             return;
           }
           ensure2DTransform(currentAsset);
-          currentAsset.tr.s = clampNumber(currentAsset.tr.s - 0.08, 0.2, 3);
+          trackCartEdit(cart(), () => { currentAsset.tr.s = clampNumber(currentAsset.tr.s - 0.08, 0.2, 3); });
           sync2DTransformFields(currentAsset);
           requestRender();
           return;

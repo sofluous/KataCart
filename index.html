@@ -14,6 +14,7 @@
     <script src="./design-system/js/theme-registry.js"></script>
     <script src="./design-system/js/theme-selector.js"></script>
     <script src="./js/face-inspector.js"></script>
+    <script src="./js/session-guard.js"></script>
     <script src="./js/create-flow.js"></script>
     <script src="./js/export.js"></script>
     <script src="./js/gallery.js"></script>
@@ -373,7 +374,7 @@
       .gallery-shell {
         height: 100%;
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
         gap: var(--gap);
       }
       .gallery-top {
@@ -381,6 +382,9 @@
         justify-content: space-between;
         align-items: center;
         gap: var(--kc-space-4);
+      }
+      .session-notice {
+        margin: 0;
       }
       .gallery-top h1 {
         margin: 0;
@@ -447,7 +451,9 @@
         border-color: color-mix(in oklab, var(--ds-accent) 72%, var(--ds-border));
         background: color-mix(in oklab, var(--ds-accent) 8%, var(--ds-bg-raised));
       }
-      .cart-card:focus-visible {
+      .cart-card:focus-visible,
+      .template-card:focus-visible,
+      .workspace-strip-card:focus-visible {
         outline: 0;
         border-color: var(--ds-focus);
         box-shadow: 0 0 0 2px color-mix(in oklab, var(--ds-focus) 46%, transparent);
@@ -655,7 +661,7 @@
         display: grid;
         gap: var(--ds-space-2);
       }
-      .template-option {
+      .template-card {
         border: 1px solid var(--ds-border);
         border-radius: var(--ds-radius-2);
         background: var(--ds-btn-bg);
@@ -667,7 +673,7 @@
         display: grid;
         gap: var(--kc-space-tight);
       }
-      .template-option[aria-selected="true"] {
+      .template-card[aria-pressed="true"] {
         border-color: var(--ds-accent);
         background: color-mix(in oklab, var(--ds-accent) 14%, var(--ds-btn-bg));
       }
@@ -2041,9 +2047,9 @@
     </style>
   </head>
   <body>
-  <aside id="createPanel">
+  <aside id="createPanel" role="dialog" aria-labelledby="createPanelTitle" aria-hidden="true" inert>
       <div>
-        <h2 class="u-m0">Create Cart</h2>
+        <h2 id="createPanelTitle" class="u-m0">Create Cart</h2>
         <p class="muted u-mt-1">
           Select a template first, then create blank cart.
         </p>
@@ -2083,12 +2089,13 @@
             </div>
           </div>
           <div class="workspace-header-right">
-            <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings" aria-label="Settings">
+            <button id="gallerySettingsBtn" class="btn" data-open-settings type="button" title="Settings" aria-label="Settings" aria-controls="settingsDrawer" aria-expanded="false">
               <i class="iconoir-settings"></i>Settings
             </button>
           </div>
         </div>
         <div id="galleryList" class="layout-grid"></div>
+        <p class="muted session-notice">Session only: carts and artwork are lost on reload. Export outputs before leaving; exports cannot currently be reopened as projects.</p>
       </div>
     </section>
 
@@ -2156,7 +2163,7 @@
             <button id="exportJsonBtn" class="btn primary" type="button">
               <i class="iconoir-download"></i>Export...
             </button>
-            <button id="settingsBtn" class="btn" data-open-settings type="button" title="Settings" aria-label="Settings">
+            <button id="settingsBtn" class="btn" data-open-settings type="button" title="Settings" aria-label="Settings" aria-controls="settingsDrawer" aria-expanded="false">
               <i class="iconoir-settings"></i>Settings
             </button>
           </div>
@@ -2394,6 +2401,7 @@
               <div id="hudAsset">Face: -</div>
               <div id="hudTemplate" class="muted">Template: -</div>
               <div id="hudCamera" class="muted">Rot 0,0 | Zoom 1.00</div>
+              <div class="muted">Session only. Export before leaving; carts are not saved.</div>
             </div>
             <div id="miniGizmo" class="mini-gizmo workspace-dock-gizmo">
               <canvas id="miniCanvas"></canvas>
@@ -2452,9 +2460,9 @@
       </footer>
     </section>
 
-    <aside id="settingsDrawer">
+    <aside id="settingsDrawer" role="dialog" aria-labelledby="settingsDrawerTitle" aria-hidden="true" inert>
       <div class="settings-head">
-        <h2 class="u-m0">Settings</h2>
+        <h2 id="settingsDrawerTitle" class="u-m0">Settings</h2>
         <button id="closeSettingsBtn" class="btn" type="button" aria-label="Close settings">
           <i class="iconoir-xmark-circle"></i>Close
         </button>
@@ -2515,6 +2523,7 @@
         <div class="export-body">
           <section id="exportPanelPackage" class="export-card export-panel">
             <h3 class="u-m0">Package Export</h3>
+            <p class="muted session-notice">Export downloads outputs; it does not save this session or create a project you can reopen here. The exit warning remains active after export.</p>
             <div class="setting-row">
               <label class="setting-label" for="exportPackageType">Type</label>
               <select id="exportPackageType">
@@ -3047,14 +3056,27 @@
         renderStyleCache.textMuted =
           styles.getPropertyValue("--ds-text-muted").trim() || "#999";
       }
+      let settingsReturnFocus = null;
       function openSettingsDrawer() {
+        if (S.settingsOpen) return;
+        settingsReturnFocus = document.activeElement;
         S.settingsOpen = true;
         syncSettingsControls();
+        U.settingsDrawer.inert = false;
+        U.settingsDrawer.setAttribute("aria-hidden", "false");
         U.settingsDrawer.classList.add("open");
+        U.settingsOpenBtns.forEach((button) => button.setAttribute("aria-expanded", "true"));
+        U.closeSettingsBtn.focus();
       }
-      function closeSettingsDrawer() {
+      function closeSettingsDrawer(restoreFocus = true) {
+        if (!S.settingsOpen) return;
         S.settingsOpen = false;
+        U.settingsDrawer.inert = true;
+        U.settingsDrawer.setAttribute("aria-hidden", "true");
         U.settingsDrawer.classList.remove("open");
+        U.settingsOpenBtns.forEach((button) => button.setAttribute("aria-expanded", "false"));
+        if (restoreFocus && settingsReturnFocus?.isConnected) settingsReturnFocus.focus();
+        settingsReturnFocus = null;
       }
       function set2DAssetEditSelected(selected) {
         S.view.assetEditSelected = !!selected;
@@ -3268,12 +3290,15 @@
         appShell?.renderWorkspace();
         requestRender();
       }
+      const sessionGuard = window.KataCartSessionGuard.createSessionGuard();
+      const { trackCartEdit, markChanged: markSessionChanged } = sessionGuard;
       const createFlow = window.KataCartCreateFlow.createCreateFlow({
         S,
         U,
         TEMPLATES,
         tById,
         createCart,
+        markSessionChanged,
         openWorkspace: (cartId) => openWorkspace(cartId),
         setStatus,
       });
@@ -3297,6 +3322,7 @@
         openExportModal,
         isCompactHeaderMode,
         setHeaderMoreOpen,
+        requestRender,
       });
       const {
         syncInspectorPanels,
@@ -3312,6 +3338,7 @@
         syncViewToggleUI,
       } = workspaceShell;
       const faceInspector = window.KataCartFaceInspector.createFaceInspector({
+        trackCartEdit,
         S,
         U,
         cart,
@@ -3353,6 +3380,8 @@
       });
       const { galleryThumb, openGallery, renderGallery } = galleryUI;
       const render2D = window.KataCartRender2D.createRender2D({
+        cart,
+        trackCartEdit,
         S,
         U,
         X,
@@ -3997,9 +4026,13 @@
         }
       }
       function workspaceNeedsAnimation() {
+        if (S.screen !== "workspace") return false;
+        const currentAsset = asset();
+        const is3d = currentAsset?.type === "3d";
+        const miniVisible = U.miniCanvas.clientWidth > 0 && U.miniCanvas.clientHeight > 0;
+        const wobbleVisible = currentAsset && S.view.renderMode === "wobble" && (is3d || miniVisible);
         return (
-          S.screen === "workspace" &&
-          ((S.view.spin && asset()?.type === "3d") || !!S.view.drag || !!S.gizmo.drag)
+          (S.view.spin && is3d) || !!wobbleVisible || !!S.view.drag || !!S.gizmo.drag
         );
       }
       function ensureRenderLoop() {
@@ -4053,6 +4086,7 @@
         return c;
       }
       function uploadImage(file) {
+        const targetCart = cart();
         const a = asset();
         if (!a || a.type !== "2d") {
           setStatus("Select a 2D face before upload.");
@@ -4062,8 +4096,10 @@
         const u = URL.createObjectURL(file),
           im = new Image();
         im.onload = () => {
-          a.image = { src: u, filename: file.name, width: im.width, height: im.height, img: im };
-          a.tr = { x: 0, y: 0, s: 1, stx: 1, sty: 1, r: 0, mx: false, my: false, px: 1 };
+          trackCartEdit(targetCart, () => {
+            a.image = { src: u, filename: file.name, width: im.width, height: im.height, img: im };
+            a.tr = { x: 0, y: 0, s: 1, stx: 1, sty: 1, r: 0, mx: false, my: false, px: 1 };
+          });
           const mismatch = im.width !== a.w || im.height !== a.h;
           setStatus(
             mismatch
@@ -4093,6 +4129,7 @@
       }
 
       const bootUI = window.KataCartBootUI.createBootUI({
+        trackCartEdit,
         S,
         U,
         cart,
@@ -4108,6 +4145,7 @@
         refreshRenderStyleCache,
         requestRender,
         closeSettingsDrawer,
+        closeCreatePanel,
         openSettingsDrawer,
         closeContextMenu,
         syncWorkspaceChrome,
@@ -4130,6 +4168,7 @@
         openGallery,
       });
       const workspaceInput = window.KataCartWorkspaceInput.createWorkspaceInput({
+        trackCartEdit,
         S,
         U,
         cart,

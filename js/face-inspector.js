@@ -16,6 +16,7 @@
       syncExportModalState,
       saveWorkspacePrefs,
       setDropHover,
+      trackCartEdit = (c, edit) => edit(),
     } = deps;
 
     function sync2DTransformFields(a) {
@@ -265,19 +266,23 @@
       saveWorkspacePrefs();
     }
 
+    function tracked(edit) {
+      return (...args) => trackCartEdit(cart(), () => edit(...args));
+    }
+
     return {
       syncContextFromAsset,
       sync2DTransformFields,
       sync2DInspectorState,
       sync3DTransformFields,
-      syncTransformFromUI,
-      syncTransformValueInput,
-      fitAsset,
-      reset2DTransform,
-      toggle2DMirror,
-      sync3DTransformFromUI,
-      sync3DTransformValueInput,
-      reset3DTransform,
+      syncTransformFromUI: tracked(syncTransformFromUI),
+      syncTransformValueInput: tracked(syncTransformValueInput),
+      fitAsset: tracked(fitAsset),
+      reset2DTransform: tracked(reset2DTransform),
+      toggle2DMirror: tracked(toggle2DMirror),
+      sync3DTransformFromUI: tracked(sync3DTransformFromUI),
+      sync3DTransformValueInput: tracked(sync3DTransformValueInput),
+      reset3DTransform: tracked(reset3DTransform),
     };
   }
 

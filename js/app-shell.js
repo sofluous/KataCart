@@ -44,6 +44,7 @@
     function renderAssetStrip() {
       const currentCart = cart();
       if (!currentCart) return;
+      const focusedFace = Array.from(U.assetStrip.children).find((item) => item === document.activeElement)?.dataset.assetId;
       U.assetStrip.innerHTML = "";
       const previewSrc =
         galleryThumb(currentCart)?.src ||
@@ -53,6 +54,11 @@
       currentCart.assets.forEach((asset) => {
         const item = document.createElement("article");
         item.className = `asset-card workspace-strip-card${asset.id === S.assetId ? " active" : ""}`;
+        item.dataset.assetId = asset.id;
+        item.tabIndex = 0;
+        item.setAttribute("role", "button");
+        item.setAttribute("aria-label", asset.label);
+        item.setAttribute("aria-pressed", String(asset.id === S.assetId));
         const mm = asset.type === "2d" ? assetPhysicalDimsMm(asset.id, template) : null;
         const faceMeta =
           asset.type === "2d"
@@ -95,6 +101,11 @@
           box.style.backgroundImage = `url("${previewSrc}")`;
         }
         item.addEventListener("click", () => {
+          setActiveAsset(asset.id);
+        });
+        item.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
           setActiveAsset(asset.id);
         });
         item.addEventListener("contextmenu", (event) => {
@@ -157,17 +168,14 @@
                 },
               },
             );
-          } else if (asset.type === "uv") {
-            menu.push({
-              label: "Export UV View",
-              icon: "iconoir-download",
-              action: () => openExportModalToTab("image"),
-            });
           }
           openContextMenu(event.clientX, event.clientY, menu);
         });
         U.assetStrip.append(item);
       });
+      if (focusedFace) {
+        Array.from(U.assetStrip.children).find((item) => item.dataset.assetId === focusedFace)?.focus();
+      }
     }
 
     function renderWorkspace() {

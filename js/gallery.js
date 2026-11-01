@@ -10,6 +10,13 @@
       syncSettingsControls,
     } = deps;
 
+    function selectCart(id) {
+      S.gallerySelectedId = id;
+      for (const card of U.galleryList.children) {
+        card.classList.toggle("is-selected", card.dataset.cartId === id);
+      }
+    }
+
     function gallerySummary(cart) {
       const template = tById(cart.templateId);
       const filled = cart.assets.filter((asset) => asset.type === "2d" && !!asset.image).length;
@@ -161,6 +168,9 @@
         if (tagTone) card.dataset.tagTone = tagTone;
         card.setAttribute("data-family", summary.template.family || "");
         card.tabIndex = 0;
+        card.dataset.cartId = cart.id;
+        card.setAttribute("role", "group");
+        card.setAttribute("aria-label", cart.name);
         card.innerHTML = `
           <div class="gallery-thumb">
             ${
@@ -170,7 +180,7 @@
             }
           </div>
           <div class="cart-meta">
-            <strong>${cart.name}</strong>
+            <strong class="cart-name"></strong>
             <span class="muted">${summary.template.name}</span>
             <span class="muted">${summary.filled}/${summary.total} 2D faces ready</span>
           </div>
@@ -178,6 +188,7 @@
             <button class="btn" type="button"><i class="iconoir-arrow-right-circle"></i>Open</button>
           </div>
         `;
+        card.querySelector(".cart-name").textContent = cart.name;
         if (thumb) {
           const media = card.querySelector(".gallery-thumb-media");
           if (media) media.style.backgroundImage = `url("${thumb.src}")`;
@@ -187,22 +198,23 @@
           openWorkspace(cart.id);
         });
         card.addEventListener("click", () => {
-          S.gallerySelectedId = cart.id;
-          renderGallery();
+          selectCart(cart.id);
         });
         card.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") openWorkspace(cart.id);
+          if (event.target !== card) return;
+          if (event.key === "Enter") {
+            event.preventDefault();
+            openWorkspace(cart.id);
+          }
           if (event.key === " ") {
             event.preventDefault();
-            S.gallerySelectedId = cart.id;
-            renderGallery();
+            selectCart(cart.id);
           }
         });
         card.addEventListener("dblclick", () => openWorkspace(cart.id));
         card.addEventListener("contextmenu", (event) => {
           event.preventDefault();
-          S.gallerySelectedId = cart.id;
-          renderGallery();
+          selectCart(cart.id);
           openContextMenu(event.clientX, event.clientY, [
             {
               label: "Open Workspace",
@@ -213,8 +225,7 @@
               label: "Select Cart",
               icon: "iconoir-check-circle",
               action: () => {
-                S.gallerySelectedId = cart.id;
-                renderGallery();
+                selectCart(cart.id);
               },
             },
             {
