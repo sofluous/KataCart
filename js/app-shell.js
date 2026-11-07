@@ -24,6 +24,8 @@
     reset2DTransform,
     reset3DTransform,
     closeCreatePanel,
+    surfaceOnly = false,
+    onSelectionSync = () => {},
   }) {
     function openWorkspace(cartId) {
       if (S.createOpen) closeCreatePanel();
@@ -52,6 +54,7 @@
         "";
       const template = tById(currentCart.templateId);
       currentCart.assets.forEach((asset) => {
+        if (surfaceOnly && asset.type !== "2d") return;
         const item = document.createElement("article");
         item.className = `asset-card workspace-strip-card${asset.id === S.assetId ? " active" : ""}`;
         item.dataset.assetId = asset.id;
@@ -176,6 +179,7 @@
       if (focusedFace) {
         Array.from(U.assetStrip.children).find((item) => item.dataset.assetId === focusedFace)?.focus();
       }
+      onSelectionSync();
     }
 
     function renderWorkspace() {

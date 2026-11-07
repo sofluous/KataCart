@@ -10,6 +10,7 @@
       isCompactHeaderMode,
       setHeaderMoreOpen,
       requestRender,
+      onChromeSync = () => {},
     } = deps;
 
     function setPressed(button, pressed) {
@@ -132,6 +133,7 @@
       }
       syncInspectorPanels();
       syncFocusButton();
+      onChromeSync();
     }
 
     function openExportModalToTab(tabId) {

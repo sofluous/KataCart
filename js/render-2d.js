@@ -13,7 +13,7 @@
       CANVAS_FS_2,
       renderStyleCache,
       drawTemplateOverlay,
-      drawInnerEdgeLabels,
+      faceCompositor,
       sync2DTransformFields,
       set2DAssetEditSelected,
       syncWorkspaceChrome,
@@ -66,71 +66,11 @@
     }
 
     function getPixelizedSourceImage(a) {
-      if (!a?.image?.img) return null;
-      const px = Math.max(1, Math.round(a.tr?.px || 1));
-      if (px <= 1) return a.image.img;
-      if (!a.image.pixelCache) a.image.pixelCache = {};
-      if (a.image.pixelCache[px]) return a.image.pixelCache[px];
-      const src = a.image.img;
-      const sw = src.width;
-      const sh = src.height;
-      const tw = Math.max(1, Math.floor(sw / px));
-      const th = Math.max(1, Math.floor(sh / px));
-      const low = document.createElement("canvas");
-      low.width = tw;
-      low.height = th;
-      const lx = low.getContext("2d");
-      lx.imageSmoothingEnabled = false;
-      lx.drawImage(src, 0, 0, tw, th);
-      const out = document.createElement("canvas");
-      out.width = sw;
-      out.height = sh;
-      const ox = out.getContext("2d");
-      ox.imageSmoothingEnabled = false;
-      ox.drawImage(low, 0, 0, tw, th, 0, 0, sw, sh);
-      a.image.pixelCache[px] = out;
-      return out;
+      return faceCompositor.getPixelizedSourceImage(a);
     }
 
     function getMappedTemplateImage(a) {
-      if (!a?.image?.img) return null;
-      const src = getPixelizedSourceImage(a);
-      if (!src) return null;
-      const key = [
-        a.image.src,
-        a.image.filename || "",
-        a.w,
-        a.h,
-        a.tr.x,
-        a.tr.y,
-        a.tr.s,
-        a.tr.stx || 1,
-        a.tr.sty || 1,
-        a.tr.r,
-        a.tr.mx ? 1 : 0,
-        a.tr.my ? 1 : 0,
-        Math.round(a.tr.px || 1),
-        S.view.templateLabels ? 1 : 0,
-      ].join("|");
-      if (a.image.mappedKey === key && a.image.mappedCache) return a.image.mappedCache;
-      const c = document.createElement("canvas");
-      c.width = Math.max(1, a.w);
-      c.height = Math.max(1, a.h);
-      const x = c.getContext("2d");
-      const fit = Math.min(c.width / src.width, c.height / src.height);
-      const dw = src.width * fit * a.tr.s * (a.tr.stx || 1);
-      const dh = src.height * fit * a.tr.s * (a.tr.sty || 1);
-      const tx = (a.tr.x / 220) * (c.width * 0.45);
-      const ty = (a.tr.y / 220) * (c.height * 0.45);
-      x.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
-      x.translate(c.width / 2 + tx, c.height / 2 + ty);
-      x.rotate((a.tr.r * Math.PI) / 180);
-      x.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-      x.drawImage(src, -dw / 2, -dh / 2, dw, dh);
-      drawInnerEdgeLabels(x, a, 0, 0, c.width, c.height);
-      a.image.mappedKey = key;
-      a.image.mappedCache = c;
-      return c;
+      return faceCompositor.getMappedTemplateImage(a);
     }
 
     function draw2D(a, w, h, accentColor) {
@@ -175,35 +115,19 @@
         return;
       }
       const mapped = getMappedTemplateImage(a);
-      if (mapped && !(S.view.assetEditSelected && a.image)) {
+      if (mapped && (a.layers || !(S.view.assetEditSelected && a.image))) {
         X.drawImage(mapped, frameX, frameY, frameW, frameH);
       }
-      if (S.view.assetEditSelected && a.image?.img) {
-        const src = getPixelizedSourceImage(a);
-        const fit = Math.min(frameW / src.width, frameH / src.height);
-        const drawW = src.width * fit * a.tr.s * (a.tr.stx || 1);
-        const drawH = src.height * fit * a.tr.s * (a.tr.sty || 1);
-        const offsetX = (a.tr.x / 220) * (frameW * 0.45);
-        const offsetY = (a.tr.y / 220) * (frameH * 0.45);
-        const centerX = frameX + frameW / 2 + offsetX;
-        const centerY = frameY + frameH / 2 + offsetY;
+      if (S.view.assetEditSelected && a.image?.img && !a.layers) {
         X.save();
         X.globalAlpha = 0.18;
-        X.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
-        X.translate(centerX, centerY);
-        X.rotate((a.tr.r * Math.PI) / 180);
-        X.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-        X.drawImage(src, -drawW / 2, -drawH / 2, drawW, drawH);
+        faceCompositor.paintArtwork(X, a, frameX, frameY, frameW, frameH);
         X.restore();
         X.save();
         X.beginPath();
         X.rect(frameX, frameY, frameW, frameH);
         X.clip();
-        X.imageSmoothingEnabled = Math.round(a.tr.px || 1) <= 1;
-        X.translate(centerX, centerY);
-        X.rotate((a.tr.r * Math.PI) / 180);
-        X.scale(a.tr.mx ? -1 : 1, a.tr.my ? -1 : 1);
-        X.drawImage(src, -drawW / 2, -drawH / 2, drawW, drawH);
+        faceCompositor.paintArtwork(X, a, frameX, frameY, frameW, frameH);
         X.restore();
         X.save();
         X.strokeStyle = accentColor;
@@ -217,11 +141,12 @@
     }
 
     function beginStagePointerInteraction(e, currentAsset) {
+      if (currentAsset.layers?.find((l) => l.id === currentAsset.activeLayerId)?.visible === false) set2DAssetEditSelected(false);
       const rect = U.stageCanvas.getBoundingClientRect();
       const px = (e.clientX - rect.left) * (U.stageCanvas.width / Math.max(1, rect.width));
       const py = (e.clientY - rect.top) * (U.stageCanvas.height / Math.max(1, rect.height));
       const insideFrame = pointInRect(px, py, S.view.assetFrameRect);
-      S.view.stageClickSelectCandidate = !!currentAsset.image && insideFrame;
+      S.view.stageClickSelectCandidate = !!currentAsset.image && insideFrame && currentAsset.layers?.find((l) => l.id === currentAsset.activeLayerId)?.visible !== false;
       if (S.view.assetEditSelected && !insideFrame) {
         set2DAssetEditSelected(false);
         syncWorkspaceChrome();
@@ -296,7 +221,7 @@
       const rect = U.stageCanvas.getBoundingClientRect();
       const px = (e.clientX - rect.left) * (U.stageCanvas.width / Math.max(1, rect.width));
       const py = (e.clientY - rect.top) * (U.stageCanvas.height / Math.max(1, rect.height));
-      if (S.view.assetEditSelected) {
+      if (S.view.assetEditSelected && currentAsset.layers?.find((l) => l.id === currentAsset.activeLayerId)?.visible !== false) {
         ensure2DTransform(currentAsset);
         currentAsset.tr.s = clampNumber(
           currentAsset.tr.s + (e.deltaY < 0 ? 0.08 : -0.08),

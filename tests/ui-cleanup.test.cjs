@@ -6,6 +6,36 @@ const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 
+test("layer edits preserve source identity and undo transforms, order and deletion", () => {
+  const context = { window: {} };
+  for (const file of ["layer-model.js", "edit-history.js"]) vm.runInNewContext(fs.readFileSync(path.join(root, "js", file), "utf8"), context);
+  const model = context.window.KataCartLayerModel;
+  const history = context.window.KataCartEditHistory.createEditHistory();
+  const source = { filename: "base.png", img: {} };
+  const face = { image: source, tr: { x: 0, y: 0, s: 1, r: 0, px: 1 } };
+  const cart = { assets: [face] };
+  model.ensure(face);
+  history.record(cart, () => { face.tr.s = 2; });
+  assert.equal(history.canUndo(cart), true);
+  history.undo(cart);
+  assert.equal(face.tr.s, 1);
+  assert.equal(face.image, source);
+  history.redo(cart);
+  assert.equal(face.tr.s, 2);
+  history.record(cart, () => model.duplicate(face));
+  assert.equal(face.layers.length, 2);
+  const id = face.activeLayerId;
+  history.record(cart, () => { model.selected(face).opacity = 0.4; model.reorder(face, -1); });
+  assert.equal(face.layers[0].id, id);
+  history.record(cart, () => model.remove(face));
+  history.undo(cart);
+  assert.equal(face.layers.length, 2);
+  assert.equal(model.selected(face).opacity, 0.4);
+  history.undo(cart);
+  assert.equal(face.layers[1].id, id);
+  assert.equal(model.selected(face).opacity, 1);
+});
+
 class Element {
   constructor() {
     this.children = [];
@@ -267,6 +297,192 @@ function session() {
   return { guard, target, c, a };
 }
 
+test("edit history restores image sources and transforms without cloning runtime images", () => {
+  const history = load("edit-history.js", "KataCartEditHistory", "createEditHistory")();
+  const { c, a } = session();
+  const first = { src: "blob:first", img: {} }, second = { src: "blob:second", img: {} };
+  a.image = first;
+  history.record(c, () => { a.image = second; a.tr.x = 60; });
+  assert.equal(history.undo(c), true);
+  assert.equal(a.image, first);
+  assert.equal(a.tr.x, 0);
+  assert.equal(history.redo(c), true);
+  assert.equal(a.image, second);
+  assert.equal(a.tr.x, 60);
+});
+
+test("gesture transactions merge edits and leave unrelated background sample loading intact", () => {
+  const history = load("edit-history.js", "KataCartEditHistory", "createEditHistory")();
+  const { c, a } = session();
+  history.begin(c);
+  history.record(c, () => { a.tr.x = 10; });
+  history.record(c, () => { a.tr.x = 20; });
+  const sample = { src: "sample.png" };
+  a.image = sample;
+  history.commit();
+  assert.equal(history.undo(c), true);
+  assert.equal(a.tr.x, 0);
+  assert.equal(a.image, sample);
+  assert.equal(history.canUndo(c), false);
+  assert.equal(history.redo(c), true);
+  assert.equal(a.tr.x, 20);
+});
+
+test("history is cart-local, ignores no-ops and clears redo after a new edit", () => {
+  const history = load("edit-history.js", "KataCartEditHistory", "createEditHistory")();
+  const { c } = session(), other = session().c;
+  history.record(c, () => { c.name = c.name; });
+  assert.equal(history.canUndo(c), false);
+  history.record(c, () => { c.name = "A"; });
+  assert.equal(history.canUndo(other), false);
+  history.undo(c);
+  assert.equal(history.canRedo(c), true);
+  history.record(c, () => { c.notes = "new"; });
+  assert.equal(history.canRedo(c), false);
+});
+
+test("exit guard continues recording undo history after its first dirty edit", () => {
+  const history = load("edit-history.js", "KataCartEditHistory", "createEditHistory")();
+  const target = new Element();
+  const guard = load("session-guard.js", "KataCartSessionGuard", "createSessionGuard")({ target, history });
+  const { c } = session();
+  guard.trackCartEdit(c, () => { c.name = "First"; });
+  guard.trackCartEdit(c, () => { c.name = "Second"; });
+  history.undo(c); assert.equal(c.name, "First");
+  history.undo(c); assert.equal(c.name, "Sample");
+  assert.equal(guard.hasChanges(), true);
+  assert.equal(target.listeners.beforeunload.length, 1);
+});
+
+function compositorHarness() {
+  const canvases = [], labels = [];
+  const S = { view: { templateLabels: false } };
+  const document = { createElement: () => {
+    const operations = [];
+    const context = Object.fromEntries(["translate", "rotate", "scale", "drawImage"].map((name) => [name, (...args) => operations.push([name, ...args])]));
+    const canvas = { getContext: () => context, operations };
+    canvases.push(canvas);
+    return canvas;
+  } };
+  const ctx = { window: {}, document };
+  vm.runInNewContext(fs.readFileSync(path.join(root, "js/face-compositor.js"), "utf8"), ctx);
+  const api = ctx.window.KataCartFaceCompositor.createFaceCompositor({ S, drawInnerEdgeLabels: (...args) => labels.push(args) });
+  const face = { id: "cover_front", w: 100, h: 200, image: { src: "art.png", filename: "art.png", img: { width: 20, height: 40 } }, tr: { x: 0, y: 0, s: 1, r: 0, px: 1 } };
+  return { api, face, S, canvases, labels };
+}
+
+test("legacy layer adapter exposes the live source/transform without migrating the face", () => {
+  const { api, face } = compositorHarness();
+  const before = JSON.stringify(face);
+  const layer = api.getFaceLayers(face)[0];
+  assert.equal(layer.id, "cover_front:artwork");
+  assert.equal(layer.source, face.image);
+  assert.equal(layer.transform, face.tr);
+  assert.equal(Object.isFrozen(layer), true);
+  assert.equal(JSON.stringify(face), before);
+  assert.equal(api.getFaceLayers({ image: null }).length, 0);
+  assert.equal(api.getMappedTemplateImage({ image: null }), null);
+});
+
+test("face composition caches stable artwork and invalidates transforms, labels and replacements", () => {
+  const { api, face, S, labels } = compositorHarness();
+  const first = api.getMappedTemplateImage(face);
+  assert.equal(api.getMappedTemplateImage(face), first);
+  assert.equal(labels.length, 1);
+  const key = face.image.mappedKey;
+  face.tr.x = 10;
+  const moved = api.getMappedTemplateImage(face);
+  assert.notEqual(moved, first);
+  assert.notEqual(face.image.mappedKey, key);
+  S.view.templateLabels = true;
+  assert.notEqual(api.getMappedTemplateImage(face), moved);
+  face.image = { ...face.image, mappedKey: undefined, mappedCache: undefined, img: { width: 40, height: 40 } };
+  assert.notEqual(api.getMappedTemplateImage(face), moved);
+});
+
+test("pixelization reuses source cache and shared painting retains legacy transform units", () => {
+  const { api, face } = compositorHarness();
+  face.tr = { x: 220, y: -220, s: 2, stx: 1.5, sty: 0.5, r: 90, mx: true, my: false, px: 4 };
+  const pixelized = api.getPixelizedSourceImage(face);
+  assert.equal(api.getPixelizedSourceImage(face), pixelized);
+  const canvas = api.getMappedTemplateImage(face);
+  const [translate, rotate, scale, draw] = canvas.operations;
+  assert.deepEqual(translate, ["translate", 95, 10]);
+  assert.deepEqual(rotate, ["rotate", Math.PI / 2]);
+  assert.deepEqual(scale, ["scale", -1, 1]);
+  assert.equal(draw[1], pixelized);
+  assert.deepEqual(draw.slice(2), [-150, -100, 300, 200]);
+});
+
+test("artwork variants are restricted to compatible physical cart types", () => {
+  const api = load("template-variants.js", "KataCartTemplateVariants", "createTemplateVariants")({});
+  assert.deepEqual(Array.from(api.variantsFor("ps2-case"), (v) => v.id), ["blank", "ps2-ketaros", "ps2-juanky"]);
+  assert.deepEqual(Array.from(api.variantsFor("psp-umd"), (v) => v.id), ["blank"]);
+  assert.deepEqual(Array.from(api.variantsFor("ps1-jewel"), (v) => v.id), ["blank", "ps1-jewel-scan"]);
+});
+
+function variantCart() {
+  return { templateId: "ps2-case", assets: ["cover_front", "cover_back", "spine", "disc_art"].map((id) => ({ id, type: "2d", w: id === "spine" ? 192 : 1024, h: 1400, image: null })) };
+}
+
+test("variant imports use existing PNGs and fill only their declared surfaces", async () => {
+  const api = load("template-variants.js", "KataCartTemplateVariants", "createTemplateVariants")({
+    loadImageFromPath: async (src) => {
+      const png = fs.readFileSync(path.join(root, src));
+      return { img: { width: png.readUInt32BE(16), height: png.readUInt32BE(20) } };
+    },
+  });
+  const c = variantCart();
+  await api.applyVariant(c, "ps2-juanky");
+  assert.equal(c.artworkVariantId, "ps2-juanky");
+  for (const a of c.assets.slice(0, 3)) {
+    assert.ok(a.image.src.includes("ps2-juanky"));
+    const fit = Math.min(a.w/a.image.width, a.h/a.image.height);
+    assert.ok(Math.abs(a.image.width * fit * a.tr.stx - a.w) < 0.001);
+  }
+  assert.equal(c.assets[3].image, null);
+  await assert.rejects(api.applyVariant(c, "ps2-ketaros"), /new blank cart/);
+});
+
+test("failed and incompatible variant imports leave all cart faces untouched", async () => {
+  const api = load("template-variants.js", "KataCartTemplateVariants", "createTemplateVariants")({
+    loadImageFromPath: async (src) => {
+      if (src.includes("spine")) throw new Error("Missing spine");
+      return { img: { width: 100, height: 100 } };
+    },
+  });
+  const c = variantCart();
+  await assert.rejects(api.applyVariant(c, "gamecube-shenske"), /incompatible/);
+  await assert.rejects(api.applyVariant(c, "ps2-ketaros"), /Missing spine/);
+  assert.ok(c.assets.every((a) => a.image === null));
+  assert.equal(c.artworkVariantId, undefined);
+});
+
+test("cancelling variant creation prevents a late import from adding a cart", async () => {
+  const U = controls(), S = { carts: [], createOpen: false };
+  const t = { id: "ps2-case", name: "PS2", d: {} };
+  let finish, marked = false, opened = false;
+  const pending = new Promise((resolve) => { finish = resolve; });
+  U.newCartNameInput.value = "My PS2";
+  const catalog = load("template-variants.js", "KataCartTemplateVariants", "createTemplateVariants")({});
+  const flow = load("create-flow.js", "KataCartCreateFlow", "createCreateFlow")({
+    S, U, TEMPLATES: [t], tById: () => t, createCart: variantCart,
+    variantsFor: catalog.variantsFor, applyVariant: () => pending,
+    markSessionChanged: () => { marked = true; }, openWorkspace: () => { opened = true; }, setStatus() {},
+  });
+  flow.bindCreateUI(); flow.openCreatePanel();
+  U.createTemplateList.children[0].emit("click");
+  U.createVariantSelect.value = "ps2-ketaros";
+  U.createVariantSelect.emit("change");
+  U.createCartBtn.emit("click");
+  assert.equal(U.createCartBtn.disabled, true);
+  flow.closeCreatePanel();
+  finish(); await new Promise(setImmediate);
+  assert.equal(S.carts.length, 0);
+  assert.equal(marked, false);
+  assert.equal(opened, false);
+});
+
 test("exit guard stays inactive for unchanged carts and view-only edits", () => {
   const { guard, target, c } = session();
   const view = { zoom: 1 };
@@ -364,14 +580,17 @@ test("creating a new cart marks the session, opening and cancelling create does 
 
 test("successful artwork upload marks its original cart, failed upload stays clean", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  const start = html.indexOf("function uploadImage(file) {");
+  const start = html.indexOf("function uploadImage(");
   const end = html.indexOf("function loadImageFromPath", start);
   for (const success of [false, true]) {
     const { guard, c, a } = session();
     let image;
+    const context = { window: {} };
+    vm.runInNewContext(fs.readFileSync(path.join(root, "js/layer-model.js"), "utf8"), context);
     const upload = vm.runInNewContext(html.slice(start, end) + "\nuploadImage;", {
+      window: context.window,
       cart: () => c, asset: () => a, trackCartEdit: guard.trackCartEdit,
-      URL: { createObjectURL: () => "blob:test" }, Image: class { constructor() { image = this; this.width = this.height = 100; } },
+      URL: { createObjectURL: () => "blob:test", revokeObjectURL() {} }, Image: class { constructor() { image = this; this.width = this.height = 100; } },
       setStatus() {}, syncContextFromAsset() {}, renderAssetStrip() {}, saveWorkspacePrefs() {}, requestRender() {},
     });
     upload({ name: "art.png" });

@@ -35,7 +35,7 @@
     function sync2DInspectorState(a) {
       const is2d = a?.type === "2d";
       const hasArtwork = !!a?.image;
-      const controlReady = is2d && hasArtwork;
+      const controlReady = is2d && hasArtwork && a.layers?.find((l) => l.id === a.activeLayerId)?.visible !== false;
       const controls = [
         U.txRange,
         U.tyRange,

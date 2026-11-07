@@ -11,12 +11,7 @@
     loadImageFromPath,
     requestRender,
   }) {
-    const referenceSamples = [
-      { name: "GameCube Reference - Shenske", templateId: "gamecube-case", folder: "gamecube" },
-      { name: "PS2 Reference - Ketaros", templateId: "ps2-case", folder: "ps2-ketaros" },
-      { name: "PS2 Reference - Juanky", templateId: "ps2-case", folder: "ps2-juanky" },
-      { name: "PS1 Jewel Case Reference", templateId: "ps1-jewel", folder: "ps1-case" },
-    ];
+    const referenceSamples = window.KataCartTemplateVariants.REFERENCE_SAMPLES;
 
     function inferTemplateIdFromFolder(folder) {
       const name = String(folder || "").toLowerCase();
@@ -45,6 +40,7 @@
         if (!template) return;
         const c = createCart(template, sample.name);
         c.referenceFolder = sample.folder;
+        c.artworkVariantId = sample.id;
         c.notes = "Reference texture sample. Original sources and mappings: textures/reference/README.md";
         carts.push(c);
       });

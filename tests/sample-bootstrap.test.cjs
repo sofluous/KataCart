@@ -14,6 +14,7 @@ function setup(loadOverride) {
   const warnings = [];
   let redraws = 0;
   const context = { window: {}, console: { warn: (...args) => warnings.push(args) } };
+  vm.runInNewContext(fs.readFileSync(path.join(root, "js/template-variants.js"), "utf8"), context);
   vm.runInNewContext(source, context);
   const api = context.window.KataCartSampleBootstrap.createSampleBootstrap({
     S, TEMPLATES: templates,

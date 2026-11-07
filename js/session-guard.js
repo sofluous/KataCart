@@ -1,5 +1,5 @@
 (function () {
-  function createSessionGuard({ target = window } = {}) {
+  function createSessionGuard({ target = window, history = null } = {}) {
     let changed = false;
 
     function warnBeforeLeaving(event) {
@@ -20,15 +20,17 @@
         assets: c.assets.map((a) => ({
           id: a.id, tr: a.tr,
           image: a.image ? { src: a.image.src, filename: a.image.filename } : null,
+          layers: a.layers?.map((l) => ({ id: l.id, name: l.name, visible: l.visible, opacity: l.opacity, transform: l.transform, source: l.source.src })),
         })),
       });
     }
 
     function trackCartEdit(c, edit) {
-      if (changed || !c) return edit();
+      const perform = () => history ? history.record(c, edit) : edit();
+      if (changed || !c) return perform();
       const before = snapshot(c);
       try {
-        return edit();
+        return perform();
       } finally {
         if (snapshot(c) !== before) markChanged();
       }

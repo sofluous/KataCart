@@ -344,6 +344,7 @@
           notes: c.notes,
           tags: c.tags,
           sku: c.sku,
+          artworkVariantId: c.artworkVariantId || null,
           assets: c.assets.map((a) => ({
             id: a.id,
             label: a.label,
@@ -351,6 +352,7 @@
             width: a.w,
             height: a.h,
             hasImage: !!a.image,
+            layers: a.layers?.map((l) => ({ id: l.id, name: l.name, type: l.type, visible: l.visible, opacity: l.opacity, boundary: l.boundary, source: { src: l.source.src, filename: l.source.filename }, transform: l.transform })),
             sourceSize: a.image ? { width: a.image.width, height: a.image.height } : null,
             transform: a.tr,
           })),

@@ -15,6 +15,8 @@
     <script src="./design-system/js/theme-selector.js"></script>
     <script src="./js/face-inspector.js"></script>
     <script src="./js/session-guard.js"></script>
+    <script src="./js/edit-history.js"></script>
+    <script src="./js/editor-layout.js"></script>
     <script src="./js/create-flow.js"></script>
     <script src="./js/export.js"></script>
     <script src="./js/gallery.js"></script>
@@ -23,8 +25,12 @@
     <script src="./js/workspace-input.js"></script>
     <script src="./js/render-config.js"></script>
     <script src="./js/sample-bootstrap.js"></script>
+    <script src="./js/template-variants.js"></script>
     <script src="./js/storage.js"></script>
     <script src="./js/render-2d.js"></script>
+    <script src="./js/face-compositor.js"></script>
+    <script src="./js/layer-model.js"></script>
+    <script src="./js/layer-panel.js"></script>
     <script src="./js/render-3d.js"></script>
     <script src="./js/render-3d-webgl.js"></script>
     <script src="./js/workspace-shell.js"></script>
@@ -649,7 +655,9 @@
         z-index: var(--kc-z-drawer);
         padding: var(--kc-space-6);
         display: grid;
-        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto minmax(80px, 1fr) auto auto;
+        max-width: 100vw;
+        overflow-y: auto;
         gap: var(--kc-space-4);
       }
       #createPanel.open {
@@ -2045,13 +2053,14 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="./css/editor-layout.css" />
   </head>
   <body>
   <aside id="createPanel" role="dialog" aria-labelledby="createPanelTitle" aria-hidden="true" inert>
       <div>
         <h2 id="createPanelTitle" class="u-m0">Create Cart</h2>
         <p class="muted u-mt-1">
-          Select a template first, then create blank cart.
+          Choose a physical cart type, then choose Blank or compatible artwork.
         </p>
       </div>
       <div class="field">
@@ -2059,6 +2068,11 @@
         <input id="newCartNameInput" type="text" value="New KataCart" />
       </div>
       <div id="createTemplateList" class="template-list"></div>
+      <div class="field">
+        <label for="createVariantSelect">Artwork template</label>
+        <select id="createVariantSelect" aria-describedby="createVariantSummary" disabled></select>
+        <p id="createVariantSummary" class="muted session-notice" aria-live="polite">Choose a cart type first.</p>
+      </div>
       <div class="create-actions">
         <button id="cancelCreateBtn" class="btn destructive" type="button">
           <i class="iconoir-xmark-circle"></i>Cancel
@@ -2862,6 +2876,8 @@
         layoutButtons: [...document.querySelectorAll(".layout-switch [data-layout]")],
         createPanel: document.getElementById("createPanel"),
         createTemplateList: document.getElementById("createTemplateList"),
+        createVariantSelect: document.getElementById("createVariantSelect"),
+        createVariantSummary: document.getElementById("createVariantSummary"),
         newCartNameInput: document.getElementById("newCartNameInput"),
         createCartBtn: document.getElementById("createCartBtn"),
         cancelCreateBtn: document.getElementById("cancelCreateBtn"),
@@ -3047,6 +3063,7 @@
 
       function setStatus(msg) {
         U.statusText.textContent = msg;
+        U.statusText.title = msg;
       }
       function refreshRenderStyleCache() {
         const styles = getComputedStyle(document.documentElement);
@@ -3195,14 +3212,14 @@
         const normalized = expected.map((exp) => {
           const old = existing.get(exp.id);
           if (!old) return exp;
-          const out = {
-            ...old,
+          // Keep face identity and layer accessors intact across selection changes.
+          const out = Object.assign(old, {
             id: exp.id,
             label: exp.label,
             type: exp.type,
             w: exp.w,
             h: exp.h,
-          };
+          });
           if (exp.type === "2d") {
             out.tr = old.tr || exp.tr;
           } else {
@@ -3290,9 +3307,14 @@
         appShell?.renderWorkspace();
         requestRender();
       }
-      const sessionGuard = window.KataCartSessionGuard.createSessionGuard();
+      let editorLayout = null;
+      const editHistory = window.KataCartEditHistory.createEditHistory({ onChange: () => editorLayout?.syncHistory() });
+      const sessionGuard = window.KataCartSessionGuard.createSessionGuard({ history: editHistory });
+      const templateVariants = window.KataCartTemplateVariants.createTemplateVariants({ loadImageFromPath });
       const { trackCartEdit, markChanged: markSessionChanged } = sessionGuard;
       const createFlow = window.KataCartCreateFlow.createCreateFlow({
+        variantsFor: templateVariants.variantsFor,
+        applyVariant: templateVariants.applyVariant,
         S,
         U,
         TEMPLATES,
@@ -3314,6 +3336,7 @@
         exportModule?.syncExportModalState();
       }
       const workspaceShell = window.KataCartWorkspaceShell.createWorkspaceShell({
+        onChromeSync: () => editorLayout?.sync(),
         S,
         U,
         asset,
@@ -3380,6 +3403,7 @@
       });
       const { galleryThumb, openGallery, renderGallery } = galleryUI;
       const render2D = window.KataCartRender2D.createRender2D({
+        faceCompositor: window.KataCartFaceCompositor.createFaceCompositor({ S, drawInnerEdgeLabels }),
         cart,
         trackCartEdit,
         S,
@@ -3394,7 +3418,6 @@
         CANVAS_FS_2,
         renderStyleCache,
         drawTemplateOverlay,
-        drawInnerEdgeLabels,
         sync2DTransformFields,
         set2DAssetEditSelected,
         syncWorkspaceChrome,
@@ -3501,6 +3524,8 @@
         bindExportUI,
       } = exportModule;
       appShell = window.KataCartAppShell.createAppShell({
+        surfaceOnly: true,
+        onSelectionSync: () => editorLayout?.sync(),
         S,
         U,
         cart,
@@ -4085,7 +4110,7 @@
         x.stroke();
         return c;
       }
-      function uploadImage(file) {
+      function uploadImage(file, addAsLayer = false) {
         const targetCart = cart();
         const a = asset();
         if (!a || a.type !== "2d") {
@@ -4093,12 +4118,20 @@
           return;
         }
         if (!file) return;
+        window.KataCartLayerModel.ensure(a);
+        const targetLayerId = a.activeLayerId;
         const u = URL.createObjectURL(file),
           im = new Image();
         im.onload = () => {
+          if (!addAsLayer && (targetLayerId ? !a.layers.some((l) => l.id === targetLayerId) : a.layers.length > 0)) {
+            URL.revokeObjectURL(u);
+            setStatus("Upload cancelled: the target layer changed.");
+            return;
+          }
           trackCartEdit(targetCart, () => {
-            a.image = { src: u, filename: file.name, width: im.width, height: im.height, img: im };
-            a.tr = { x: 0, y: 0, s: 1, stx: 1, sty: 1, r: 0, mx: false, my: false, px: 1 };
+            const source = { src: u, filename: file.name, width: im.width, height: im.height, img: im };
+            if (addAsLayer) window.KataCartLayerModel.add(a, source);
+            else window.KataCartLayerModel.replace(a, targetLayerId, source);
           });
           const mismatch = im.width !== a.w || im.height !== a.h;
           setStatus(
@@ -4111,7 +4144,7 @@
           saveWorkspacePrefs();
           requestRender();
         };
-        im.onerror = () => setStatus("Failed to load image file.");
+        im.onerror = () => { URL.revokeObjectURL(u); setStatus("Failed to load image file."); };
         im.src = u;
       }
       function loadImageFromPath(path) {
@@ -4226,6 +4259,20 @@
       bindCreateUI();
       bootUI.bindChromeAndSettingsUI();
       workspaceInput.bindWorkspaceInputs();
+
+      editorLayout = window.KataCartEditorLayout.createEditorLayout({
+        uploadImage, trackCartEdit,
+        refreshLayers: () => { syncContextFromAsset(); renderAssetStrip(); requestRender(); },
+        S, U, cart, asset, setActiveAsset, set2DAssetEditSelected, syncWorkspaceChrome, saveWorkspacePrefs, requestRender,
+        history: editHistory,
+        refreshAfterHistory: () => {
+          syncContextFromAsset();
+          renderAssetStrip();
+          renderGallery();
+          requestRender();
+          setStatus("Edit history applied. Changes remain session-only.");
+        },
+      });
 
       workspaceInput.initApp();
     </script>
